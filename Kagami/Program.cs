@@ -61,12 +61,19 @@ public static class Program
         // cli
         while (true)
         {
-            switch (Console.ReadLine())
+            try
             {
-                case "/stop":
-                    await _bot.Logout();
-                    _bot.Dispose();
-                    return;
+                switch (Console.ReadLine())
+                {
+                    case "/stop":
+                        await _bot.Logout();
+                        _bot.Dispose();
+                        return;
+                }
+            }
+            catch (Exception e)
+            {
+                return;
             }
         }
     }
