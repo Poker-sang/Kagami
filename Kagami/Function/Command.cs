@@ -32,7 +32,8 @@ public static partial class Command
         // Increase
         ++_messageCounter;
 
-        if (group.MemberUin == bot.Uin) return;
+        if (group.MemberUin == bot.Uin) 
+            return;
 
 
         try
@@ -87,11 +88,13 @@ public static partial class Command
     {
         // Get at
         var at = group.Chain.GetChain<AtChain>();
-        if (at is null) return Text("Argument error");
+        if (at is null) 
+            return Text("Argument error");
 
         // Get group info
         var memberInfo = await bot.GetGroupMemberInfo(group.GroupUin, at.AtUin, true);
-        if (memberInfo is null) return Text("No such member");
+        if (memberInfo is null) 
+            return Text("No such member");
 
         return new MessageBuilder("[Member Info]\n")
             .Text($"Name: {memberInfo.Name}\n")
@@ -107,7 +110,8 @@ public static partial class Command
     {
         // Get at
         var atChain = group.Chain.GetChain<AtChain>();
-        if (atChain is null) return Text("Argument error");
+        if (atChain is null) 
+            return Text("Argument error");
 
         var time = 60U;
         var textChains = group.Chain
@@ -138,58 +142,51 @@ public static partial class Command
     {
         // Get at
         var atChain = group.Chain.GetChain<AtChain>();
-        if (atChain == null) return Text("Argument error");
+        if (atChain is null) 
+            return Text("Argument error");
 
-        var textChains = group.Chain
-            .FindChain<TextChain>();
+        var textChains = group.Chain.FindChain<TextChain>();
+        // Check argument
+        if (textChains.Count is not 2)
+            return Text("Argument error");
+
+        try
         {
-            // Check argument
-            if (textChains.Count is not 2)
-                return Text("Argument error");
-
-            try
-            {
-                if (await bot.GroupSetSpecialTitle(group.GroupUin, atChain.AtUin, textChains[1].Content, uint.MaxValue))
-                    return Text($"Set special title for member [{atChain.AtUin}].");
-                return Text("Unknown error.");
-            }
-            catch (OperationFailedException e)
-            {
-                return Text($"{e.Message} ({e.HResult})");
-            }
+            if (await bot.GroupSetSpecialTitle(group.GroupUin, atChain.AtUin, textChains[1].Content, uint.MaxValue))
+                return Text($"Set special title for member [{atChain.AtUin}].");
+            return Text("Unknown error.");
+        }
+        catch (OperationFailedException e)
+        {
+            return Text($"{e.Message} ({e.HResult})");
         }
     }
 
     [Help("Parse bv to av")]
     public static async Task<MessageBuilder> Bv(TextChain chain)
     {
-        var avCode = Util.Bv2Av(chain.Content);
-        if (avCode == "") return Text("Invalid BV code");
-        {
-            // Download the page
-            var bytes = await Util.Download($"https://www.bilibili.com/video/{avCode}");
-            var html = Encoding.UTF8.GetString(bytes);
-            {
-                // Get meta data
-                var metaData = Util.GetMetaData("itemprop", html);
-                var titleMeta = metaData["description"];
-                var imageMeta = metaData["image"];
-                var keyWdMeta = metaData["keywords"];
+        var avCode = Util.Bv2Av(chain.Content[4..]);
+        if (avCode is "") 
+            return Text("Invalid BV code");
+        // Download the page
+        var bytes = await Util.Download($"https://www.bilibili.com/video/{avCode}");
+        var html = Encoding.UTF8.GetString(bytes);
+        // Get meta data
+        var metaData = Util.GetMetaData("itemprop", html);
+        var titleMeta = metaData["description"];
+        var imageMeta = metaData["image"];
+        var keyWdMeta = metaData["keywords"];
 
-                // Download the image
-                var image = await Util.Download(imageMeta);
+        // Download the image
+        var image = await Util.Download(imageMeta);
 
-                // Build message
-                var result = new MessageBuilder();
-                {
-                    result.Text($"{titleMeta}\n");
-                    result.Text($"https://www.bilibili.com/video/{avCode}\n\n");
-                    result.Image(image);
-                    result.Text("\n#" + string.Join(" #", keyWdMeta.Split(",")[1..^4]));
-                }
-                return result;
-            }
-        }
+        // Build message
+        var result = new MessageBuilder();
+        result.Text($"{titleMeta}\n");
+        result.Text($"https://www.bilibili.com/video/{avCode}\n\n");
+        result.Image(image);
+        result.Text("\n#" + string.Join(" #", keyWdMeta.Split(",")[1..^4]));
+        return result;
     }
 
     [Help("Github repo parser", Name = "https://github.com/")]
@@ -200,20 +197,17 @@ public static partial class Command
         {
             var bytes = await Util.Download($"{chain.Content.TrimEnd('/')}.git");
             var html = Encoding.UTF8.GetString(bytes);
-            {
-                // Get meta data
-                var metaData = Util.GetMetaData("property", html);
-                var imageMeta = metaData["og:image"];
+            // Get meta data
+            var metaData = Util.GetMetaData("property", html);
+            var imageMeta = metaData["og:image"];
 
-                // Build message
-                var image = await Util.Download(imageMeta);
-                return new MessageBuilder().Image(image);
-            }
+            // Build message
+            var image = await Util.Download(imageMeta);
+            return new MessageBuilder().Image(image);
         }
         catch (WebException webException)
         {
-            Console.WriteLine($"Not a repository link. \n" +
-                              $"{webException.Message}");
+            Console.WriteLine($"Not a repository link. \n{webException.Message}");
             return null;
         }
     }
