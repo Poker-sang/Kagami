@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Konata.Core" Version="1.*-*" />
+		<PackageReference Include="Selenium.WebDriver" Version="4.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,6 +25,12 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Kagami.SourceGenerator\Kagami.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Wolfram.NETLink">
+	    <HintPath>Wolfram.NETLink.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

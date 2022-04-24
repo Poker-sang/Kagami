@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Kagami.Attributes;
@@ -64,9 +65,9 @@ public static partial class Command
 
             // System status
             .Text($"Processed {_messageCounter} message(s)\n")
-            .Text($"GC Memory {Util.Bytes2MiB(GC.GetTotalAllocatedBytes(), 2)} MiB " +
+            .Text($"GC Memory {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB " +
                   $"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)\n")
-            .Text($"Total Memory {Util.Bytes2MiB(Process.GetCurrentProcess().WorkingSet64, 2)} MiB\n\n")
+            .Text($"Total Memory {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB\n\n")
 
             // Copyrights
             .Text("Konata Project (C) 2022");
@@ -165,20 +166,20 @@ public static partial class Command
     [Help("Parse bv to av")]
     public static async Task<MessageBuilder> Bv(TextChain chain)
     {
-        var avCode = Util.Bv2Av(chain.Content[4..]);
+        var avCode = chain.Content[4..].Bv2Av();
         if (avCode is "") 
             return Text("Invalid BV code");
-        // Download the page
-        var bytes = await Util.Download($"https://www.bilibili.com/video/{avCode}");
+        // UrlDownload the page
+        var bytes = await $"https://www.bilibili.com/video/{avCode}".UrlDownload();
         var html = Encoding.UTF8.GetString(bytes);
         // Get meta data
-        var metaData = Util.GetMetaData("itemprop", html);
+        var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];
         var imageMeta = metaData["image"];
         var keyWdMeta = metaData["keywords"];
 
-        // Download the image
-        var image = await Util.Download(imageMeta);
+        // UrlDownload the image
+        var image = await imageMeta.UrlDownload();
 
         // Build message
         var result = new MessageBuilder();
@@ -192,22 +193,22 @@ public static partial class Command
     [Help("Github repo parser", Name = "https://github.com/")]
     public static async Task<MessageBuilder> GithubParser(TextChain chain)
     {
-        // Download the page
+        // UrlDownload the page
         try
         {
-            var bytes = await Util.Download($"{chain.Content.TrimEnd('/')}.git");
+            var bytes = await $"{chain.Content.TrimEnd('/')}.git".UrlDownload();
             var html = Encoding.UTF8.GetString(bytes);
             // Get meta data
-            var metaData = Util.GetMetaData("property", html);
+            var metaData = html.GetMetaData("property");
             var imageMeta = metaData["og:image"];
 
             // Build message
-            var image = await Util.Download(imageMeta);
+            var image = await imageMeta.UrlDownload();
             return new MessageBuilder().Image(image);
         }
-        catch (WebException webException)
+        catch (HttpRequestException e)
         {
-            Console.WriteLine($"Not a repository link. \n{webException.Message}");
+            Console.WriteLine($"Not a repository link. \n{e.Message}");
             return null;
         }
     }
