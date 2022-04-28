@@ -5,13 +5,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Kagami.Attributes;
+using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Exceptions.Model;
+using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using Konata.Core.Interfaces.Api;
-using Kagami.Utils;
 
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedParameter.Local
