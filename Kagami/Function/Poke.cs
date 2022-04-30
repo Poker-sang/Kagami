@@ -16,6 +16,6 @@ public static class Poke
         if (group.MemberUin != bot.Uin) return;
 
         // Convert it to ping
-        bot.SendGroupMessage(group.GroupUin, Command.Greeting());
+        _ = bot.SendGroupMessage(group.GroupUin, Commands.Text("不许戳"));
     }
 }

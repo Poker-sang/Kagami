@@ -1,10 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Kagami.Attributes;
+﻿using Kagami.Attributes;
 using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Events.Model;
@@ -12,49 +6,20 @@ using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedParameter.Local
 
 namespace Kagami.Function;
 
-[GenerateHelp("Poker Kagami Help", DefaultPrefix = "\\")]
-public static partial class Command
+public static partial class Commands
 {
-    private static uint _messageCounter;
-
-    /// <summary>
-    /// On group message
-    /// </summary>
-    /// <param name="bot"></param>
-    /// <param name="group"></param>
-    internal static async void OnGroupMessage(Bot bot, GroupMessageEvent group)
-    {
-        // Increase
-        ++_messageCounter;
-
-        if (group.MemberUin == bot.Uin) 
-            return;
-
-
-        try
-        {
-            if (await GetReply(bot, group) is { } reply)
-                await bot.SendGroupMessage(group.GroupUin, reply);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            Console.WriteLine(e.StackTrace);
-
-            // Send error print
-            await bot.SendGroupMessage(group.GroupUin,
-                Text($"{e.Message}\n{e.StackTrace}"));
-        }
-    }
-
     [Help("Get Status")]
-    public static MessageBuilder Status()
+    private static MessageBuilder Status()
         => new MessageBuilder()
             // Core descriptions
             .Text($"[Poker Kagami]\n")
@@ -73,28 +38,28 @@ public static partial class Command
             .Text("Konata Project (C) 2022");
 
     [Help("Greeting")]
-    public static MessageBuilder Greeting()
+    private static MessageBuilder Greeting()
         => Text("Hello, I'm Poker Kagami");
 
     [Help("Echo a message(Safer than Eval)")]
-    public static MessageBuilder Echo(TextChain text, MessageChain chain)
-        => new MessageBuilder(text.Content[5..].Trim()).Add(chain[1..]);
+    private static MessageBuilder Echo(TextChain text, MessageChain chain)
+        => new MessageBuilder(text.Content[4..].Trim()).Add(chain[1..]);
 
     [Help("Eval a message")]
-    public static MessageBuilder Eval(MessageChain chain)
-        => MessageBuilder.Eval(chain.ToString()[5..].TrimStart());
+    private static MessageBuilder Eval(MessageChain chain)
+        => MessageBuilder.Eval(chain.ToString()[4..].TrimStart());
 
     [Help("Get MemberInfo")]
-    public static async Task<MessageBuilder> MemberInfo(Bot bot, GroupMessageEvent group)
+    private static async Task<MessageBuilder> MemberInfo(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var at = group.Chain.GetChain<AtChain>();
-        if (at is null) 
+        if (at is null)
             return Text("Argument error");
 
         // Get group info
         var memberInfo = await bot.GetGroupMemberInfo(group.GroupUin, at.AtUin, true);
-        if (memberInfo is null) 
+        if (memberInfo is null)
             return Text("No such member");
 
         return new MessageBuilder("[Member Info]\n")
@@ -107,11 +72,11 @@ public static partial class Command
     }
 
     [Help("Mute a member")]
-    public static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group)
+    private static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var atChain = group.Chain.GetChain<AtChain>();
-        if (atChain is null) 
+        if (atChain is null)
             return Text("Argument error");
 
         var time = 60U;
@@ -121,9 +86,7 @@ public static partial class Command
             // Parse time
             if (textChains.Count is 2 &&
                 uint.TryParse(textChains[1].Content, out var t))
-            {
                 time = t;
-            }
         }
 
         try
@@ -139,11 +102,11 @@ public static partial class Command
     }
 
     [Help("Set Title for member")]
-    public static async Task<MessageBuilder> SetTitle(Bot bot, GroupMessageEvent group)
+    private static async Task<MessageBuilder> SetTitle(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var atChain = group.Chain.GetChain<AtChain>();
-        if (atChain is null) 
+        if (atChain is null)
             return Text("Argument error");
 
         var textChains = group.Chain.FindChain<TextChain>();
@@ -164,10 +127,10 @@ public static partial class Command
     }
 
     [Help("Parse bv to av")]
-    public static async Task<MessageBuilder> Bv(TextChain chain)
+    private static async Task<MessageBuilder> Bv(TextChain chain)
     {
         var avCode = chain.Content[4..].Bv2Av();
-        if (avCode is "") 
+        if (avCode is "")
             return Text("Invalid BV code");
         // UrlDownload the page
         var bytes = await $"https://www.bilibili.com/video/{avCode}".UrlDownload();
@@ -191,11 +154,12 @@ public static partial class Command
     }
 
     [Help("Github repo parser", Name = "https://github.com/")]
-    public static async Task<MessageBuilder> GithubParser(TextChain chain)
+    private static async Task<MessageBuilder> GithubParser(Bot bot, GroupMessageEvent group, TextChain chain)
     {
         // UrlDownload the page
         try
         {
+            _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching repository..."));
             var bytes = await $"{chain.Content.TrimEnd('/')}.git".UrlDownload();
             var html = Encoding.UTF8.GetString(bytes);
             // Get meta data
@@ -209,12 +173,10 @@ public static partial class Command
         catch (HttpRequestException e)
         {
             Console.WriteLine($"Not a repository link. \n{e.Message}");
-            return null;
+            return Text("Not a repository link.");
         }
     }
 
     [Help("Repeat a message")]
-    public static MessageBuilder Repeat(MessageChain message) => new(message);
-
-    private static MessageBuilder Text(string text) => new MessageBuilder().Text(text);
+    private static MessageBuilder Repeat(MessageChain message) => new(message);
 }

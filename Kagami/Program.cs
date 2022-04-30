@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Kagami.Utils;
 
 namespace Kagami;
 
@@ -16,7 +17,6 @@ public static class Program
     private static Bot _bot;
     public static async Task Main()
     {
-        Utils.Util.GetImages(null, null);
         _bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
         {
             // Print the log
@@ -47,16 +47,14 @@ public static class Program
             _bot.OnGroupPoke += Poke.OnGroupPoke;
 
             // Handle messages from group
-            _bot.OnGroupMessage += Command.OnGroupMessage;
+            _bot.OnGroupMessage += Commands.OnGroupMessage;
         }
 
         // Login the bot
         var result = await _bot.Login();
-        {
-            // Update the keystore
-            if (result)
-                UpdateKeystore(_bot.KeyStore);
-        }
+        // Update the keystore
+        if (result)
+            UpdateKeystore(_bot.KeyStore);
 
         // cli
         while (true)
@@ -65,13 +63,13 @@ public static class Program
             {
                 switch (Console.ReadLine())
                 {
-                    case "/stop":
+                    case @"\stop":
                         await _bot.Logout();
                         _bot.Dispose();
                         return;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return;
             }

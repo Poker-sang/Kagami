@@ -1,15 +1,13 @@
-﻿using System;
+﻿using OpenQA.Selenium;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 
-// ReSharper disable InvertIf
 
 namespace Kagami.Utils;
 
@@ -39,10 +37,8 @@ public static class Util
         {
             var r = 0L;
             for (var i = 0; i < sed.Length; i++)
-            {
                 r += chars[bvCode[sed[i]]]
                      * (long)Math.Pow(table.Length, i);
-            }
 
             var result = r - add ^ xor;
             return result is > 10000000000 or < 0 ? "" : $"av{result}";
@@ -156,19 +152,6 @@ public static class Util
 
         return metaDict;
     }
-
-    //IEnumerable<string>
-    public static async void GetImages(this string html, string pseudoClass)
-    {
-        var pattern = @"(?!<img)(?=.*alt=""f2MXs.jpg"")(?=.*class=""fr-fic fr-dib medium-zoom-image"")(?=.*src=""([^""]+)"")(?!>)";
-        Thread.Sleep(10000);
-        html = Encoding.Default.GetString(await "https://cangku.icu/archives/198097".UrlDownload());
-        var a = Regex.Matches(
-            html,
-            pattern);
-    }
-
-
 
     /// <summary>
     /// Can I do
