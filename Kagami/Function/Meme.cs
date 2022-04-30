@@ -40,7 +40,7 @@ public static partial class Commands
     /// </div>
     /// ......
     /// https://cangku.icu/search/post?q=沙雕图集锦
-    private static async Task<IEnumerable<string>> GetImageSources(this string html, string pseudoClass)
+    private static async Task<IEnumerable<string>> GetMemeImageSources()
     {
         await Task.Yield();
 
@@ -85,7 +85,7 @@ public static partial class Commands
         _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching meme images..."));
         try
         {
-            var imgUrls = await GetImageSources(null, null);
+            var imgUrls = await GetMemeImageSources();
 
             foreach (var imgUrl in imgUrls)
                 await File.WriteAllBytesAsync(@$"C:\Users\poker\Desktop\123\{imgUrl}", await imgUrl.UrlDownload());

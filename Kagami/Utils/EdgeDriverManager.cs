@@ -6,7 +6,7 @@ namespace Kagami.Utils;
 
 public static class EdgeDriverManager
 {
-    private static EdgeDriver EdgeDriver { get; set; }
+    private static EdgeDriver? EdgeDriver { get; set; }
     /// <summary>
     /// 
     /// </summary>
