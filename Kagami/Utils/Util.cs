@@ -1,7 +1,5 @@
-﻿using OpenQA.Selenium;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -96,10 +94,7 @@ public static class Util
     /// <param name="timeout"></param>
     /// <param name="limitLen">default 2 gigabytes</param>
     /// <returns></returns>
-    public static async Task<byte[]?> UrlDownload(this string url, Dictionary<string, string>? header = null, int timeout = 8000, int limitLen = 0)
-    public static async Task<byte[]> UrlDownload(this string url,
-        Dictionary<string, string>? header = null,
-        int timeout = 8000, int limitLen = 2 << 9)
+    public static async Task<byte[]> UrlDownload(this string url, Dictionary<string, string>? header = null, int timeout = 8000, int limitLen = 2 << 9)
     {
         // Create request
         var request = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All })
