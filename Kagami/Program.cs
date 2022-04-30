@@ -8,13 +8,13 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Kagami.Utils;
 
 namespace Kagami;
 
 public static class Program
 {
-    private static Bot _bot;
+    private static Bot _bot = null!;
+
     public static async Task Main()
     {
         _bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
@@ -94,7 +94,7 @@ public static class Program
     /// Load or create device 
     /// </summary>
     /// <returns></returns>
-    private static BotDevice GetDevice()
+    private static BotDevice? GetDevice()
     {
         // Read the device from config
         if (File.Exists("device.json"))
@@ -118,7 +118,7 @@ public static class Program
     /// Load or create keystore
     /// </summary>
     /// <returns></returns>
-    private static BotKeyStore GetKeyStore()
+    private static BotKeyStore? GetKeyStore()
     {
         // Read the device from config
         if (File.Exists("keystore.json"))

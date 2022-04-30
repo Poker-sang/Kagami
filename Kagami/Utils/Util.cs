@@ -94,14 +94,18 @@ public static class Util
     /// <param name="url"></param>
     /// <param name="header"></param>
     /// <param name="timeout"></param>
-    /// <param name="limitLen"></param>
+    /// <param name="limitLen">default 2 gigabytes</param>
     /// <returns></returns>
     public static async Task<byte[]?> UrlDownload(this string url, Dictionary<string, string>? header = null, int timeout = 8000, int limitLen = 0)
+    public static async Task<byte[]> UrlDownload(this string url,
+        Dictionary<string, string>? header = null,
+        int timeout = 8000, int limitLen = 2 << 9)
     {
         // Create request
         var request = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All })
         {
-            Timeout = new TimeSpan(0, 0, 0, timeout)
+            Timeout = new TimeSpan(0, 0, 0, timeout),
+            MaxResponseContentBufferSize = limitLen
         };
         // Default useragent
         request.DefaultRequestHeaders.Add("User-Agent", new[]
@@ -118,12 +122,6 @@ public static class Util
 
         // Open response stream
         var response = await request.GetByteArrayAsync(url);
-
-        // length limitation
-        if (limitLen is not 0)
-            // Decline streaming transport
-            if (response.LongLength > limitLen || response.LongLength is 0)
-                return null;
 
         // Receive the response data
         return response;
