@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Kagami.Utils;
 
-public static class Util
+public static class Utilities
 {
     public static double Bytes2MiB(this long bytes, int round) => Math.Round(bytes / 1048576.0, round);
 
