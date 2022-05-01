@@ -28,7 +28,7 @@ internal static partial class TypeWithAttributeDelegates
                         defaultSuffix = (string)value;
                         break;
                 }
-
+        
         var stringBuilder = new StringBuilder().AppendLine(@$"#nullable enable
 
 using Konata.Core;
@@ -48,15 +48,16 @@ partial class {typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualified
         if (textChain is null)
             return null;
 
-        return 0 switch
+        return textChain.Content.Split(' ')[0].ToLower() switch
         {{
-            0 when textChain.Content.StartsWith(@""{defaultPrefix}help{defaultSuffix}"", true, CultureInfo.CurrentCulture) => Help(),");
+            @""{defaultPrefix}help{defaultSuffix}"" => Help(),");
         var getReplyEndAndHelpBegin = new StringBuilder($@"            _ => null
         }};
     }}
 
     public static MessageBuilder Help() => new MessageBuilder(""{beforeHelp}\n"")
 ");
+        
         const string helpEndAndClassEnd = ";\n}";
 
         foreach (var member in typeSymbol.GetMembers()
@@ -116,7 +117,7 @@ attribute)
             if (parameters.Length is not 0)
                 parameters.Remove(parameters.Length - 2, 2);
 
-            stringBuilder.AppendLine($@"{Spacing(3)}0 when textChain.Content.StartsWith(@""{name}"", true, CultureInfo.CurrentCulture) => {isAsync}{member.Name}({parameters}),");
+            stringBuilder.AppendLine($@"{Spacing(3)}@""{name}"" => {isAsync}{member.Name}({parameters}),");
 
             getReplyEndAndHelpBegin.AppendLine($@"{Spacing(3)}.Text(@""- {name}
   {summary}

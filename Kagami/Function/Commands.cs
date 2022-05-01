@@ -132,8 +132,7 @@ public static partial class Commands
         if (avCode is "")
             return Text("Invalid BV code");
         // UrlDownload the page
-        var bytes = await $"https://www.bilibili.com/video/{avCode}".UrlDownload();
-        var html = Encoding.UTF8.GetString(bytes);
+        var html = await $"https://www.bilibili.com/video/{avCode}".UrlDownloadString();
         // Get meta data
         var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];
@@ -141,7 +140,7 @@ public static partial class Commands
         var keyWdMeta = metaData["keywords"];
 
         // UrlDownload the image
-        var image = await imageMeta.UrlDownload();
+        var image = await imageMeta.UrlDownloadBytes();
 
         // Build message
         var result = new MessageBuilder();
@@ -159,14 +158,13 @@ public static partial class Commands
         try
         {
             _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching repository..."));
-            var bytes = await $"{chain.Content.TrimEnd('/')}.git".UrlDownload();
-            var html = Encoding.UTF8.GetString(bytes);
+            var html = await $"{chain.Content.TrimEnd('/')}.git".UrlDownloadString();
             // Get meta data
             var metaData = html.GetMetaData("property");
             var imageMeta = metaData["og:image"];
 
             // Build message
-            var image = await imageMeta.UrlDownload();
+            var image = await imageMeta.UrlDownloadBytes();
             return new MessageBuilder().Image(image);
         }
         catch (HttpRequestException e)

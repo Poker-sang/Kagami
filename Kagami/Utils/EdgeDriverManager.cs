@@ -1,5 +1,6 @@
 ﻿using System;
 using Kagami.Exceptions;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 
 namespace Kagami.Utils;
@@ -7,6 +8,7 @@ namespace Kagami.Utils;
 public static class EdgeDriverManager
 {
     private static EdgeDriver? EdgeDriver { get; set; }
+
     /// <summary>
     /// 
     /// </summary>
@@ -18,7 +20,7 @@ public static class EdgeDriverManager
         if (EdgeDriver is null)
         {
             var options = new EdgeOptions();
-            
+
             options.AddArguments(
                 // "--headless",
                 "blink-settings=imagesEnabled=false",
@@ -29,12 +31,24 @@ public static class EdgeDriverManager
         throw new EdgeDriverBusyException("Only one EdgeDriver instance can exist at a time.");
     }
 
+    public static IWebElement? TryFindElement(this WebDriver webDriver, By by)
+    {
+        try
+        {
+            return webDriver.FindElement(by);
+        }
+        catch (NoSuchElementException)
+        {
+            return null;
+        }
+    }
+
     public static void Quit()
     {
         if (EdgeDriver is null)
             return;
         EdgeDriver.Quit();
-        EdgeDriver = null;
+        EdgeDriver = null!;
         GC.Collect();
     }
 }

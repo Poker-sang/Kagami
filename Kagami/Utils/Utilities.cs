@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -89,12 +90,11 @@ public static class Utilities
     /// <summary>
     /// UrlDownload file
     /// </summary>
-    /// <param name="url"></param>
     /// <param name="header"></param>
     /// <param name="timeout"></param>
     /// <param name="limitLen">default 2 gigabytes</param>
     /// <returns></returns>
-    public static async Task<byte[]> UrlDownload(this string url, Dictionary<string, string>? header = null, int timeout = 8000, long limitLen = ((long)2 << 30) - 1)
+    private static HttpClient UrlDownload(Dictionary<string, string>? header = null, int timeout = 8000, long limitLen = ((long)2 << 30) - 1)
     {
         // Create request
         var request = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All })
@@ -115,13 +115,19 @@ public static class Utilities
             foreach (var (k, v) in header)
                 request.DefaultRequestHeaders.Add(k, v);
 
-        // Open response stream
-        var response = await request.GetByteArrayAsync(url);
-
-        // Receive the response data
-        return response;
+        return request;
     }
 
+    public static async Task<string> UrlDownloadString(this string url, Dictionary<string, string>? header = null,
+        int timeout = 8000, long limitLen = ((long)2 << 30) - 1) =>
+        await UrlDownload(header, timeout, limitLen).GetStringAsync(url);
+
+    public static async Task<byte[]> UrlDownloadBytes(this string url, Dictionary<string, string>? header = null,
+        int timeout = 8000, long limitLen = ((long)2 << 30) - 1) =>
+        await UrlDownload(header, timeout, limitLen).GetByteArrayAsync(url);
+    public static async Task<Stream> UrlDownloadStream(this string url, Dictionary<string, string>? header = null,
+        int timeout = 8000, long limitLen = ((long)2 << 30) - 1) =>
+        await UrlDownload(header, timeout, limitLen).GetStreamAsync(url);
 
 
     /// <summary>

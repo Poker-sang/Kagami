@@ -13,7 +13,8 @@ public static class Poke
     /// <param name="group"></param>
     internal static void OnGroupPoke(Bot bot, GroupPokeEvent group)
     {
-        if (group.MemberUin != bot.Uin) return;
+        if (group.MemberUin != bot.Uin)
+            return;
 
         // Convert it to ping
         _ = bot.SendGroupMessage(group.GroupUin, Commands.Text("不许戳"));
