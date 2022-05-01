@@ -18,6 +18,7 @@ public static class EdgeDriverManager
         if (EdgeDriver is null)
         {
             var options = new EdgeOptions();
+            
             options.AddArguments(
                 // "--headless",
                 "blink-settings=imagesEnabled=false",

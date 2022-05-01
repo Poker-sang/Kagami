@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami", "Kagami\Kagami.csproj", "{B10F8933-2FDC-4CAE-9A14-E503DACBB029}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kagami.SourceGenerator", "Kagami.SourceGenerator\Kagami.SourceGenerator.csproj", "{19809C72-6999-48BB-BB92-DB0E779370EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.SourceGenerator", "Kagami.SourceGenerator\Kagami.SourceGenerator.csproj", "{19809C72-6999-48BB-BB92-DB0E779370EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

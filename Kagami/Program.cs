@@ -18,37 +18,36 @@ public static class Program
     public static async Task Main()
     {
         _bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
+
+        // Print the log
+        _bot.OnLog += (_, e) => Console.WriteLine(e.EventMessage);
+
+        // Handle the captcha
+        _bot.OnCaptcha += (s, e) =>
         {
-            // Print the log
-            _bot.OnLog += (_, e) => Console.WriteLine(e.EventMessage);
-
-            // Handle the captcha
-            _bot.OnCaptcha += (s, e) =>
+            switch (e.Type)
             {
-                switch (e.Type)
-                {
-                    case CaptchaEvent.CaptchaType.Sms:
-                        Console.WriteLine(e.Phone);
-                        s.SubmitSmsCode(Console.ReadLine());
-                        break;
+                case CaptchaEvent.CaptchaType.Sms:
+                    Console.WriteLine(e.Phone);
+                    s.SubmitSmsCode(Console.ReadLine());
+                    break;
 
-                    case CaptchaEvent.CaptchaType.Slider:
-                        Console.WriteLine(e.SliderUrl);
-                        s.SubmitSliderTicket(Console.ReadLine());
-                        break;
+                case CaptchaEvent.CaptchaType.Slider:
+                    Console.WriteLine(e.SliderUrl);
+                    s.SubmitSliderTicket(Console.ReadLine());
+                    break;
 
-                    default:
-                    case CaptchaEvent.CaptchaType.Unknown:
-                        break;
-                }
-            };
+                default:
+                case CaptchaEvent.CaptchaType.Unknown:
+                    break;
+            }
+        };
 
-            // Handle poke messages
-            _bot.OnGroupPoke += Poke.OnGroupPoke;
+        // Handle poke messages
+        _bot.OnGroupPoke += Poke.OnGroupPoke;
 
-            // Handle messages from group
-            _bot.OnGroupMessage += Commands.OnGroupMessage;
-        }
+        // Handle messages from group
+        _bot.OnGroupMessage += Commands.OnGroupMessage;
 
         // Login the bot
         var result = await _bot.Login();

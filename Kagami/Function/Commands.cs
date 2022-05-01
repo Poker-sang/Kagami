@@ -8,7 +8,6 @@ using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
