@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Kagami.Attributes;
+﻿using Kagami.Attributes;
 using Kagami.Exceptions;
 using Kagami.Utils;
 using Konata.Core;
@@ -15,7 +7,14 @@ using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kagami.Function;
 
@@ -56,9 +55,9 @@ public static partial class Commands
             ReadOnlyCollection<IWebElement>? divisions;
             do
             {
-                divisions = driver.FindElements(By.XPath("/html/body/div/div[1]/div/div/div/div[3]/div[2]/span/div"));
+                divisions = driver.FindElements(By.XPath("/html/body/div/div[1]/div/div/div/div[3]/div[2]/span/child::*"));
                 Thread.Sleep(1000);
-            } while (divisions.Count is 0);
+            } while (divisions is { Count: 0 });
             var link = "";
             foreach (var division in divisions)
                 if (division.FindElement(By.XPath("./div/section/a")) is { } anchor)
@@ -70,12 +69,17 @@ public static partial class Commands
 
             driver.Url = link;
 
-            ReadOnlyCollection<IWebElement>? images;
+            ReadOnlyCollection<IWebElement>? paragraphs;
             do
             {
-                images = driver.FindElements(By.XPath("/html/body/div/div[1]/div/div/div/div/div[1]/article/div[2]/p[1]/img"));
+                paragraphs = driver.FindElements(By.XPath("/html/body/div/div[1]/div/div/div/div/div[1]/article/div[2]/child::*"));
                 Thread.Sleep(1000);
-            } while (images.Count is 0);
+            } while (paragraphs.Count is 0);
+
+            var images = new List<IWebElement>();
+
+            foreach (var paragraph in paragraphs)
+                images.AddRange(paragraph.FindElements(By.TagName("img")));
 
             var array = images.Select(image => image.GetAttribute("src")).ToArray();
             return array;
@@ -91,37 +95,42 @@ public static partial class Commands
         }
     }
 
+    private const string SavePath = @"C:\Users\poker\Desktop\memes\";
+
 
     [Help("Update meme images")]
-    private static async Task<MessageBuilder> Update(Bot bot, GroupMessageEvent group, TextChain text)
+    private static async Task<MessageBuilder> UpdateMeme(Bot bot, GroupMessageEvent group, TextChain text)
     {
         _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching meme images..."));
         try
         {
-            var rst = Regex.Match(text.Content, @"\b[0-9]+\b");
+            var result = Regex.Match(text.Content, @"\b[0-9]+\b");
 
-            var directory = new DirectoryInfo(@$"C:\Users\poker\Desktop\{rst.Value}");
+            if (!result.Success)
+                return Text("Need an argument");
+
+            var directory = new DirectoryInfo(SavePath + result.Value);
             string[] imgUrls;
             if (directory.Exists)
             {
-                if (directory.GetFiles() is { Length: 1 } files && files[0] is { Name: "issue.txt" } txtFile)
+                if (directory.GetFiles() is { Length: 2 } files && files[1] is { Name: "1.txt" } txtFile)
                     imgUrls = await File.ReadAllLinesAsync(txtFile.FullName);
                 else return Text("Meme images already existed!");
             }
             else
             {
                 directory.Create();
+                await File.WriteAllTextAsync(Path.Combine(directory.FullName, "0.bin"), 0.ToString());
 
-                imgUrls = rst.Success
-                    ? await GetMemeImageSources(int.Parse(rst.Value).NumberToCn())
-                    : await GetMemeImageSources();
+                imgUrls = await GetMemeImageSources(int.Parse(result.Value).NumberToCn());
 
-                await File.WriteAllLinesAsync(@$"{directory.FullName}\issue.txt", imgUrls);
+                await File.WriteAllLinesAsync(Path.Combine(directory.FullName, "1.txt"), imgUrls);
             }
 
-            foreach (var imgUrl in imgUrls)
-                await File.WriteAllBytesAsync(@$"{directory.FullName}\{imgUrl.Split('/')[^1]}",
-                    await imgUrl.UrlDownload());
+            for (var i = 0; i < imgUrls.Length; i++)
+                await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
+                    await imgUrls[i].UrlDownload());
+
             return Text("Meme images updated!");
         }
         catch (EdgeDriverBusyException e)
@@ -141,4 +150,34 @@ public static partial class Commands
         }
     }
 
+    [Help("Send a meme image in sequence")]
+    private static async Task<MessageBuilder> Meme(TextChain text)
+    {
+        try
+        {
+            var result = Regex.Match(text.Content, @"\b[0-9]+\b");
+
+            var directory = !result.Success ? new DirectoryInfo(SavePath).GetDirectories()[^1] : new DirectoryInfo(SavePath + result.Value);
+
+            var number = int.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, "0.bin")));
+            var files = directory.GetFiles();
+            if (number >= files.Length - 2)
+                number = 0;
+
+            var image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName, (number + 2).ToString()));
+
+            ++number;
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "0.bin"), number.ToString());
+
+            var message = new MessageBuilder();
+            message.Text($"{number}/{files.Length - 2}");
+            message.Image(image);
+            return message;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return Text("Bad argument");
+        }
+    }
 }

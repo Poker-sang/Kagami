@@ -126,8 +126,7 @@ public static class Program
                 <BotKeyStore>(File.ReadAllText("keystore.json"));
         }
 
-        Console.WriteLine("For first running, please " +
-                          "type your account and password.");
+        Console.WriteLine("For first running, please type your account and password.");
 
         Console.Write("Account: ");
         var account = Console.ReadLine();
