@@ -22,7 +22,7 @@ public static class EdgeDriverManager
             var options = new EdgeOptions();
 
             options.AddArguments(
-                // "--headless",
+                "--headless",
                 "blink-settings=imagesEnabled=false",
                 "--disable-blink-features=AutomationControlled");
             return EdgeDriver = new EdgeDriver(EdgeDriverService.CreateDefaultService(), options, new TimeSpan(0, timeout, 0));

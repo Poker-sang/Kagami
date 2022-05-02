@@ -56,8 +56,8 @@ public static partial class Commands
             ReadOnlyCollection<IWebElement>? divisions;
             do
             {
-                if (driver.TryFindElement(By.XPath("/html/body/div/div[1]/div/div/div/div[3]/div[2]/div"))?.Text is
-                    "非常抱歉，找不到匹配的内容")
+                // 非常抱歉，找不到匹配的内容
+                if (driver.TryFindElement(By.XPath("/html/body/div/div[1]/div/div/div/div[3]/div[2]/div"))?.Text is "抱歉")
                     throw new NotFoundException("Issue not found!");
                 divisions = driver.FindElements(By.XPath("/html/body/div/div[1]/div/div/div/div[3]/div[2]/span/child::*"));
                 Thread.Sleep(1000);
@@ -82,8 +82,11 @@ public static partial class Commands
 
             var images = new List<IWebElement>();
 
-            foreach (var paragraph in paragraphs)
+            foreach (var paragraph in paragraphs.SkipLast(1))
                 images.AddRange(paragraph.FindElements(By.TagName("img")));
+            // 今日喵喵语录两则
+            if (!paragraphs[^1].Text.Contains("语录"))
+                images.AddRange(paragraphs[^1].FindElements(By.TagName("img")));
 
             var array = images.Select(image => image.GetAttribute("src")).ToArray();
             return array;
@@ -98,12 +101,22 @@ public static partial class Commands
             EdgeDriverManager.Quit();
         }
     }
-
+    /// <summary>
+    /// 图片存放总路径
+    /// </summary>
     private const string SavePath = @"C:\Users\poker\Desktop\memes\";
-
+    /// <summary>
+    /// 记录现在已经发到第几张图片的指针
+    /// </summary>
     private const string Pointer = "0.ptr";
+    /// <summary>
+    /// 记录某期所有图片链接的索引
+    /// </summary>
     private const string Indexer = "1.idx";
-    private const string New = "new.ptr";
+    /// <summary>
+    /// 记录目前文件夹中最新一期期数的指针
+    /// </summary>
+    private const string NewPath = SavePath + "new.ptr";
 
 
     [Help("Send a meme image in sequence")]
@@ -111,16 +124,21 @@ public static partial class Commands
     {
 
         var content = text.Content[4..].Trim().Split(' ');
-        try
+        switch (content[0])
         {
-            switch (content[0])
-            {
-                case "update":
+            // 更新图片
+            case "update":
+                {
+                    try
                     {
                         _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching meme images..."));
+                        // 图片链接索引
                         string[]? imgUrls = null;
+                        // 汉字数字字符串
                         string? cnNumber = null;
+                        // 阿拉伯数字字符串
                         string? number = null;
+                        // 未指定期数，RSS获取订阅
                         if (content.Length is 1)
                         {
                             var xDocument = XDocument.Parse((await "https://cangku.icu/feed".UrlDownloadString())[1..]);
@@ -135,6 +153,7 @@ public static partial class Commands
                                         var last = entryTitle.IndexOf('期');
                                         if (first is not -1 && last is not -1 && entry.Element(d + "content") is { } entryContent)
                                         {
+                                            // 直接获取图片链接索引、期数
                                             imgUrls = Regex.Matches(entryContent.Value, @"src=""([^""]+)""")
                                                 .Select(match => match.Groups[1].Value).ToArray();
                                             cnNumber = entryTitle[(first + 1)..last]; //
@@ -147,41 +166,47 @@ public static partial class Commands
                             if (imgUrls is null || number is null || cnNumber is null)
                                 throw new Exception("RSS subscription failed!");
                         }
+                        // 指定期数
                         else
                         {
-                            try
-                            {
-                                var result = Regex.Match(content[1], @"\b[0-9]+\b");
+                            var result = Regex.Match(content[1], @"\b[0-9]+\b");
 
-                                if (!result.Success)
-                                    return Text("Need an argument");
+                            if (!result.Success)
+                                return Text("Need an argument");
 
-                                number = result.Value;
-                            }
-                            catch (FormatException e)
-                            {
-                                Console.WriteLine(e);
-                                return Text("Bad argument");
-                            }
+                            number = result.Value;
                         }
+                        // 下载图片
                         var directory = new DirectoryInfo(SavePath + number);
                         try
                         {
+                            // 如果已经有文件夹
                             if (directory.Exists)
                             {
+                                // 只有索引
                                 if (directory.GetFiles() is { Length: 2 } files &&
                                     files[1] is { Name: "1.txt" } txtFile)
                                     imgUrls ??= await File.ReadAllLinesAsync(txtFile.FullName);
+                                // 索引和图片都有
                                 else return Text("Meme images already existed!");
                             }
+                            // 没有文件夹
                             else
                             {
-                                cnNumber ??= int.Parse(number).NumberToCn();
+                                // may throw FormatException
+                                var newInt = int.Parse(number);
+                                // 指定期数时，需要阿拉伯数字转汉字
+                                cnNumber ??= newInt.NumberToCn();
+                                // 指定期数时，需要下载图片链接索引
+                                // may throw EdgeDriverBusyException, NotFoundException
                                 imgUrls ??= await GetMemeImageSources(cnNumber);
                                 directory.Create();
+                                // 记录索引和指针
                                 await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), 0.ToString());
                                 await File.WriteAllLinesAsync(Path.Combine(directory.FullName, Indexer), imgUrls);
-                                await File.WriteAllTextAsync(SavePath + New, number);
+                                // 若已有最新的则不写入总索引
+                                if (int.Parse(await File.ReadAllTextAsync(NewPath)) < newInt)
+                                    await File.WriteAllTextAsync(NewPath, number);
                             }
                         }
                         catch (EdgeDriverBusyException e)
@@ -194,52 +219,64 @@ public static partial class Commands
                             Console.WriteLine(e);
                             return Text(e.Message);
                         }
-
+                        catch (FormatException e)
+                        {
+                            Console.WriteLine(e);
+                            return Text("Bad argument, needs an integer.");
+                        }
+                        // 获取图片
                         for (var i = 0; i < imgUrls.Length; i++)
                             await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
                                 await imgUrls[i].UrlDownloadBytes());
 
                         return Text("Meme images updated!");
                     }
-                default:
-                    try
-                    {
-                        if (!File.Exists(SavePath + New))
-                            return Text("No meme images yet.");
-
-                        var result = Regex.Match(content[0], @"\b[0-9]+\b");
-
-                        var directory = result.Success
-                            ? new DirectoryInfo(SavePath + result.Value)
-                            : new DirectoryInfo(SavePath + int.Parse(await File.ReadAllTextAsync(SavePath + New)));
-
-                        var number = int.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
-                        var files = directory.GetFiles();
-                        if (number >= files.Length - 2)
-                            number = 0;
-
-                        var image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName,
-                            (number + 2).ToString()));
-
-                        ++number;
-                        await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), number.ToString());
-
-                        var message = new MessageBuilder();
-                        message.Text($"{number}/{files.Length - 2}");
-                        message.Image(image);
-                        return message;
-                    }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        return Text("Bad argument");
+                        return Text("Meme images update failed! May you retry to request.");
                     }
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            return Text("Meme images update failed! May you retry to request.");
+                }
+            // 发送图片
+            default:
+                try
+                {
+                    if (!File.Exists(NewPath))
+                        return Text("No meme images yet.");
+
+                    var result = Regex.Match(content[0], @"\b[0-9]+\b");
+
+                    var directory = result.Success
+                        // 指定期数
+                        ? new DirectoryInfo(SavePath + result.Value)
+                        // 未指定期数
+                        : new DirectoryInfo(SavePath + int.Parse(await File.ReadAllTextAsync(NewPath)));
+
+                    // 指定期数不存在
+                    if (!directory.Exists)
+                        return Text("Issue not exists");
+
+                    var pointer = int.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
+                    var files = directory.GetFiles();
+                    if (pointer >= files.Length - 2)
+                        pointer = 0;
+
+                    var image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName,
+                        (pointer + 2).ToString()));
+
+                    ++pointer;
+                    await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), pointer.ToString());
+
+                    var message = new MessageBuilder();
+                    message.Text($"{pointer}/{files.Length - 2}");
+                    message.Image(image);
+                    return message;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return Text("Bad argument");
+                }
         }
     }
 }
