@@ -18,34 +18,31 @@ public static partial class Commands
 {
     [Help("Get Status")]
     private static MessageBuilder Status()
-        => new MessageBuilder()
+        => Text(
             // Core descriptions
-            .Text($"[Poker Kagami]\n")
-            .Text($"[branch:{BuildStamp.Branch}]\n")
-            .Text($"[commit:{BuildStamp.CommitHash[..12]}]\n")
-            .Text($"[version:{BuildStamp.Version}]\n")
-            .Text($"[{BuildStamp.BuildTime}]\n\n")
+            $"[Poker Kagami]\n" +
+            $"[branch:{BuildStamp.Branch}]\n" +
+            $"[commit:{BuildStamp.CommitHash[..12]}]\n" +
+            $"[version:{BuildStamp.Version}]\n" +
+            ($"[{BuildStamp.BuildTime}]\n\n" +
 
             // System status
-            .Text($"Processed {_messageCounter} message(s)\n")
-            .Text($"GC Memory {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB " +
-                  $"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)\n")
-            .Text($"Total Memory {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB\n\n")
+            $"Processed {_messageCounter} message(s)\n" +
+            $"GC Memory {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB " +
+                  $"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)\n" +
+            $"Total Memory {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB\n\n" +
 
             // Copyrights
-            .Text("Konata Project (C) 2022");
+            "Konata Project (C) 2022");
 
     [Help("Greeting")]
     private static MessageBuilder Greeting() => Text("Hello, I'm Poker Kagami");
 
-    [Help("Echo a message(Safer than Eval)")]
-    private static MessageBuilder Echo(TextChain text, MessageChain message) => new MessageBuilder(text.Content[4..].Trim()).Add(message[1..]);
+    [Help("-message Repeat a message")]
+    private static MessageBuilder Repeat(TextChain text, MessageChain message) => Text(text.Content[4..].Trim()).Add(message[1..]);
 
-    [Help("Eval a message")]
-    private static MessageBuilder Eval(MessageChain message) => MessageBuilder.Eval(message.ToString()[4..].TrimStart());
-
-    [Help("Get MemberInfo")]
-    private static async Task<MessageBuilder> MemberInfo(Bot bot, GroupMessageEvent group)
+    [Help("-at Get MemberInfo")]
+    private static async Task<MessageBuilder> Member(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var at = group.Chain.GetChain<AtChain>();
@@ -57,16 +54,17 @@ public static partial class Commands
         if (memberInfo is null)
             return Text("No such member");
 
-        return new MessageBuilder("[Member Info]\n")
-            .Text($"Name: {memberInfo.Name}\n")
-            .Text($"Join: {memberInfo.JoinTime}\n")
-            .Text($"Role: {memberInfo.Role}\n")
-            .Text($"Level: {memberInfo.Level}\n")
-            .Text($"SpecTitle: {memberInfo.SpecialTitle}\n")
-            .Text($"Nickname: {memberInfo.NickName}");
+        return Text(
+            "[Member Info]\n" +
+            $"Name: {memberInfo.Name}\n" +
+            $"Join: {memberInfo.JoinTime}\n" +
+            $"Role: {memberInfo.Role}\n" +
+            $"Level: {memberInfo.Level}\n" +
+            $"SpecTitle: {memberInfo.SpecialTitle}\n" +
+            $"Nickname: {memberInfo.NickName}");
     }
 
-    [Help("Mute a member")]
+    [Help("-at [-minute] Mute a member")]
     private static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group)
     {
         // Get at
@@ -74,20 +72,17 @@ public static partial class Commands
         if (atChain is null)
             return Text("Argument error");
 
-        var time = 60U;
-        var textChains = group.Chain
-            .FindChain<TextChain>();
-        {
-            // Parse time
-            if (textChains.Count is 2 &&
-                uint.TryParse(textChains[1].Content, out var t))
-                time = t;
-        }
+        var time = 10U;
+        var textChains = group.Chain.FindChain<TextChain>();
+        // Parse time
+        if (textChains.Count is 2 &&
+            uint.TryParse(textChains[1].Content, out var t))
+            time = t;
 
         try
         {
-            if (await bot.GroupMuteMember(group.GroupUin, atChain.AtUin, time))
-                return Text($"Mute member [{atChain.AtUin}] for {time} sec.");
+            if (await bot.GroupMuteMember(group.GroupUin, atChain.AtUin, time * 60))
+                return Text($"Mute member [{atChain.AtUin}] for {time} minutes.");
             return Text("Unknown error.");
         }
         catch (OperationFailedException e)
@@ -96,8 +91,8 @@ public static partial class Commands
         }
     }
 
-    [Help("Set Title for member")]
-    private static async Task<MessageBuilder> SetTitle(Bot bot, GroupMessageEvent group)
+    [Help("-at -title Set Title for member")]
+    private static async Task<MessageBuilder> Title(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var atChain = group.Chain.GetChain<AtChain>();
@@ -121,7 +116,7 @@ public static partial class Commands
         }
     }
 
-    [Help("Parse bv to av")]
+    [Help("-code Parse bv to av")]
     private static async Task<MessageBuilder> Bv(TextChain text)
     {
         var avCode = text.Content[4..].Bv2Av();
@@ -133,21 +128,19 @@ public static partial class Commands
         var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];
         var imageMeta = metaData["image"];
-        var keyWdMeta = metaData["keywords"];
+        var keywordMeta = metaData["keywords"];
 
         // UrlDownload the image
         var image = await imageMeta.UrlDownloadBytes();
 
         // Build message
-        var result = new MessageBuilder();
-        result.Text($"{titleMeta}\n");
-        result.Text($"https://www.bilibili.com/video/{avCode}\n\n");
-        result.Image(image);
-        result.Text("\n#" + string.Join(" #", keyWdMeta.Split(",")[1..^4]));
-        return result;
+        return Text($"{titleMeta}\n")
+            .Text($"https://www.bilibili.com/video/{avCode}\n\n")
+            .Image(image)
+            .Text("\n#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
     }
 
-    [Help("-Name -Repo Github repo")]
+    [Help("-organization -repository Github repo")]
     private static async Task<MessageBuilder> Github(Bot bot, GroupMessageEvent group, TextChain text)
     {
         // UrlDownload the page
@@ -170,7 +163,4 @@ public static partial class Commands
             return Text("Not a repository link.");
         }
     }
-
-    [Help("Repeat a message")]
-    private static MessageBuilder Repeat(MessageChain message) => new(message);
 }
