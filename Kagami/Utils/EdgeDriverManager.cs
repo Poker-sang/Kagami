@@ -28,7 +28,8 @@ public static class EdgeDriverManager
             return EdgeDriver = new EdgeDriver(EdgeDriverService.CreateDefaultService(), options, new TimeSpan(0, timeout, 0));
         }
 
-        throw new EdgeDriverBusyException("Only one EdgeDriver instance can exist at a time.");
+        // throw new EdgeDriverBusyException("Only one EdgeDriver instance can exist at a time.");
+        throw new EdgeDriverBusyException("EdgeDriver is busy! You should not make two requests at the same time.");
     }
 
     public static IWebElement? TryFindElement(this WebDriver webDriver, By by)

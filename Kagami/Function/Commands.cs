@@ -9,7 +9,6 @@ using Konata.Core.Message.Model;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 
@@ -37,16 +36,13 @@ public static partial class Commands
             .Text("Konata Project (C) 2022");
 
     [Help("Greeting")]
-    private static MessageBuilder Greeting()
-        => Text("Hello, I'm Poker Kagami");
+    private static MessageBuilder Greeting() => Text("Hello, I'm Poker Kagami");
 
     [Help("Echo a message(Safer than Eval)")]
-    private static MessageBuilder Echo(TextChain text, MessageChain chain)
-        => new MessageBuilder(text.Content[4..].Trim()).Add(chain[1..]);
+    private static MessageBuilder Echo(TextChain text, MessageChain message) => new MessageBuilder(text.Content[4..].Trim()).Add(message[1..]);
 
     [Help("Eval a message")]
-    private static MessageBuilder Eval(MessageChain chain)
-        => MessageBuilder.Eval(chain.ToString()[4..].TrimStart());
+    private static MessageBuilder Eval(MessageChain message) => MessageBuilder.Eval(message.ToString()[4..].TrimStart());
 
     [Help("Get MemberInfo")]
     private static async Task<MessageBuilder> MemberInfo(Bot bot, GroupMessageEvent group)
@@ -126,9 +122,9 @@ public static partial class Commands
     }
 
     [Help("Parse bv to av")]
-    private static async Task<MessageBuilder> Bv(TextChain chain)
+    private static async Task<MessageBuilder> Bv(TextChain text)
     {
-        var avCode = chain.Content[4..].Bv2Av();
+        var avCode = text.Content[4..].Bv2Av();
         if (avCode is "")
             return Text("Invalid BV code");
         // UrlDownload the page
@@ -151,14 +147,15 @@ public static partial class Commands
         return result;
     }
 
-    [Help("Github repo parser", Name = "https://github.com/")]
-    private static async Task<MessageBuilder> GithubParser(Bot bot, GroupMessageEvent group, TextChain chain)
+    [Help("-Name -Repo Github repo")]
+    private static async Task<MessageBuilder> Github(Bot bot, GroupMessageEvent group, TextChain text)
     {
         // UrlDownload the page
         try
         {
+            var args = text.Content.Split(' ');
             _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching repository..."));
-            var html = await $"{chain.Content.TrimEnd('/')}.git".UrlDownloadString();
+            var html = await $"https://github.com/{args[1]}/{args[2]}.git".UrlDownloadString();
             // Get meta data
             var metaData = html.GetMetaData("property");
             var imageMeta = metaData["og:image"];

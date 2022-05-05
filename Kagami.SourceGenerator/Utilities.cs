@@ -23,9 +23,9 @@ internal static class Utilities
     /// </summary>
     /// <param name="namespaces">namespaces集合</param>
     /// <param name="usedTypes">已判断过的types</param>
-    /// <param name="baseClass">type的基类</param>
+    /// <param name="contextType">上下文所在的类</param>
     /// <param name="symbol">type的symbol</param>
-    internal static void UseNamespace(this HashSet<string> namespaces, HashSet<ITypeSymbol> usedTypes, INamedTypeSymbol baseClass, ITypeSymbol symbol)
+    internal static void UseNamespace(this HashSet<string> namespaces, HashSet<ITypeSymbol> usedTypes, INamedTypeSymbol contextType, ITypeSymbol symbol)
     {
         if (usedTypes.Contains(symbol))
         {
@@ -35,17 +35,11 @@ internal static class Utilities
         usedTypes.Add(symbol);
 
         var ns = symbol.ContainingNamespace;
-        if (!SymbolEqualityComparer.Default.Equals(ns, baseClass.ContainingNamespace))
-        {
+        if (!SymbolEqualityComparer.Default.Equals(ns, contextType.ContainingNamespace))
             namespaces.Add(ns.ToDisplayString());
-        }
 
         if (symbol is INamedTypeSymbol { IsGenericType: true } genericSymbol)
-        {
             foreach (var a in genericSymbol.TypeArguments)
-            {
-                UseNamespace(namespaces, usedTypes, baseClass, a);
-            }
-        }
+                UseNamespace(namespaces, usedTypes, contextType, a);
     }
 }

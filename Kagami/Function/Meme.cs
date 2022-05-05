@@ -42,7 +42,7 @@ public static partial class Commands
     ///  </span>
     /// </div>
     /// ......
-    /// https://cangku.icu/search/post?q=沙雕图集锦
+    /// https://cangku.icu/search/post?q=沙雕图集锦 第xxx期
     private static async Task<string[]> GetMemeImageSources(string? issue = null)
     {
         await Task.Yield();
@@ -91,16 +91,44 @@ public static partial class Commands
             var array = images.Select(image => image.GetAttribute("src")).ToArray();
             return array;
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
         finally
         {
             EdgeDriverManager.Quit();
         }
     }
+
+    /// <summary>
+    /// 从RSS获取订阅
+    /// </summary>
+    /// <returns>图片链接和期数</returns>
+    /// <exception cref="NotFoundException"></exception>
+    private static async Task<(string[], string)> GetMemeImageSourcesRss()
+    {
+        await Task.Yield();
+
+        var xDocument = XDocument.Parse((await "https://cangku.icu/feed".UrlDownloadString())[1..]);
+        XNamespace d = "http://www.w3.org/2005/Atom";
+        if (xDocument.Root is { } root)
+            foreach (var entry in root.Descendants(d + "entry"))
+            {
+                // xElement.Element(d + "author")?.Element(d + "name")?.Value is not "錒嗄锕"
+                if (entry.Element(d + "title")?.Value is { } entryTitle && entryTitle.Contains("沙雕图集锦"))
+                {
+                    var first = entryTitle.IndexOf('第');
+                    var last = entryTitle.IndexOf('期');
+                    if (first is not -1 && last is not -1 && entry.Element(d + "content") is { } content)
+                    {
+                        var result = Regex.Matches(content.Value, @"src=""([^""]+)""")
+                            .Select(match => match.Groups[1].Value);
+                        // 直接获取图片链接索引、期数
+                        return ((content.Value.Contains("语录") ? result.SkipLast(2) : result).ToArray(), entryTitle[(first + 1)..last]);
+                    }
+                }
+            }
+        throw new NotFoundException("RSS subscription failed!");
+    }
+
+
     /// <summary>
     /// 图片存放总路径
     /// </summary>
@@ -119,11 +147,10 @@ public static partial class Commands
     private const string NewPath = SavePath + "new.ptr";
 
 
-    [Help("Send a meme image in sequence")]
+    [Help("[-Command][-Issue] Send a meme image in sequence")]
     private static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group, TextChain text)
     {
-
-        var content = text.Content[4..].Trim().Split(' ');
+        var content = text.Content[4..].Trim().ToLower().Split(' ');
         switch (content[0])
         {
             // 更新图片
@@ -134,50 +161,27 @@ public static partial class Commands
                         _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching meme images..."));
                         // 图片链接索引
                         string[]? imgUrls = null;
-                        // 汉字数字字符串
-                        string? cnNumber = null;
-                        // 阿拉伯数字字符串
-                        string? number = null;
+                        // 期数的汉字数字字符串
+                        string? cnIssue = null;
+                        // 期数的阿拉伯数字字符串
+                        string? issue;
                         // 未指定期数，RSS获取订阅
                         if (content.Length is 1)
-                        {
-                            var xDocument = XDocument.Parse((await "https://cangku.icu/feed".UrlDownloadString())[1..]);
-                            XNamespace d = "http://www.w3.org/2005/Atom";
-                            if (xDocument.Root is { } root)
-                                foreach (var entry in root.Descendants(d + "entry"))
-                                {
-                                    // xElement.Element("author")?.Element(d + "name")?.Value is not "錒嗄锕"
-                                    if (entry.Element(d + "title")?.Value is { } entryTitle && entryTitle.Contains("沙雕图集锦"))
-                                    {
-                                        var first = entryTitle.IndexOf('第');
-                                        var last = entryTitle.IndexOf('期');
-                                        if (first is not -1 && last is not -1 && entry.Element(d + "content") is { } entryContent)
-                                        {
-                                            // 直接获取图片链接索引、期数
-                                            imgUrls = Regex.Matches(entryContent.Value, @"src=""([^""]+)""")
-                                                .Select(match => match.Groups[1].Value).ToArray();
-                                            cnNumber = entryTitle[(first + 1)..last]; //
-                                            number = cnNumber;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                            if (imgUrls is null || number is null || cnNumber is null)
-                                throw new Exception("RSS subscription failed!");
-                        }
+                            try
+                            {
+                                (imgUrls, cnIssue) = await GetMemeImageSourcesRss();
+                                issue = cnIssue.CnToInt().ToString();
+                            }
+                            catch (NotFoundException e)
+                            {
+                                Console.WriteLine(e);
+                                return Text(e.Message);
+                            }
                         // 指定期数
-                        else
-                        {
-                            var result = Regex.Match(content[1], @"\b[0-9]+\b");
-
-                            if (!result.Success)
-                                return Text("Need an argument");
-
-                            number = result.Value;
-                        }
+                        // var result = Regex.Match(content[0], @"\b[0-9]+\b");
+                        else issue = content[1];
                         // 下载图片
-                        var directory = new DirectoryInfo(SavePath + number);
+                        var directory = new DirectoryInfo(SavePath + issue);
                         try
                         {
                             // 如果已经有文件夹
@@ -185,7 +189,7 @@ public static partial class Commands
                             {
                                 // 只有索引
                                 if (directory.GetFiles() is { Length: 2 } files &&
-                                    files[1] is { Name: "1.txt" } txtFile)
+                                    files[1] is { Name: Indexer } txtFile)
                                     imgUrls ??= await File.ReadAllLinesAsync(txtFile.FullName);
                                 // 索引和图片都有
                                 else return Text("Meme images already existed!");
@@ -194,25 +198,25 @@ public static partial class Commands
                             else
                             {
                                 // may throw FormatException
-                                var newInt = int.Parse(number);
+                                var newInt = int.Parse(issue);
                                 // 指定期数时，需要阿拉伯数字转汉字
-                                cnNumber ??= newInt.NumberToCn();
+                                cnIssue ??= newInt.IntToCn();
                                 // 指定期数时，需要下载图片链接索引
                                 // may throw EdgeDriverBusyException, NotFoundException
-                                imgUrls ??= await GetMemeImageSources(cnNumber);
+                                imgUrls ??= await GetMemeImageSources(cnIssue);
                                 directory.Create();
                                 // 记录索引和指针
                                 await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), 0.ToString());
                                 await File.WriteAllLinesAsync(Path.Combine(directory.FullName, Indexer), imgUrls);
                                 // 若已有最新的则不写入总索引
                                 if (int.Parse(await File.ReadAllTextAsync(NewPath)) < newInt)
-                                    await File.WriteAllTextAsync(NewPath, number);
+                                    await File.WriteAllTextAsync(NewPath, issue);
                             }
                         }
                         catch (EdgeDriverBusyException e)
                         {
                             Console.WriteLine(e);
-                            return Text("EdgeDriver is busy! You should not make two requests at the same time.");
+                            return Text(e.Message);
                         }
                         catch (NotFoundException e)
                         {
@@ -225,11 +229,11 @@ public static partial class Commands
                             return Text("Bad argument, needs an integer.");
                         }
                         // 获取图片
-                        for (var i = 0; i < imgUrls.Length; i++)
+                        for (var i = 0; i < imgUrls.Length; ++i)
                             await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
                                 await imgUrls[i].UrlDownloadBytes());
 
-                        return Text("Meme images updated!");
+                        return Text($"Meme images updated! Issue: No.{issue}");
                     }
                     catch (Exception e)
                     {
@@ -244,13 +248,14 @@ public static partial class Commands
                     if (!File.Exists(NewPath))
                         return Text("No meme images yet.");
 
-                    var result = Regex.Match(content[0], @"\b[0-9]+\b");
-
-                    var directory = result.Success
-                        // 指定期数
-                        ? new DirectoryInfo(SavePath + result.Value)
+                    var issue = content[0] is ""
                         // 未指定期数
-                        : new DirectoryInfo(SavePath + int.Parse(await File.ReadAllTextAsync(NewPath)));
+                        ? await File.ReadAllTextAsync(NewPath)
+                        // 指定期数
+                        // var result = Regex.Match(content[0], @"\b[0-9]+\b");
+                        : content[0];
+
+                    var directory = new DirectoryInfo(SavePath + issue);
 
                     // 指定期数不存在
                     if (!directory.Exists)
@@ -268,14 +273,14 @@ public static partial class Commands
                     await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), pointer.ToString());
 
                     var message = new MessageBuilder();
-                    message.Text($"{pointer}/{files.Length - 2}");
+                    message.Text($"{issue} {pointer}/{files.Length - 2}");
                     message.Image(image);
                     return message;
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    return Text("Bad argument");
+                    return Text("Bad argument, needs an integer.");
                 }
         }
     }
