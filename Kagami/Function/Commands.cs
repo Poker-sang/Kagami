@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-
 namespace Kagami.Function;
 
 public static partial class Commands
@@ -24,7 +23,7 @@ public static partial class Commands
             $"[branch:{BuildStamp.Branch}]\n" +
             $"[commit:{BuildStamp.CommitHash[..12]}]\n" +
             $"[version:{BuildStamp.Version}]\n" +
-            ($"[{BuildStamp.BuildTime}]\n\n" +
+            $"[{BuildStamp.BuildTime}]\n\n" +
 
             // System status
             $"Processed {_messageCounter} message(s)\n" +

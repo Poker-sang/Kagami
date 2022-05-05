@@ -1,8 +1,8 @@
-﻿using System;
-using Kagami.Attributes;
+﻿using Kagami.Attributes;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
+using System;
 
 namespace Kagami.Function;
 
@@ -24,8 +24,7 @@ public static partial class Commands
 
         try
         {
-            if (await GetReply(bot, group) is { } reply)
-                _ = await bot.SendGroupMessage(group.GroupUin, reply);
+            _ = await bot.SendGroupMessage(group.GroupUin, (await GetReply(bot, group)).WithResetText() ?? Reread(group));
         }
         catch (Exception e)
         {
