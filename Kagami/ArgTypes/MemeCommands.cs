@@ -2,5 +2,5 @@
 
 public enum MemeCommands
 {
-    Update
+    Update, List
 }

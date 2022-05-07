@@ -155,6 +155,10 @@ public static partial class Commands
         var content = text.Content[4..].Trim().ToLower().Split(' ');
         switch (content[0])
         {
+            // 列出已有期数
+            case "list":
+                return Text(new DirectoryInfo(SavePath).GetDirectories().Aggregate("吊图已有期数：",
+                    (current, directoryInfo) => current + directoryInfo.Name + ", ")[..^2]);
             // 更新图片
             case "update":
                 {
@@ -248,7 +252,7 @@ public static partial class Commands
                 try
                 {
                     if (!File.Exists(NewPath))
-                        return Text("还没有吊图");
+                        return Text("仓库里还没有吊图，先更新吧x");
 
                     var issue = content[0] is ""
                         // 未指定期数
