@@ -19,12 +19,23 @@ public static partial class Commands
         // Increase
         ++_messageCounter;
 
+
+        if (group.GroupUin == 815791942)
+            return;
         if (group.MemberUin == bot.Uin)
             return;
 
         try
         {
-            _ = await bot.SendGroupMessage(group.GroupUin, (await GetReply(bot, group)).WithResetText() ?? Reread(group));
+            if (!RereadDictionary.ContainsKey(group.GroupUin))
+                RereadDictionary[group.GroupUin] = (1, "");
+            if (await GetReply(bot, group) is { } reply)
+            {
+                RereadDictionary[group.GroupUin] = (RereadDictionary[group.GroupUin].Count, "");
+                _ = await bot.SendGroupMessage(group.GroupUin, reply);
+            }
+            else if (Reread(group) is { } reread)
+                _ = await bot.SendGroupMessage(group.GroupUin, reread);
         }
         catch (Exception e)
         {
@@ -32,8 +43,7 @@ public static partial class Commands
             Console.WriteLine(e.StackTrace);
 
             // Send error print
-            _ = await bot.SendGroupMessage(group.GroupUin,
-                Text($"{e.Message}\n{e.StackTrace}"));
+            _ = await bot.SendGroupMessage(group.GroupUin, Text($"{e.Message}"));
         }
     }
 }

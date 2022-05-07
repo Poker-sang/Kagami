@@ -10,66 +10,68 @@ using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Kagami.ArgTypes;
 
 namespace Kagami.Function;
 
 public static partial class Commands
 {
-    [Help("Get Status")]
+    [Help("相关数据")]
     private static MessageBuilder Status()
-        => Text(
-            // Core descriptions
-            $"[Poker Kagami]\n" +
-            $"[branch:{BuildStamp.Branch}]\n" +
-            $"[commit:{BuildStamp.CommitHash[..12]}]\n" +
-            $"[version:{BuildStamp.Version}]\n" +
-            $"[{BuildStamp.BuildTime}]\n\n" +
+        => Text("[Poker Kagami]")
+               // Core descriptions
+               .TextLine($"[分支:{BuildStamp.Branch}]")
+               .TextLine($"[提交:{BuildStamp.CommitHash[..12]}]")
+               .TextLine($"[版本:{BuildStamp.Version}]")
+               .TextLine($"[{BuildStamp.BuildTime}]")
+               .TextLine()
+               // System status
+               .TextLine($"处理了 {_messageCounter} 条消息")
+               .TextLine($"GC内存 {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB ")
+               .Text($"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)")
+               .TextLine($"总内存 {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB")
+               .TextLine()
+               // Copyrights
+               .TextLine("Konata Project (C) 2022");
 
-            // System status
-            $"Processed {_messageCounter} message(s)\n" +
-            $"GC Memory {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB " +
-                  $"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)\n" +
-            $"Total Memory {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB\n\n" +
+    [Help("打招呼")]
+    private static MessageBuilder Greeting() => Text("你好！！！我是Poker Kagami");
 
-            // Copyrights
-            "Konata Project (C) 2022");
-
-    [Help("Greeting")]
-    private static MessageBuilder Greeting() => Text("Hello, I'm Poker Kagami");
-
-    [Help("-message Repeat a message")]
+    [Help("复读一句话", "message")]
+    [HelpArgs(typeof(string))]
     private static MessageBuilder Repeat(TextChain text, MessageChain message) => Text(text.Content[4..].Trim()).Add(message[1..]);
 
-    [Help("-at Get MemberInfo")]
+    [Help("获取成员信息", "member")]
+    [HelpArgs(typeof(At))]
     private static async Task<MessageBuilder> Member(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var at = group.Chain.GetChain<AtChain>();
         if (at is null)
-            return Text("Argument error");
+            return Text(ArgumentError);
 
         // Get group info
         var memberInfo = await bot.GetGroupMemberInfo(group.GroupUin, at.AtUin, true);
         if (memberInfo is null)
-            return Text("No such member");
+            return Text("没有找到这个人x");
 
-        return Text(
-            "[Member Info]\n" +
-            $"Name: {memberInfo.Name}\n" +
-            $"Join: {memberInfo.JoinTime}\n" +
-            $"Role: {memberInfo.Role}\n" +
-            $"Level: {memberInfo.Level}\n" +
-            $"SpecTitle: {memberInfo.SpecialTitle}\n" +
-            $"Nickname: {memberInfo.NickName}");
+        return Text("[成员信息]")
+            .TextLine($"名称: {memberInfo.Name}")
+            .TextLine($"加入时间: {memberInfo.JoinTime}")
+            .TextLine($"类别: {memberInfo.Role}")
+            .TextLine($"等级: {memberInfo.Level}")
+            .TextLine($"头衔: {memberInfo.SpecialTitle}")
+            .TextLine($"昵称: {memberInfo.NickName}");
     }
 
-    [Help("-at [-minute] Mute a member")]
+    [Help("禁言一个人", "member", "minute")]
+    [HelpArgs(typeof(At), typeof(uint?))]
     private static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var atChain = group.Chain.GetChain<AtChain>();
         if (atChain is null)
-            return Text("Argument error");
+            return Text(ArgumentError);
 
         var time = 10U;
         var textChains = group.Chain.FindChain<TextChain>();
@@ -81,66 +83,71 @@ public static partial class Commands
         try
         {
             if (await bot.GroupMuteMember(group.GroupUin, atChain.AtUin, time * 60))
-                return Text($"Mute member [{atChain.AtUin}] for {time} minutes.");
-            return Text("Unknown error.");
+                return Text($"禁言 [{atChain.AtUin}] {time}分钟");
+            return Text(UnknownError);
         }
         catch (OperationFailedException e)
         {
-            return Text($"{e.Message} ({e.HResult})");
+            Console.WriteLine(e.Message);
+            return Text(OperationFailed);
         }
     }
 
-    [Help("-at -title Set Title for member")]
+    [Help("设置头衔", "member", "title")]
+    [HelpArgs(typeof(At), typeof(string))]
     private static async Task<MessageBuilder> Title(Bot bot, GroupMessageEvent group)
     {
         // Get at
         var atChain = group.Chain.GetChain<AtChain>();
         if (atChain is null)
-            return Text("Argument error");
+            return Text(ArgumentError);
 
         var textChains = group.Chain.FindChain<TextChain>();
         // Check argument
         if (textChains.Count is not 2)
-            return Text("Argument error");
+            return Text(ArgumentError);
 
         try
         {
             if (await bot.GroupSetSpecialTitle(group.GroupUin, atChain.AtUin, textChains[1].Content, uint.MaxValue))
-                return Text($"Set special title for member [{atChain.AtUin}].");
-            return Text("Unknown error.");
+                return Text($"为 [{atChain.AtUin}] 设置头衔");
+            return Text(UnknownError);
         }
         catch (OperationFailedException e)
         {
-            return Text($"{e.Message} ({e.HResult})");
+            Console.WriteLine($"{e.Message} ({e.HResult})");
+            return Text(OperationFailed);
         }
     }
 
-    [Help("-code Parse bv to av")]
+    [Help("展示视频信息", "code")]
+    [HelpArgs(typeof(string))]
     private static async Task<MessageBuilder> Bv(TextChain text)
     {
-        var avCode = text.Content[4..].Bv2Av();
-        if (avCode is "")
-            return Text("Invalid BV code");
+        if (text.Content[3..].Bv2Av() is not { } avCode)
+            return Text("BV号不对哦");
         // UrlDownload the page
         var html = await $"https://www.bilibili.com/video/{avCode}".UrlDownloadString();
         // Get meta data
         var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];
         var imageMeta = metaData["image"];
-        var keywordMeta = metaData["keywords"];
+        // var keywordMeta = metaData["keywords"];
 
         // UrlDownload the image
         var image = await imageMeta.UrlDownloadBytes();
 
         // Build message
-        return Text($"{titleMeta}\n")
-            .Text($"https://www.bilibili.com/video/{avCode}\n\n")
-            .Image(image)
-            .Text("\n#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
+        return Text($"{titleMeta}")
+            .TextLine($"https://www.bilibili.com/video/{avCode}")
+            .TextLine()
+            .Image(image);
+        // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
     }
 
-    [Help("-organization -repository Github repo")]
-    private static async Task<MessageBuilder> Github(Bot bot, GroupMessageEvent group, TextChain text)
+    [Help("仓库信息", "organization", "repository")]
+    [HelpArgs(typeof(string), typeof(string))]
+    private static async Task<MessageBuilder> GitHub(Bot bot, GroupMessageEvent group, TextChain text)
     {
         // UrlDownload the page
         try
@@ -159,7 +166,16 @@ public static partial class Commands
         catch (HttpRequestException e)
         {
             Console.WriteLine($"Not a repository link. \n{e.Message}");
-            return Text("Not a repository link.");
+            return Text("不是一个仓库链接");
         }
     }
+
+    [Help("帮我选一个", "items")]
+    [HelpArgs(typeof(string[]))]
+    private static MessageBuilder Roll(TextChain text)
+    {
+        var items = text.Content[5..].Trim().Split(' ');
+        return Text($"嗯让我想想ww......果然还是\"{items.RandomGet()}\"比较好！");
+    }
+
 }

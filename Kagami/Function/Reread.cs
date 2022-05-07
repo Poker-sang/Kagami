@@ -1,4 +1,5 @@
-﻿using Konata.Core.Events.Model;
+﻿using System.Collections.Generic;
+using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 
@@ -6,35 +7,41 @@ namespace Kagami.Function;
 
 public static partial class Commands
 {
-    private static T WithResetText<T>(this T obj)
-    {
-        _lastText = "";
-        return obj;
-    }
+    private static readonly Dictionary<uint, (uint Count, string LastText)> RereadDictionary = new();
 
-    private static string _lastText = "";
-    private static uint _count;
-    private static MessageBuilder Reread(GroupMessageEvent group)
+    /// <summary>
+    /// 超过三条连续相同消息复读
+    /// </summary>
+    /// <param name="group"></param>
+    /// <returns></returns>
+    private static MessageBuilder? Reread(GroupMessageEvent group)
     {
-        var reread = "";
-        if (group.Chain.Count is 1 && group.Chain[0] is TextChain text)
-            // 如果不是复读
-            if (_lastText != text.Content)
-            {
-                _lastText = text.Content;
-                _count = 1;
-            }
-            // 如果是复读
-            // 如果已经出现3次
-            else if (_count is 2)
-            {
-                _count = 0;
-                reread = _lastText;
-            }
-            // 如果没有3次且没有复读过
-            else if (_lastText == text.Content && _count is not 0)
-                ++_count;
+        var (count, lastText) = RereadDictionary[group.GroupUin];
+        try
+        {
+            if (group.Chain.Count is 1 && group.Chain[0] is TextChain text)
+                // 如果不是复读
+                if (lastText != text.Content)
+                {
+                    lastText = text.Content;
+                    count = 1;
+                }
+                // 如果是复读
+                // 如果已经出现3次
+                else if (count is 2)
+                {
+                    count = 0;
+                    return Text(lastText);
+                }
+                // 如果没有3次且没有复读过
+                else if (lastText == text.Content && count is not 0)
+                    ++count;
+        }
+        finally
+        {
+            RereadDictionary[group.GroupUin] = (count, lastText);
+        }
 
-        return Text(reread);
+        return null;
     }
 }

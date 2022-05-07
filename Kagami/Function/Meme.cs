@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Kagami.ArgTypes;
 
 namespace Kagami.Function;
 
@@ -58,7 +59,7 @@ public static partial class Commands
             {
                 // 非常抱歉，找不到匹配的内容
                 if (driver.TryFindElement(By.XPath("/html/body/div/div[1]/div/div/div/div[3]/div[2]/div"))?.Text is "抱歉")
-                    throw new NotFoundException("Issue not found!");
+                    throw new NotFoundException($"第{issue}期未找到！");
                 divisions = driver.FindElements(By.XPath("/html/body/div/div[1]/div/div/div/div[3]/div[2]/span/child::*"));
                 Thread.Sleep(1000);
             } while (divisions is { Count: 0 });
@@ -125,7 +126,7 @@ public static partial class Commands
                     }
                 }
             }
-        throw new NotFoundException("RSS subscription failed!");
+        throw new NotFoundException("RSS订阅失败！");
     }
 
 
@@ -147,10 +148,11 @@ public static partial class Commands
     private const string NewPath = SavePath + "new.ptr";
 
 
-    [Help("[-Command][-Issue] Send a meme image in sequence")]
+    [Help("吊图相关", "Command", "Issue")]
+    [HelpArgs(typeof(MemeCommands?), typeof(uint?))]
     private static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group, TextChain text)
     {
-        var content = text.Content[4..].Trim().ToLower().Split(' ');
+        var content = text.Content[5..].Trim().ToLower().Split(' ');
         switch (content[0])
         {
             // 更新图片
@@ -158,7 +160,7 @@ public static partial class Commands
                 {
                     try
                     {
-                        _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching meme images..."));
+                        _ = await bot.SendGroupMessage(group.GroupUin, Text("正在获取吊图..."));
                         // 图片链接索引
                         string[]? imgUrls = null;
                         // 期数的汉字数字字符串
@@ -192,7 +194,7 @@ public static partial class Commands
                                     files[1] is { Name: Indexer } txtFile)
                                     imgUrls ??= await File.ReadAllLinesAsync(txtFile.FullName);
                                 // 索引和图片都有
-                                else return Text("Meme images already existed!");
+                                else return Text($"{issue}期吊图已存在！");
                             }
                             // 没有文件夹
                             else
@@ -216,7 +218,7 @@ public static partial class Commands
                         catch (EdgeDriverBusyException e)
                         {
                             Console.WriteLine(e);
-                            return Text(e.Message);
+                            return Text("请勿同时进行请求");
                         }
                         catch (NotFoundException e)
                         {
@@ -226,19 +228,19 @@ public static partial class Commands
                         catch (FormatException e)
                         {
                             Console.WriteLine(e);
-                            return Text("Bad argument, needs an integer.");
+                            return Text(ArgumentError);
                         }
                         // 获取图片
                         for (var i = 0; i < imgUrls.Length; ++i)
                             await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
                                 await imgUrls[i].UrlDownloadBytes());
 
-                        return Text($"Meme images updated! Issue: No.{issue}");
+                        return Text($"吊图已更新！第{issue}期");
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        return Text("Meme images update failed! May you retry to request.");
+                        return Text("吊图更新失败！你可以重新尝试");
                     }
                 }
             // 发送图片
@@ -246,7 +248,7 @@ public static partial class Commands
                 try
                 {
                     if (!File.Exists(NewPath))
-                        return Text("No meme images yet.");
+                        return Text("还没有吊图");
 
                     var issue = content[0] is ""
                         // 未指定期数
@@ -259,9 +261,9 @@ public static partial class Commands
 
                     // 指定期数不存在
                     if (!directory.Exists)
-                        return Text("Issue not exists");
+                        return Text($"第{issue}期不存在");
 
-                    var pointer = int.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
+                    var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
                     var files = directory.GetFiles();
                     if (pointer >= files.Length - 2)
                         pointer = 0;
@@ -280,7 +282,7 @@ public static partial class Commands
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    return Text("Bad argument, needs an integer.");
+                    return Text(ArgumentError);
                 }
         }
     }

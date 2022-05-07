@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -19,7 +20,7 @@ public static class Utilities
     /// </summary>
     /// <param name="bvCode"></param>
     /// <returns></returns>
-    public static string Bv2Av(this string bvCode)
+    public static string? Bv2Av(this string bvCode)
     {
         const long xor = 177451812L;
         const long add = 100618342136696320L;
@@ -34,18 +35,14 @@ public static class Utilities
 
         try
         {
-            var r = 0L;
-            for (var i = 0; i < sed.Length; i++)
-                r += chars[bvCode[sed[i]]]
-                     * (long)Math.Pow(table.Length, i);
+            var r = sed.Select((t, i) => chars[bvCode[t]] * (long)Math.Pow(table.Length, i)).Sum();
 
             var result = r - add ^ xor;
             return result is > 10000000000 or < 0 ? "" : $"av{result}";
         }
-
         catch
         {
-            return "";
+            return null;
         }
     }
 
@@ -113,7 +110,7 @@ public static class Utilities
         {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" ,
             "AppleWebKit/537.36 (KHTML, like Gecko)" ,
-            "Chrome / 100.0.4896.127 Safari / 537.36 Edg / 100.0.1185.50" ,
+            "Chrome/101.0.4951.41 Safari/537.36 Edg/101.0.1210.32",
             "Poker Kagami/1.0.0 (Konata Project)"
         });
         // Append request header
@@ -157,11 +154,4 @@ public static class Utilities
 
         return metaDict;
     }
-
-    /// <summary>
-    /// Can I do
-    /// </summary>
-    /// <param name="factor">Probability scale</param>
-    /// <returns></returns>
-    public static bool CanIDo(double factor = 0.5f) => new Random().NextDouble() >= 1 - factor;
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,7 +29,7 @@ internal static partial class TypeWithAttributeDelegates
                         defaultSuffix = (string)value;
                         break;
                 }
-        
+
         var stringBuilder = new StringBuilder().AppendLine(@$"#nullable enable
 
 using Konata.Core;
@@ -57,19 +58,43 @@ partial class {typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualified
 
     public static MessageBuilder Help() => new MessageBuilder(""{beforeHelp}\n"")
 ");
-        
+
         const string helpEndAndClassEnd = ";\n}";
 
         foreach (var member in typeSymbol.GetMembers()
                      .Where(member => member is { Kind: SymbolKind.Method })
                      .Cast<IMethodSymbol>())
         {
-            if (member.GetAttributes().FirstOrDefault(attributeData => attributeData.AttributeClass!.ToDisplayString() is "Kagami.Attributes.HelpAttribute") is not { }
-attribute)
+            AttributeData? attribute = null, argsAttribute = null;
+            foreach (var attributeData in member.GetAttributes())
+                switch (attributeData.AttributeClass!.ToDisplayString())
+                {
+                    case "Kagami.Attributes.HelpAttribute":
+                        attribute = attributeData;
+                        break;
+                    case "Kagami.Attributes.HelpArgsAttribute":
+                        argsAttribute = attributeData;
+                        break;
+                }
+
+            if (attribute?.ConstructorArguments[0].Value is not string summary)
                 continue;
 
-            if (attribute.ConstructorArguments[0].Value is not string summary)
-                continue;
+            var number = attribute.ConstructorArguments[1].Values.Length;
+            if (argsAttribute is not null && number == argsAttribute.ConstructorArguments[0].Values.Length)
+            {
+                var args = new ValueTuple<ITypeSymbol, bool, string>[number];
+
+                // 获取参数
+                for (var i = 0; i < number; ++i)
+                    if (attribute.ConstructorArguments[1].Values[i].Value is string description &&
+                        argsAttribute.ConstructorArguments[0].Values[i].Value is INamedTypeSymbol type)
+                    {
+                        if (type is { IsGenericType: true } and { Name: "Nullable" })
+                            args[i] = (type.TypeArguments[0], true, description);
+                        else args[i] = (type, false, description);
+                    }
+            }
 
             string? name = null;
             var prefix = defaultPrefix;
@@ -119,9 +144,7 @@ attribute)
 
             stringBuilder.AppendLine($@"{Spacing(3)}@""{name}"" => {isAsync}{member.Name}({parameters}),");
 
-            getReplyEndAndHelpBegin.AppendLine($@"{Spacing(3)}.Text(@""- {name}
-  {summary}
-"")");
+            getReplyEndAndHelpBegin.AppendLine($"{Spacing(3)}.TextLine(@\"· {name} {summary}\")");
         }
         stringBuilder.Append(getReplyEndAndHelpBegin).Remove(stringBuilder.Length - 2, 2).Append(helpEndAndClassEnd);
         return stringBuilder.ToString();

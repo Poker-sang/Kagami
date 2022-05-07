@@ -1,4 +1,5 @@
-﻿using Konata.Core;
+﻿using System;
+using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 
@@ -17,6 +18,9 @@ public static class Poke
             return;
 
         // Convert it to ping
-        _ = bot.SendGroupMessage(group.GroupUin, Commands.Text("不许戳"));
+        if (new Random().Next(10) is 0)
+            _ = bot.SendGroupMessage(group.GroupUin, Commands.Text(PokeMessage.RandomGet()));
     }
+
+    private static readonly string[] PokeMessage = { "你再戳", "rua", "不许戳", "戳♥死♥我", "呜呜", "别戳了别戳了", "啊啊啊", "。", "？", "！", "喵", "呜", "您？" };
 }

@@ -9,6 +9,6 @@ public class GenerateHelpAttribute : Attribute
     {
 
     }
-    public string DefaultPrefix { init; get; }
-    public string DefaultSuffix { init; get; }
+    public string DefaultPrefix { init; get; } = "";
+    public string DefaultSuffix { init; get; } = "";
 }
