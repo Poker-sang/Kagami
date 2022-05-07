@@ -148,7 +148,7 @@ public static partial class Commands
     private const string NewPath = SavePath + "new.ptr";
 
 
-    [Help("吊图相关", "Command", "Issue")]
+    [Help("弔图相关", "Command", "Issue")]
     [HelpArgs(typeof(MemeCommands?), typeof(uint?))]
     private static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group, TextChain text)
     {
@@ -157,14 +157,14 @@ public static partial class Commands
         {
             // 列出已有期数
             case "list":
-                return Text(new DirectoryInfo(SavePath).GetDirectories().Aggregate("吊图已有期数：",
+                return Text(new DirectoryInfo(SavePath).GetDirectories().Aggregate("弔图已有期数：",
                     (current, directoryInfo) => current + directoryInfo.Name + ", ")[..^2]);
             // 更新图片
             case "update":
                 {
                     try
                     {
-                        _ = await bot.SendGroupMessage(group.GroupUin, Text("正在获取吊图..."));
+                        _ = await bot.SendGroupMessage(group.GroupUin, Text("正在获取弔图..."));
                         // 图片链接索引
                         string[]? imgUrls = null;
                         // 期数的汉字数字字符串
@@ -198,7 +198,7 @@ public static partial class Commands
                                     files[1] is { Name: Indexer } txtFile)
                                     imgUrls ??= await File.ReadAllLinesAsync(txtFile.FullName);
                                 // 索引和图片都有
-                                else return Text($"{issue}期吊图已存在！");
+                                else return Text($"{issue}期弔图已存在！");
                             }
                             // 没有文件夹
                             else
@@ -239,12 +239,12 @@ public static partial class Commands
                             await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
                                 await imgUrls[i].UrlDownloadBytes());
 
-                        return Text($"吊图已更新！第{issue}期");
+                        return Text($"弔图已更新！第{issue}期");
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        return Text("吊图更新失败！你可以重新尝试");
+                        return Text("弔图更新失败！你可以重新尝试");
                     }
                 }
             // 发送图片
@@ -252,7 +252,7 @@ public static partial class Commands
                 try
                 {
                     if (!File.Exists(NewPath))
-                        return Text("仓库里还没有吊图，先更新吧x");
+                        return Text("仓库里还没有弔图，先更新吧x");
 
                     var issue = content[0] is ""
                         // 未指定期数

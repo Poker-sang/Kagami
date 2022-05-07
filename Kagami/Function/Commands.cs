@@ -40,7 +40,7 @@ public static partial class Commands
 
     [Help("复读一句话", "message")]
     [HelpArgs(typeof(string))]
-    private static MessageBuilder Repeat(TextChain text, MessageChain message) => Text(text.Content[4..].Trim()).Add(message[1..]);
+    private static MessageBuilder Repeat(TextChain text, MessageChain message) => Text(text.Content[6..].Trim()).Add(message[1..]);
 
     [Help("获取成员信息", "member")]
     [HelpArgs(typeof(At))]
@@ -125,7 +125,7 @@ public static partial class Commands
     [HelpArgs(typeof(string))]
     private static async Task<MessageBuilder> Bv(TextChain text)
     {
-        if (text.Content[3..].Bv2Av() is not { } avCode)
+        if (text.Content[2..].Trim().Bv2Av() is not { } avCode)
             return Text("BV号不对哦");
         // UrlDownload the page
         var html = await $"https://www.bilibili.com/video/{avCode}".UrlDownloadString();
@@ -175,8 +175,8 @@ public static partial class Commands
     [HelpArgs(typeof(string[]))]
     private static MessageBuilder Roll(TextChain text)
     {
-        var items = text.Content[5..].Trim().Split(' ');
-        return Text($"嗯让我想想ww......果然还是\"{items.RandomGet()}\"比较好！");
+        var items = text.Content[4..].Trim().Split(' ');
+        return Text(items.Length < 2 ? "没有选项让我怎么选，笨！" : $"嗯让我想想ww......果然还是\"{items.RandomGet()}\"比较好！");
     }
 
 }
