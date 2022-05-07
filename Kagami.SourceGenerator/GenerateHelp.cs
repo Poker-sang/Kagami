@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,8 +12,6 @@ internal static partial class TypeWithAttributeDelegates
     public static string? GenerateHelp(TypeDeclarationSyntax typeDeclaration, INamedTypeSymbol typeSymbol, List<AttributeData> attributeList)
     {
         var specifiedAttribute = attributeList[0];
-        if (specifiedAttribute.ConstructorArguments[0].Value is not string beforeHelp)
-            return null;
 
         var defaultPrefix = "";
         var defaultSuffix = "";
@@ -45,56 +42,27 @@ partial class {typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualified
 {{
     public static async Task<MessageBuilder?> GetReply(Bot bot, GroupMessageEvent group)
     {{
-        var textChain = group.Chain.GetChain<TextChain>();
-        if (textChain is null)
+        if (group.Message.Chain[0] is not {{ Type: BaseChain.ChainType.Text }} tc)
             return null;
+
+        var textChain = (TextChain)tc;
 
         return textChain.Content.Split(' ')[0].ToLower() switch
         {{
-            @""{defaultPrefix}help{defaultSuffix}"" => Help(),");
-        var getReplyEndAndHelpBegin = new StringBuilder($@"            _ => null
+            @""{defaultPrefix}help{defaultSuffix}"" => await Help(),");
+        const string getReplyEndAndHelpBegin = $@"            _ => null
         }};
     }}
 
-    public static MessageBuilder Help() => new MessageBuilder(""{beforeHelp}\n"")
-");
-
-        const string helpEndAndClassEnd = ";\n}";
+    public static async Task<MessageBuilder> Help() => new MessageBuilder().Image(await System.IO.File.ReadAllBytesAsync(HelpImage));
+}}";
 
         foreach (var member in typeSymbol.GetMembers()
                      .Where(member => member is { Kind: SymbolKind.Method })
                      .Cast<IMethodSymbol>())
         {
-            AttributeData? attribute = null, argsAttribute = null;
-            foreach (var attributeData in member.GetAttributes())
-                switch (attributeData.AttributeClass!.ToDisplayString())
-                {
-                    case "Kagami.Attributes.HelpAttribute":
-                        attribute = attributeData;
-                        break;
-                    case "Kagami.Attributes.HelpArgsAttribute":
-                        argsAttribute = attributeData;
-                        break;
-                }
-
-            if (attribute?.ConstructorArguments[0].Value is not string summary)
+            if (member.GetAttributes().FirstOrDefault(attributeData => attributeData.AttributeClass!.ToDisplayString() is "Kagami.Attributes.HelpAttribute") is not { } attribute)
                 continue;
-
-            var number = attribute.ConstructorArguments[1].Values.Length;
-            if (argsAttribute is not null && number == argsAttribute.ConstructorArguments[0].Values.Length)
-            {
-                var args = new ValueTuple<ITypeSymbol, bool, string>[number];
-
-                // 获取参数
-                for (var i = 0; i < number; ++i)
-                    if (attribute.ConstructorArguments[1].Values[i].Value is string description &&
-                        argsAttribute.ConstructorArguments[0].Values[i].Value is INamedTypeSymbol type)
-                    {
-                        if (type is { IsGenericType: true } and { Name: "Nullable" })
-                            args[i] = (type.TypeArguments[0], true, description);
-                        else args[i] = (type, false, description);
-                    }
-            }
 
             string? name = null;
             var prefix = defaultPrefix;
@@ -143,10 +111,8 @@ partial class {typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualified
                 parameters.Remove(parameters.Length - 2, 2);
 
             stringBuilder.AppendLine($@"{Spacing(3)}@""{name}"" => {isAsync}{member.Name}({parameters}),");
-
-            getReplyEndAndHelpBegin.AppendLine($"{Spacing(3)}.TextLine(@\"· {name} {summary}\")");
         }
-        stringBuilder.Append(getReplyEndAndHelpBegin).Remove(stringBuilder.Length - 2, 2).Append(helpEndAndClassEnd);
+        stringBuilder.Append(getReplyEndAndHelpBegin);
         return stringBuilder.ToString();
     }
 }

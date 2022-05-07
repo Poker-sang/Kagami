@@ -49,6 +49,7 @@ public static class EdgeDriverManager
         if (EdgeDriver is null)
             return;
         EdgeDriver.Quit();
+        EdgeDriver.Dispose();
         EdgeDriver = null!;
         GC.Collect();
     }

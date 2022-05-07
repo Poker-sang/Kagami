@@ -121,10 +121,8 @@ public static class Program
     {
         // Read the device from config
         if (File.Exists("keystore.json"))
-        {
             return JsonSerializer.Deserialize
                 <BotKeyStore>(File.ReadAllText("keystore.json"));
-        }
 
         Console.WriteLine("For first running, please type your account and password.");
 

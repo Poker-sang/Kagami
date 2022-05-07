@@ -133,7 +133,7 @@ public static partial class Commands
     /// <summary>
     /// 图片存放总路径
     /// </summary>
-    private const string SavePath = @"C:\Users\poker\Desktop\memes\";
+    private const string SavePath = EnvPath + @"memes\";
     /// <summary>
     /// 记录现在已经发到第几张图片的指针
     /// </summary>
@@ -153,141 +153,148 @@ public static partial class Commands
     private static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group, TextChain text)
     {
         var content = text.Content[4..].Trim().ToLower().Split(' ');
-        switch (content[0])
+        try
         {
-            // 列出已有期数
-            case "list":
-                return Text(new DirectoryInfo(SavePath).GetDirectories().Aggregate("弔图已有期数：",
-                    (current, directoryInfo) => current + directoryInfo.Name + ", ")[..^2]);
-            // 更新图片
-            case "update":
-                {
-                    try
+            switch (content[0])
+            {
+                // 列出已有期数
+                case "list":
+                    return Text(new DirectoryInfo(SavePath).GetDirectories().Aggregate("弔图已有期数：",
+                        (current, directoryInfo) => current + directoryInfo.Name + ", ")[..^2]);
+                // 更新图片
+                case "update":
                     {
-                        _ = await bot.SendGroupMessage(group.GroupUin, Text("正在获取弔图..."));
-                        // 图片链接索引
-                        string[]? imgUrls = null;
-                        // 期数的汉字数字字符串
-                        string? cnIssue = null;
-                        // 期数的阿拉伯数字字符串
-                        string? issue;
-                        // 未指定期数，RSS获取订阅
-                        if (content.Length is 1)
+                        try
+                        {
+                            _ = await bot.SendGroupMessage(group.GroupUin, Text("正在获取弔图..."));
+                            // 图片链接索引
+                            string[]? imgUrls = null;
+                            // 期数的汉字数字字符串
+                            string? cnIssue = null;
+                            // 期数的阿拉伯数字字符串
+                            string? issue;
+                            // 未指定期数，RSS获取订阅
+                            if (content.Length is 1)
+                                try
+                                {
+                                    (imgUrls, cnIssue) = await GetMemeImageSourcesRss();
+                                    issue = cnIssue.CnToInt().ToString();
+                                }
+                                catch (NotFoundException e)
+                                {
+                                    Console.WriteLine(e);
+                                    return Text(e.Message);
+                                }
+                            // 指定期数
+                            // var result = Regex.Match(content[0], @"\b[0-9]+\b");
+                            else issue = content[1];
+                            // 下载图片
+                            var directory = new DirectoryInfo(SavePath + issue);
                             try
                             {
-                                (imgUrls, cnIssue) = await GetMemeImageSourcesRss();
-                                issue = cnIssue.CnToInt().ToString();
+                                // 如果已经有文件夹
+                                if (directory.Exists)
+                                {
+                                    // 只有索引
+                                    if (directory.GetFiles() is { Length: 2 } files &&
+                                        files[1] is { Name: Indexer } txtFile)
+                                        imgUrls ??= await File.ReadAllLinesAsync(txtFile.FullName);
+                                    // 索引和图片都有
+                                    else return Text($"{issue}期弔图已存在！");
+                                }
+                                // 没有文件夹
+                                else
+                                {
+                                    // may throw FormatException
+                                    var newInt = int.Parse(issue);
+                                    // 指定期数时，需要阿拉伯数字转汉字
+                                    cnIssue ??= newInt.IntToCn();
+                                    // 指定期数时，需要下载图片链接索引
+                                    // may throw EdgeDriverBusyException, NotFoundException
+                                    imgUrls ??= await GetMemeImageSources(cnIssue);
+                                    directory.Create();
+                                    // 记录索引和指针
+                                    await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), 0.ToString());
+                                    await File.WriteAllLinesAsync(Path.Combine(directory.FullName, Indexer), imgUrls);
+                                    // 若已有最新的则不写入总索引
+                                    if (int.Parse(await File.ReadAllTextAsync(NewPath)) < newInt)
+                                        await File.WriteAllTextAsync(NewPath, issue);
+                                }
+                            }
+                            catch (EdgeDriverBusyException e)
+                            {
+                                Console.WriteLine(e);
+                                return Text("请勿同时进行请求");
                             }
                             catch (NotFoundException e)
                             {
                                 Console.WriteLine(e);
                                 return Text(e.Message);
                             }
-                        // 指定期数
-                        // var result = Regex.Match(content[0], @"\b[0-9]+\b");
-                        else issue = content[1];
-                        // 下载图片
-                        var directory = new DirectoryInfo(SavePath + issue);
-                        try
-                        {
-                            // 如果已经有文件夹
-                            if (directory.Exists)
+                            catch (FormatException e)
                             {
-                                // 只有索引
-                                if (directory.GetFiles() is { Length: 2 } files &&
-                                    files[1] is { Name: Indexer } txtFile)
-                                    imgUrls ??= await File.ReadAllLinesAsync(txtFile.FullName);
-                                // 索引和图片都有
-                                else return Text($"{issue}期弔图已存在！");
+                                Console.WriteLine(e);
+                                return Text(ArgumentError);
                             }
-                            // 没有文件夹
-                            else
-                            {
-                                // may throw FormatException
-                                var newInt = int.Parse(issue);
-                                // 指定期数时，需要阿拉伯数字转汉字
-                                cnIssue ??= newInt.IntToCn();
-                                // 指定期数时，需要下载图片链接索引
-                                // may throw EdgeDriverBusyException, NotFoundException
-                                imgUrls ??= await GetMemeImageSources(cnIssue);
-                                directory.Create();
-                                // 记录索引和指针
-                                await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), 0.ToString());
-                                await File.WriteAllLinesAsync(Path.Combine(directory.FullName, Indexer), imgUrls);
-                                // 若已有最新的则不写入总索引
-                                if (int.Parse(await File.ReadAllTextAsync(NewPath)) < newInt)
-                                    await File.WriteAllTextAsync(NewPath, issue);
-                            }
-                        }
-                        catch (EdgeDriverBusyException e)
-                        {
-                            Console.WriteLine(e);
-                            return Text("请勿同时进行请求");
-                        }
-                        catch (NotFoundException e)
-                        {
-                            Console.WriteLine(e);
-                            return Text(e.Message);
-                        }
-                        catch (FormatException e)
-                        {
-                            Console.WriteLine(e);
-                            return Text(ArgumentError);
-                        }
-                        // 获取图片
-                        for (var i = 0; i < imgUrls.Length; ++i)
-                            await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
-                                await imgUrls[i].UrlDownloadBytes());
+                            // 获取图片
+                            for (var i = 0; i < imgUrls.Length; ++i)
+                                await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
+                                    await imgUrls[i].UrlDownloadBytes());
 
-                        return Text($"弔图已更新！第{issue}期");
+                            return Text($"弔图已更新！第{issue}期");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            return Text("弔图更新失败！你可以重新尝试");
+                        }
+                    }
+                // 发送图片
+                default:
+                    try
+                    {
+                        if (!File.Exists(NewPath))
+                            return Text("仓库里还没有弔图，先更新吧x");
+
+                        var issue = content[0] is ""
+                            // 未指定期数
+                            ? await File.ReadAllTextAsync(NewPath)
+                            // 指定期数
+                            // var result = Regex.Match(content[0], @"\b[0-9]+\b");
+                            : content[0];
+
+                        var directory = new DirectoryInfo(SavePath + issue);
+
+                        // 指定期数不存在
+                        if (!directory.Exists)
+                            return Text($"第{issue}期不存在");
+
+                        var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
+                        var files = directory.GetFiles();
+                        if (pointer >= files.Length - 2)
+                            pointer = 0;
+
+                        var image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName,
+                            (pointer + 2).ToString()));
+
+                        ++pointer;
+                        await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), pointer.ToString());
+
+                        var message = new MessageBuilder();
+                        message.Text($"{issue} {pointer}/{files.Length - 2}");
+                        message.Image(image);
+                        return message;
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        return Text("弔图更新失败！你可以重新尝试");
+                        return Text(ArgumentError);
                     }
-                }
-            // 发送图片
-            default:
-                try
-                {
-                    if (!File.Exists(NewPath))
-                        return Text("仓库里还没有弔图，先更新吧x");
-
-                    var issue = content[0] is ""
-                        // 未指定期数
-                        ? await File.ReadAllTextAsync(NewPath)
-                        // 指定期数
-                        // var result = Regex.Match(content[0], @"\b[0-9]+\b");
-                        : content[0];
-
-                    var directory = new DirectoryInfo(SavePath + issue);
-
-                    // 指定期数不存在
-                    if (!directory.Exists)
-                        return Text($"第{issue}期不存在");
-
-                    var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
-                    var files = directory.GetFiles();
-                    if (pointer >= files.Length - 2)
-                        pointer = 0;
-
-                    var image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName,
-                        (pointer + 2).ToString()));
-
-                    ++pointer;
-                    await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), pointer.ToString());
-
-                    var message = new MessageBuilder();
-                    message.Text($"{issue} {pointer}/{files.Length - 2}");
-                    message.Image(image);
-                    return message;
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    return Text(ArgumentError);
-                }
+            }
+        }
+        finally
+        {
+            GC.Collect();
         }
     }
 }

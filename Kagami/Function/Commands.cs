@@ -1,8 +1,9 @@
-﻿using Kagami.Attributes;
+﻿using Kagami.ArgTypes;
+using Kagami.Attributes;
 using Kagami.Utils;
 using Konata.Core;
+using Konata.Core.Common;
 using Konata.Core.Events.Model;
-using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
@@ -10,8 +11,6 @@ using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Kagami.ArgTypes;
-using Konata.Core.Common;
 
 namespace Kagami.Function;
 
@@ -19,23 +18,24 @@ public static partial class Commands
 {
     [Help("相关数据")]
     private static MessageBuilder Status()
-        => Text("[Poker Kagami]")
-               // Core descriptions
-               .TextLine($"[分支:{BuildStamp.Branch}]")
-               .TextLine($"[提交:{BuildStamp.CommitHash[..12]}]")
-               .TextLine($"[版本:{BuildStamp.Version}]")
-               .TextLine($"[{BuildStamp.BuildTime}]")
-               .TextLine()
-               // System status
-               .TextLine($"处理了 {_messageCounter} 条消息")
-               .TextLine($"GC内存 {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB ")
-               .Text($"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)")
-               .TextLine($"总内存 {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB")
-               .TextLine()
-               // Copyrights
-               .TextLine("Konata Project (C) 2022");
+        => Text("[Poker Kagami] 内核信息")
+            // Core descriptions
+            .TextLine($"[分支:{BuildStamp.Branch}]")
+            .TextLine($"[提交:{BuildStamp.CommitHash[..12]}]")
+            .TextLine($"[版本:{BuildStamp.Version}]")
+            .TextLine($"[{BuildStamp.BuildTime}]")
+            .TextLine("Konata Project (C) 2022")
+            .TextLine()
+            // System status
+            .TextLine($"处理了 {_messageCounter} 条消息")
+            .TextLine($"GC内存 {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB ")
+            .Text($"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)")
+            .TextLine($"总内存 {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB");
 
-    [Help("打招呼")]
+    [Help("看看我是否在线")]
+    private static MessageBuilder Ping() => Text("Pong!");
+
+    [Help("自我介绍")]
     private static MessageBuilder Greeting() => Text("你好！！！我是Poker Kagami");
 
     [Help("复读一句话", "message")]
@@ -56,72 +56,15 @@ public static partial class Commands
         if (memberInfo is null)
             return Text("没有找到这个人x");
 
-        return Text("[成员信息]")
-            .TextLine($"名称：{memberInfo.Name}")
+        return Text($"[{memberInfo.NickName}]")
+            .TextLine($"群名片：{memberInfo.Name}")
             .TextLine($"加入时间：{memberInfo.JoinTime}")
             .TextLine($"类别：{memberInfo.Role switch { RoleType.Member => "成员", RoleType.Admin => "管理员", RoleType.Owner => "群主", _ => throw new ArgumentOutOfRangeException() }}")
             .TextLine($"等级：{memberInfo.Level}")
-            .TextLine($"头衔：{memberInfo.SpecialTitle}")
-            .TextLine($"昵称：{memberInfo.NickName}");
+            .TextLine($"头衔：{memberInfo.SpecialTitle}");
     }
 
-    [Help("禁言一个人", "member", "minute")]
-    [HelpArgs(typeof(At), typeof(uint?))]
-    private static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group)
-    {
-        // Get at
-        var atChain = group.Chain.GetChain<AtChain>();
-        if (atChain is null)
-            return Text(ArgumentError);
-
-        var time = 10U;
-        var textChains = group.Chain.FindChain<TextChain>();
-        // Parse time
-        if (textChains.Count is 2 &&
-            uint.TryParse(textChains[1].Content, out var t))
-            time = t;
-
-        try
-        {
-            if (await bot.GroupMuteMember(group.GroupUin, atChain.AtUin, time * 60))
-                return Text($"禁言 [{atChain.AtUin}] {time}分钟");
-            return Text(UnknownError);
-        }
-        catch (OperationFailedException e)
-        {
-            Console.WriteLine(e.Message);
-            return Text(OperationFailed);
-        }
-    }
-
-    [Help("设置头衔", "member", "title")]
-    [HelpArgs(typeof(At), typeof(string))]
-    private static async Task<MessageBuilder> Title(Bot bot, GroupMessageEvent group)
-    {
-        // Get at
-        var atChain = group.Chain.GetChain<AtChain>();
-        if (atChain is null)
-            return Text(ArgumentError);
-
-        var textChains = group.Chain.FindChain<TextChain>();
-        // Check argument
-        if (textChains.Count is not 2)
-            return Text(ArgumentError);
-
-        try
-        {
-            if (await bot.GroupSetSpecialTitle(group.GroupUin, atChain.AtUin, textChains[1].Content.Trim(), uint.MaxValue))
-                return Text($"为 [{atChain.AtUin}] 设置头衔");
-            return Text(UnknownError);
-        }
-        catch (OperationFailedException e)
-        {
-            Console.WriteLine($"{e.Message} ({e.HResult})");
-            return Text(OperationFailed);
-        }
-    }
-
-    [Help("展示视频信息", "code")]
+    [Help("展示视频信息", "bvCode")]
     [HelpArgs(typeof(string))]
     private static async Task<MessageBuilder> Bv(TextChain text)
     {
@@ -146,7 +89,7 @@ public static partial class Commands
         // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
     }
 
-    [Help("仓库信息", "organization", "repository")]
+    [Help("仓库信息", "orgName", "repoName")]
     [HelpArgs(typeof(string), typeof(string))]
     private static async Task<MessageBuilder> GitHub(Bot bot, GroupMessageEvent group, TextChain text)
     {

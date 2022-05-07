@@ -122,16 +122,18 @@ public static class Utilities
     }
 
     public static async Task<string> UrlDownloadString(this string url, Dictionary<string, string>? header = null,
-        int timeout = 8000, long limitLen = ((long)2 << 30) - 1) =>
-        await UrlDownload(header, timeout, limitLen).GetStringAsync(url);
+        int timeout = 8000, long limitLen = ((long)2 << 30) - 1)
+    {
+        using var httpClient = UrlDownload(header, timeout, limitLen);
+        return await httpClient.GetStringAsync(url);
+    }
 
     public static async Task<byte[]> UrlDownloadBytes(this string url, Dictionary<string, string>? header = null,
-        int timeout = 8000, long limitLen = ((long)2 << 30) - 1) =>
-        await UrlDownload(header, timeout, limitLen).GetByteArrayAsync(url);
-    public static async Task<Stream> UrlDownloadStream(this string url, Dictionary<string, string>? header = null,
-        int timeout = 8000, long limitLen = ((long)2 << 30) - 1) =>
-        await UrlDownload(header, timeout, limitLen).GetStreamAsync(url);
-
+        int timeout = 8000, long limitLen = ((long)2 << 30) - 1)
+    {
+        using var httpClient = UrlDownload(header, timeout, limitLen);
+        return await httpClient.GetByteArrayAsync(url);
+    }
 
     /// <summary>
     /// Get meta data

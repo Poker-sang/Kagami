@@ -4,7 +4,7 @@ using Konata.Core.Message;
 
 namespace Kagami.Function;
 
-public partial class Commands
+public static partial class Commands
 {
     private static uint _messageCounter;
 
