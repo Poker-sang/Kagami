@@ -152,7 +152,7 @@ public static partial class Commands
     [HelpArgs(typeof(MemeCommands?), typeof(uint?))]
     private static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group, TextChain text)
     {
-        var content = text.Content[5..].Trim().ToLower().Split(' ');
+        var content = text.Content[4..].Trim().ToLower().Split(' ');
         switch (content[0])
         {
             // 更新图片

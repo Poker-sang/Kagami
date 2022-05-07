@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Kagami.ArgTypes;
+using Konata.Core.Common;
 
 namespace Kagami.Function;
 
@@ -56,12 +57,12 @@ public static partial class Commands
             return Text("没有找到这个人x");
 
         return Text("[成员信息]")
-            .TextLine($"名称: {memberInfo.Name}")
-            .TextLine($"加入时间: {memberInfo.JoinTime}")
-            .TextLine($"类别: {memberInfo.Role}")
-            .TextLine($"等级: {memberInfo.Level}")
-            .TextLine($"头衔: {memberInfo.SpecialTitle}")
-            .TextLine($"昵称: {memberInfo.NickName}");
+            .TextLine($"名称：{memberInfo.Name}")
+            .TextLine($"加入时间：{memberInfo.JoinTime}")
+            .TextLine($"类别：{memberInfo.Role switch { RoleType.Member => "成员", RoleType.Admin => "管理员", RoleType.Owner => "群主", _ => throw new ArgumentOutOfRangeException() }}")
+            .TextLine($"等级：{memberInfo.Level}")
+            .TextLine($"头衔：{memberInfo.SpecialTitle}")
+            .TextLine($"昵称：{memberInfo.NickName}");
     }
 
     [Help("禁言一个人", "member", "minute")]
@@ -109,7 +110,7 @@ public static partial class Commands
 
         try
         {
-            if (await bot.GroupSetSpecialTitle(group.GroupUin, atChain.AtUin, textChains[1].Content, uint.MaxValue))
+            if (await bot.GroupSetSpecialTitle(group.GroupUin, atChain.AtUin, textChains[1].Content.Trim(), uint.MaxValue))
                 return Text($"为 [{atChain.AtUin}] 设置头衔");
             return Text(UnknownError);
         }
