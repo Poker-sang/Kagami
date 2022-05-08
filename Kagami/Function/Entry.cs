@@ -19,8 +19,6 @@ public static partial class Commands
         // Increase
         ++_messageCounter;
 
-        if (group.GroupUin == 815791942)
-            return;
         if (group.MemberUin == bot.Uin)
         {
             _lastMessage = group.Message;
@@ -49,7 +47,8 @@ public static partial class Commands
         }
     }
 
-    public const string EnvPath = @"C:\Users\poker\Desktop\Bot\";
+    private const string EnvPath = @"C:\Users\poker\Desktop\Bot\";
+    public const string HelpPath = EnvPath + @"help\";
 
-    public const string HelpImage = EnvPath + "help.png";
+    private const string HelpImage = HelpPath + "help.png";
 }

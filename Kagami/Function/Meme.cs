@@ -129,11 +129,14 @@ public static partial class Commands
         throw new NotFoundException("RSS订阅失败！");
     }
 
-
     /// <summary>
     /// 图片存放总路径
     /// </summary>
-    private const string SavePath = EnvPath + @"memes\";
+    private const string MemePath = EnvPath + @"memes\";
+    /// <summary>
+    /// 记录目前文件夹中最新一期期数的指针
+    /// </summary>
+    private const string NewPath = MemePath + "new.ptr";
     /// <summary>
     /// 记录现在已经发到第几张图片的指针
     /// </summary>
@@ -142,13 +145,8 @@ public static partial class Commands
     /// 记录某期所有图片链接的索引
     /// </summary>
     private const string Indexer = "1.idx";
-    /// <summary>
-    /// 记录目前文件夹中最新一期期数的指针
-    /// </summary>
-    private const string NewPath = SavePath + "new.ptr";
 
-
-    [Help("弔图相关", "Command", "Issue")]
+    [Help("弔图相关", "指令", "期数")]
     [HelpArgs(typeof(MemeCommands?), typeof(uint?))]
     private static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group, TextChain text)
     {
@@ -159,7 +157,7 @@ public static partial class Commands
             {
                 // 列出已有期数
                 case "list":
-                    return Text(new DirectoryInfo(SavePath).GetDirectories().Aggregate("弔图已有期数：",
+                    return Text(new DirectoryInfo(MemePath).GetDirectories().Aggregate("弔图已有期数：",
                         (current, directoryInfo) => current + directoryInfo.Name + ", ")[..^2]);
                 // 更新图片
                 case "update":
@@ -189,7 +187,7 @@ public static partial class Commands
                             // var result = Regex.Match(content[0], @"\b[0-9]+\b");
                             else issue = content[1];
                             // 下载图片
-                            var directory = new DirectoryInfo(SavePath + issue);
+                            var directory = new DirectoryInfo(MemePath + issue);
                             try
                             {
                                 // 如果已经有文件夹
@@ -216,6 +214,12 @@ public static partial class Commands
                                     // 记录索引和指针
                                     await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), 0.ToString());
                                     await File.WriteAllLinesAsync(Path.Combine(directory.FullName, Indexer), imgUrls);
+
+                                    // 获取图片
+                                    for (var i = 0; i < imgUrls.Length; ++i)
+                                        await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
+                                            await imgUrls[i].UrlDownloadBytes());
+
                                     // 若已有最新的则不写入总索引
                                     if (int.Parse(await File.ReadAllTextAsync(NewPath)) < newInt)
                                         await File.WriteAllTextAsync(NewPath, issue);
@@ -236,11 +240,6 @@ public static partial class Commands
                                 Console.WriteLine(e);
                                 return Text(ArgumentError);
                             }
-                            // 获取图片
-                            for (var i = 0; i < imgUrls.Length; ++i)
-                                await File.WriteAllBytesAsync(Path.Combine(directory.FullName, (i + 2).ToString()),
-                                    await imgUrls[i].UrlDownloadBytes());
-
                             return Text($"弔图已更新！第{issue}期");
                         }
                         catch (Exception e)
@@ -263,7 +262,7 @@ public static partial class Commands
                             // var result = Regex.Match(content[0], @"\b[0-9]+\b");
                             : content[0];
 
-                        var directory = new DirectoryInfo(SavePath + issue);
+                        var directory = new DirectoryInfo(MemePath + issue);
 
                         // 指定期数不存在
                         if (!directory.Exists)

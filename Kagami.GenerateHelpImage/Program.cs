@@ -1,16 +1,17 @@
 ﻿using Kagami.Attributes;
 using Kagami.Function;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using System.Reflection;
 using System.Text;
+using Kagami.GenerateHelpImage;
+using Konata.Core.Common;
+using static Kagami.GenerateHelpImage.Methods.Color;
 using Args = System.Collections.ObjectModel.ReadOnlyCollection<System.Reflection.CustomAttributeTypedArgument>;
 
 
+
 var allText = new StringBuilder();
+
+
 
 foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | BindingFlags.Static))
     if (methodInfo.CustomAttributes.FirstOrDefault(t => t.AttributeType == typeof(HelpAttribute)) is { } help)
@@ -21,7 +22,18 @@ foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | 
             .Select(t => (string)t.Value!).ToArray() is not { } argsNames)
             continue;
 
-        var commandLine = new StringBuilder(methodInfo.Name.ToLower());
+        var commandLine = "";
+        if (methodInfo.CustomAttributes.FirstOrDefault(t => t.AttributeType == typeof(PermissionAttribute)) is { } permission
+            && (RoleType)permission.ConstructorArguments[0].Value! is var role and not RoleType.Member)
+            commandLine += role switch
+            {
+                RoleType.Admin => "*需要管理员权限".Run(Comment, true) + "\n",
+                RoleType.Owner => "*需要群主权限".Run(Comment, true) + "\n",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+        commandLine += methodInfo.Name.ToLower().Run(Method);
+        var commandArgs = new StringBuilder();
         var records = new StringBuilder();
 
         if (argsNames.Length is not 0
@@ -42,17 +54,27 @@ foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | 
                         type = innerType;
                     }
                 }
-                commandLine.Append(isNullable ? $" [-{argsNames[i]}]" : $" -{argsNames[i]}");
-                records.AppendLine($"{argsNames[i]}: {type.Name}");
+                commandArgs.Append(isNullable ? $" [-{argsNames[i]}]" : $" -{argsNames[i]}");
+                records.Append(argsNames[i].Run(Arg) + ": ".Run(Summary));
+                if (type.IsEnum)
+                {
+                    records.AppendLine();
+                    foreach (var field in type.GetFields())
+                        if (field.CustomAttributes.FirstOrDefault(t => t.AttributeType == typeof(EnumHelpAttribute)) is
+                            { } enumHelp
+                            && enumHelp.ConstructorArguments[0].Value is string enumSummary)
+                            records.AppendLine(field.Name.ToLower().Run(Class) + $"→ {enumSummary}".Run(Summary));
+                }
+                else records.AppendLine(type.Name.ToLower().Run(Class));
             }
-        allText.Append(commandLine).AppendLine().AppendLine(summary).Append(records).AppendLine();
+        allText
+            .Append(commandLine)
+            .Append(commandArgs.ToString().Run(Arg))
+            .AppendLine()
+            .AppendLine(summary.Run(Summary, true))
+            .Append(records)
+            .AppendLine();
     }
 
-var fontFamily = new FontCollection().Add(Commands.EnvPath + "JetBrainsMono-Regular.ttf");
-var font = new Font(fontFamily, 20);
-
-using var image = await Image.LoadAsync<Rgba32>(Commands.EnvPath + "desktop.png");
-
-image.Mutate(x => x.DrawText(allText.ToString(), font, Color.White, new PointF(50, 50)));
-
-await image.SaveAsync(Commands.HelpImage);
+allText.Replace("\n", "<LineBreak/>\n");
+File.WriteAllText(Commands.HelpPath + "help.txt", allText.ToString());

@@ -38,11 +38,11 @@ public static partial class Commands
     [Help("自我介绍")]
     private static MessageBuilder Greeting() => Text("你好！！！我是Poker Kagami");
 
-    [Help("复读一句话", "message")]
+    [Help("复读一句话", "话")]
     [HelpArgs(typeof(string))]
     private static MessageBuilder Repeat(TextChain text, MessageChain message) => Text(text.Content[6..].Trim()).Add(message[1..]);
 
-    [Help("获取成员信息", "member")]
+    [Help("获取成员信息", "成员")]
     [HelpArgs(typeof(At))]
     private static async Task<MessageBuilder> Member(Bot bot, GroupMessageEvent group)
     {
@@ -64,7 +64,7 @@ public static partial class Commands
             .TextLine($"头衔：{memberInfo.SpecialTitle}");
     }
 
-    [Help("展示视频信息", "bvCode")]
+    [Help("展示视频信息", "BV号")]
     [HelpArgs(typeof(string))]
     private static async Task<MessageBuilder> Bv(TextChain text)
     {
@@ -89,7 +89,7 @@ public static partial class Commands
         // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
     }
 
-    [Help("仓库信息", "orgName", "repoName")]
+    [Help("仓库信息", "组织名", "仓库名")]
     [HelpArgs(typeof(string), typeof(string))]
     private static async Task<MessageBuilder> GitHub(Bot bot, GroupMessageEvent group, TextChain text)
     {
@@ -114,7 +114,7 @@ public static partial class Commands
         }
     }
 
-    [Help("帮我选一个", "items")]
+    [Help("帮我选一个", "一些选项")]
     [HelpArgs(typeof(string[]))]
     private static MessageBuilder Roll(TextChain text)
     {
