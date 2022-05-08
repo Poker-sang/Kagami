@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.SourceGenerator", "K
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.GenerateHelpImage", "Kagami.GenerateHelpImage\Kagami.GenerateHelpImage.csproj", "{E4CD1875-87BA-4184-AA1F-A310E70A4BA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kagami.HelpDisplay", "HelpDisplay\Kagami.HelpDisplay.csproj", "{CDD2A1EF-6E87-40C3-8A1A-7964F7DD7F4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kagami.HelpDisplay", "Kagami.HelpDisplay\Kagami.HelpDisplay.csproj", "{CDD2A1EF-6E87-40C3-8A1A-7964F7DD7F4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

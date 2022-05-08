@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Konata.Core.Message;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -156,4 +156,8 @@ public static class Utilities
 
         return metaDict;
     }
+
+
+    public static TChain? FetchChain<TChain>(this MessageChain chain) where TChain : BaseChain => (TChain?)chain.FirstOrDefault(i => i is TChain);
+    public static IEnumerable<TChain> FetchChains<TChain>(this MessageChain chain) where TChain : BaseChain => chain.Where(i => i is TChain).Cast<TChain>();
 }

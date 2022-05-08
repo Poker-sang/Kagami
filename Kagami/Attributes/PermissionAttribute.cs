@@ -1,5 +1,5 @@
-﻿using System;
-using Konata.Core.Common;
+﻿using Konata.Core.Common;
+using System;
 
 namespace Kagami.Attributes;
 

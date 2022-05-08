@@ -19,14 +19,10 @@ public static partial class Commands
         // Increase
         ++_messageCounter;
 
-        if (group.MemberUin == bot.Uin)
-        {
-            _lastMessage = group.Message;
-            return;
-        }
-
         try
         {
+            if (await TryRecall(bot, group))
+                return;
             if (!RereadDictionary.ContainsKey(group.GroupUin))
                 RereadDictionary[group.GroupUin] = (1, "");
             if (await GetReply(bot, group) is { } reply)
@@ -48,7 +44,7 @@ public static partial class Commands
     }
 
     private const string EnvPath = @"C:\Users\poker\Desktop\Bot\";
-    public const string HelpPath = EnvPath + @"help\";
 
+    public const string HelpPath = EnvPath + @"help\";
     private const string HelpImage = HelpPath + "help.png";
 }

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using Kagami.ArgTypes;
+﻿using Kagami.ArgTypes;
 using Kagami.Attributes;
+using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
@@ -9,6 +8,9 @@ using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kagami.Function;
 
@@ -21,14 +23,14 @@ public static partial class Commands
     private static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group)
     {
         // Get at
-        var atChain = group.Chain.GetChain<AtChain>();
+        var atChain = group.Chain.FetchChain<AtChain>();
         if (atChain is null)
             return Text(ArgumentError);
 
         var time = 10U;
-        var textChains = group.Chain.FindChain<TextChain>();
+        var textChains = group.Chain.FetchChains<TextChain>().ToArray();
         // Parse time
-        if (textChains.Count is 2 &&
+        if (textChains.Length is 2 &&
             uint.TryParse(textChains[1].Content, out var t))
             time = t;
 
@@ -51,13 +53,13 @@ public static partial class Commands
     private static async Task<MessageBuilder> Title(Bot bot, GroupMessageEvent group)
     {
         // Get at
-        var atChain = group.Chain.GetChain<AtChain>();
+        var atChain = group.Chain.FetchChain<AtChain>();
         if (atChain is null)
             return Text(ArgumentError);
 
-        var textChains = group.Chain.FindChain<TextChain>();
+        var textChains = group.Chain.FetchChains<TextChain>().ToArray();
         // Check argument
-        if (textChains.Count is not 2)
+        if (textChains.Length is not 2)
             return Text(ArgumentError);
 
         try

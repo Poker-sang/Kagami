@@ -1,4 +1,5 @@
-﻿using Kagami.Attributes;
+﻿using Kagami.ArgTypes;
+using Kagami.Attributes;
 using Kagami.Exceptions;
 using Kagami.Utils;
 using Konata.Core;
@@ -16,7 +17,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Kagami.ArgTypes;
 
 namespace Kagami.Function;
 

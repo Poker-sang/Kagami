@@ -47,7 +47,7 @@ public static partial class Commands
     private static async Task<MessageBuilder> Member(Bot bot, GroupMessageEvent group)
     {
         // Get at
-        var at = group.Chain.GetChain<AtChain>();
+        var at = group.Chain.FetchChain<AtChain>();
         if (at is null)
             return Text(ArgumentError);
 

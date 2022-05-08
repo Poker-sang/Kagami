@@ -1,7 +1,7 @@
-﻿using System;
-using Kagami.Exceptions;
+﻿using Kagami.Exceptions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
+using System;
 
 namespace Kagami.Utils;
 

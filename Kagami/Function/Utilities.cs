@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Konata.Core.Message;
+using System;
 using System.Collections.Generic;
-using Konata.Core.Message;
 
 namespace Kagami.Function;
 

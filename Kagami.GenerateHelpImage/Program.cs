@@ -1,9 +1,9 @@
 ﻿using Kagami.Attributes;
 using Kagami.Function;
-using System.Reflection;
-using System.Text;
 using Kagami.GenerateHelpImage;
 using Konata.Core.Common;
+using System.Reflection;
+using System.Text;
 using static Kagami.GenerateHelpImage.Methods.Color;
 using Args = System.Collections.ObjectModel.ReadOnlyCollection<System.Reflection.CustomAttributeTypedArgument>;
 
