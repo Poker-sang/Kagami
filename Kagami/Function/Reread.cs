@@ -2,6 +2,7 @@
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using System.Collections.Generic;
+using Kagami.Attributes;
 
 namespace Kagami.Function;
 
@@ -14,6 +15,7 @@ public static partial class Commands
     /// </summary>
     /// <param name="group"></param>
     /// <returns></returns>
+    [Trigger("复读一次这条消息", "3连相同文字消息")]
     private static MessageBuilder? Reread(GroupMessageEvent group)
     {
         var (count, lastText) = RereadDictionary[group.GroupUin];

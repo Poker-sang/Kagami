@@ -6,9 +6,9 @@ namespace Kagami.Attributes;
 /// 使用DefaultPrefix（Prefix）+方法名+DefaultSuffix（Suffix）或Name作为调用指令
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public class HelpArgsAttribute : Attribute
+public class CommandArgsAttribute : Attribute
 {
-    public HelpArgsAttribute(params Type[] args)
+    public CommandArgsAttribute(params Type[] args)
     {
 
     }

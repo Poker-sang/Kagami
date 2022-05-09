@@ -8,12 +8,14 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Kagami.Attributes;
 
 namespace Kagami.Function;
 
 public static partial class Commands
 {
-    private static async Task<bool> TryRecall(Bot bot, GroupMessageEvent group)
+    [Trigger("撤回我被回复的消息", "回复我的某条信息")]
+    private static async Task<bool> Recall(Bot bot, GroupMessageEvent group)
     {
         if (group.Chain.FetchChain<ReplyChain>() is { } replyChain)
         {

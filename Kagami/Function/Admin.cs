@@ -19,7 +19,7 @@ public static partial class Commands
 
     [Permission(RoleType.Admin)]
     [Help("禁言一个人", "成员", "时间（分）")]
-    [HelpArgs(typeof(At), typeof(uint?))]
+    [CommandArgs(typeof(At), typeof(uint?))]
     private static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group)
     {
         // Get at
@@ -49,7 +49,7 @@ public static partial class Commands
 
     [Permission(RoleType.Owner)]
     [Help("设置头衔", "成员", "头衔")]
-    [HelpArgs(typeof(At), typeof(string))]
+    [CommandArgs(typeof(At), typeof(string))]
     private static async Task<MessageBuilder> Title(Bot bot, GroupMessageEvent group)
     {
         // Get at

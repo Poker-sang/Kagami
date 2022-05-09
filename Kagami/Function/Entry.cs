@@ -24,10 +24,12 @@ public static partial class Commands
 
         try
         {
-            if (await TryRecall(bot, group))
+            if (await Recall(bot, group))
                 return;
+
             if (!RereadDictionary.ContainsKey(group.GroupUin))
                 RereadDictionary[group.GroupUin] = (1, "");
+
             if (await GetReply(bot, group) is { } reply)
             {
                 RereadDictionary[group.GroupUin] = (RereadDictionary[group.GroupUin].Count, "");

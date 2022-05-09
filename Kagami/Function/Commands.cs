@@ -10,6 +10,7 @@ using Konata.Core.Message.Model;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Kagami.Function;
@@ -39,11 +40,11 @@ public static partial class Commands
     private static MessageBuilder Greeting() => Text("你好！！！我是Poker Kagami");
 
     [Help("复读一句话", "话")]
-    [HelpArgs(typeof(string))]
+    [CommandArgs(typeof(string))]
     private static MessageBuilder Repeat(TextChain text, MessageChain message) => Text(text.Content[6..].Trim()).Add(message[1..]);
 
     [Help("获取成员信息", "成员")]
-    [HelpArgs(typeof(At))]
+    [CommandArgs(typeof(At))]
     private static async Task<MessageBuilder> Member(Bot bot, GroupMessageEvent group)
     {
         // Get at
@@ -65,7 +66,7 @@ public static partial class Commands
     }
 
     [Help("展示视频信息", "BV号")]
-    [HelpArgs(typeof(string))]
+    [CommandArgs(typeof(string))]
     private static async Task<MessageBuilder> Bv(TextChain text)
     {
         if (text.Content[2..].Trim().Bv2Av() is not { } avCode)
@@ -90,14 +91,15 @@ public static partial class Commands
     }
 
     [Help("仓库信息", "组织名", "仓库名")]
-    [HelpArgs(typeof(string), typeof(string))]
+    [CommandArgs(typeof(string), typeof(string))]
     private static async Task<MessageBuilder> GitHub(Bot bot, GroupMessageEvent group, TextChain text)
     {
         // UrlDownload the page
         try
         {
-            var args = text.Content.Split(' ');
-            _ = await bot.SendGroupMessage(group.GroupUin, Text("Fetching repository..."));
+            if (text.Content[6..].Trim().Split(' ') is not { Length: 2 } args)
+                return Text(ArgumentError);
+            _ = await bot.SendGroupMessage(group.GroupUin, Text("获取仓库中..."));
             var html = await $"https://github.com/{args[1]}/{args[2]}.git".UrlDownloadString();
             // Get meta data
             var metaData = html.GetMetaData("property");
@@ -115,11 +117,29 @@ public static partial class Commands
     }
 
     [Help("帮我选一个", "一些选项")]
-    [HelpArgs(typeof(string[]))]
+    [CommandArgs(typeof(string[]))]
     private static MessageBuilder Roll(TextChain text)
     {
         var items = text.Content[4..].Trim().Split(' ');
         return Text(items.Length < 2 ? "没有选项让我怎么选，笨！" : $"嗯让我想想ww......果然还是\"{items.RandomGet()}\"比较好！");
     }
 
+    [Help("获取图片", "指令")]
+    [CommandArgs(typeof(PicCommands))]
+    private static async Task<MessageBuilder> Pic(TextChain text)
+    {
+        var content = text.Content[3..].Trim().ToLower().Split(' ');
+        switch (content[0])
+        {
+            case "bing":
+                {
+                    var result = await "https://api.xygeng.cn/Bing/url".UrlDownloadString();
+                    result = Regex.Match(result, @"""(http[^""]+)""").Groups[1].Value;
+                    result = Regex.Unescape(result);
+                    return new MessageBuilder().Image(await result.UrlDownloadBytes());
+                }
+        }
+
+        return Text(ArgumentError);
+    }
 }

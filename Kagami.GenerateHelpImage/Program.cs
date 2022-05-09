@@ -7,11 +7,7 @@ using System.Text;
 using static Kagami.GenerateHelpImage.Methods.Color;
 using Args = System.Collections.ObjectModel.ReadOnlyCollection<System.Reflection.CustomAttributeTypedArgument>;
 
-
-
 var allText = new StringBuilder();
-
-
 
 foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | BindingFlags.Static))
     if (methodInfo.CustomAttributes.FirstOrDefault(t => t.AttributeType == typeof(HelpAttribute)) is { } help)
@@ -25,12 +21,12 @@ foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | 
         var commandLine = "";
         if (methodInfo.CustomAttributes.FirstOrDefault(t => t.AttributeType == typeof(PermissionAttribute)) is { } permission
             && (RoleType)permission.ConstructorArguments[0].Value! is var role and not RoleType.Member)
-            commandLine += role switch
+            commandLine += ("*需要" + role switch
             {
-                RoleType.Admin => "*需要管理员权限".Run(Comment) + "\n",
-                RoleType.Owner => "*需要群主权限".Run(Comment) + "\n",
+                RoleType.Admin => "管理员",
+                RoleType.Owner => "群主",
                 _ => throw new ArgumentOutOfRangeException()
-            };
+            } + "权限").Run(Comment) + "\n";
 
         commandLine += methodInfo.Name.ToLower().Run(Method);
         var commandArgs = new StringBuilder();
@@ -38,8 +34,8 @@ foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | 
 
         if (argsNames.Length is not 0
             && methodInfo.CustomAttributes
-                .FirstOrDefault(t => t.AttributeType == typeof(HelpArgsAttribute)) is { } helpArgs
-            && ((Args)helpArgs.ConstructorArguments[0].Value!).Select(t => (Type)t.Value!).ToArray() is { } argsTypes
+                .FirstOrDefault(t => t.AttributeType == typeof(CommandArgsAttribute)) is { } commandArgTypes
+            && ((Args)commandArgTypes.ConstructorArguments[0].Value!).Select(t => (Type)t.Value!).ToArray() is { } argsTypes
             && argsTypes.Length == argsNames.Length)
             for (var i = 0; i < argsTypes.Length; i++)
             {

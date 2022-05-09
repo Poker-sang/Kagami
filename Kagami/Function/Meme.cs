@@ -147,7 +147,7 @@ public static partial class Commands
     private const string Indexer = "1.idx";
 
     [Help("弔图相关", "指令", "期数")]
-    [HelpArgs(typeof(MemeCommands?), typeof(uint?))]
+    [CommandArgs(typeof(MemeCommands?), typeof(uint?))]
     private static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group, TextChain text)
     {
         var content = text.Content[4..].Trim().ToLower().Split(' ');
