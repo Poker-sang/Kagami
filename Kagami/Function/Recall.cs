@@ -48,7 +48,16 @@ public static partial class Commands
                             break;
                     }
 
-                _ = await bot.RecallMessage(messageStruct);
+                try
+                {
+                    _ = await bot.RecallMessage(messageStruct);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    _ = await bot.SendGroupMessage(group.GroupUin, Text("呜呜超过两分钟无法撤回了，麻烦联系管理员x"));
+                    return false;
+                }
                 return true;
             }
         }

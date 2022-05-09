@@ -27,8 +27,8 @@ foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | 
             && (RoleType)permission.ConstructorArguments[0].Value! is var role and not RoleType.Member)
             commandLine += role switch
             {
-                RoleType.Admin => "*需要管理员权限".Run(Comment, true) + "\n",
-                RoleType.Owner => "*需要群主权限".Run(Comment, true) + "\n",
+                RoleType.Admin => "*需要管理员权限".Run(Comment) + "\n",
+                RoleType.Owner => "*需要群主权限".Run(Comment) + "\n",
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -67,13 +67,13 @@ foreach (var methodInfo in typeof(Commands).GetMethods(BindingFlags.NonPublic | 
                 }
                 else records.AppendLine(type.Name.ToLower().Run(Class));
             }
-        allText
-            .Append(commandLine)
-            .Append(commandArgs.ToString().Run(Arg))
-            .AppendLine()
-            .AppendLine(summary.Run(Summary, true))
-            .Append(records)
-            .AppendLine();
+        allText.Append(commandLine);
+        if (commandArgs.Length is not 0)
+            allText.Append(commandArgs.ToString().Run(Arg));
+        allText.AppendLine().AppendLine(summary.Run(Summary));
+        if (records.Length is not 0)
+            allText.Append(records);
+        allText.AppendLine();
     }
 
 allText.Replace("\n", "<LineBreak/>\n");

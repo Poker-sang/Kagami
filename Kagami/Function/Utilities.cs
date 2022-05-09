@@ -12,7 +12,7 @@ public static partial class Commands
     private static MessageBuilder TextLine(this MessageBuilder message, string text = "") => message.Text("\n" + text);
 
     private static string ArgumentError => ArgumentErrorMessage.RandomGet();
-    private static readonly string[] ArgumentErrorMessage = { "参数不对哦", "请再检查一下参数", "没听懂欸", "嗯？" };
+    private static readonly string[] ArgumentErrorMessage = { "参数不对哦", "请再检查一下参数", "没听懂欸", "嗯？", "好笨，参数错了哦" };
     private static string UnknownError => UnknownErrorMessage.RandomGet();
     private static readonly string[] UnknownErrorMessage = { "咱也不知道出了什么问题", "呜呜失败了" };
     private static string OperationFailed => OperationFailedMessage.RandomGet();

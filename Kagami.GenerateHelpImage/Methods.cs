@@ -16,9 +16,17 @@ public static class Methods
         Method, Arg, Class, Summary, Comment
     }
 
-    public static string Run(this string text, Color color, bool useChineseFontFamily = false)
+    public static string Run(this string text, Color color)
     {
-        return $@"<Run FontFamily=""{(useChineseFontFamily ? ChineseFontFamily : EnglishFontFamily)}"" Foreground=""{color switch
+        return $@"<Run FontFamily=""{color switch
+        {
+            Color.Method => EnglishFontFamily,
+            Color.Arg => ChineseFontFamily,
+            Color.Class => EnglishFontFamily,
+            Color.Summary => ChineseFontFamily,
+            Color.Comment => ChineseFontFamily,
+            _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
+        }}"" Foreground=""{color switch
         {
             Color.Method => MethodColor,
             Color.Arg => ArgColor,

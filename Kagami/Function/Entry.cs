@@ -19,6 +19,9 @@ public static partial class Commands
         // Increase
         ++_messageCounter;
 
+        if (group.MemberUin == bot.Uin)
+            return;
+
         try
         {
             if (await TryRecall(bot, group))
