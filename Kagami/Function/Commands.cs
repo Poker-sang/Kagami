@@ -100,7 +100,7 @@ public static partial class Commands
             if (text.Content[6..].Trim().Split(' ') is not { Length: 2 } args)
                 return Text(ArgumentError);
             _ = await bot.SendGroupMessage(group.GroupUin, Text("获取仓库中..."));
-            var html = await $"https://github.com/{args[1]}/{args[2]}.git".UrlDownloadString();
+            var html = await $"https://github.com/{args[0]}/{args[1]}.git".UrlDownloadString();
             // Get meta data
             var metaData = html.GetMetaData("property");
             var imageMeta = metaData["og:image"];
@@ -118,11 +118,12 @@ public static partial class Commands
 
     [Help("帮我选一个", "一些选项")]
     [CommandArgs(typeof(string[]))]
-    private static MessageBuilder Roll(TextChain text)
+    private static MessageBuilder Roll(GroupMessageEvent group, TextChain text)
     {
         var items = text.Content[4..].Trim().Split(' ');
-        return Text(items.Length < 2 ? "没有选项让我怎么选，笨！" : $"嗯让我想想ww......果然还是\"{items.RandomGet()}\"比较好！");
+        return Text(items.Length < 2 ? "没有选项让我怎么选，笨！" : RollMessage.RandomGet().Replace("$", items.RandomGet()).Replace("扑克", group.MemberCard));
     }
+    private static readonly string[] RollMessage = { "嗯让我想想ww......果然还是$好！", "emmm我想选$吧x", "要不还是选$呢？", "就你了！$！" };
 
     [Help("获取图片", "指令")]
     [CommandArgs(typeof(PicCommands))]
