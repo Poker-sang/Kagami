@@ -72,7 +72,7 @@ public static partial class Commands
         if (text.Content[2..].Trim().Bv2Av() is not { } avCode)
             return Text("BV号不对哦");
         // UrlDownload the page
-        var html = await $"https://www.bilibili.com/video/{avCode}".UrlDownloadString();
+        var html = await $"https://www.bilibili.com/video/av{avCode}".UrlDownloadString();
         // Get meta data
         var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];

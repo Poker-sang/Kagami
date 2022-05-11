@@ -38,7 +38,7 @@ public static class Utilities
             var r = sed.Select((t, i) => chars[bvCode[t]] * (long)Math.Pow(table.Length, i)).Sum();
 
             var result = r - add ^ xor;
-            return result is > 10000000000 or < 0 ? "" : $"av{result}";
+            return result is > 10000000000 or < 0 ? "" : result.ToString();
         }
         catch
         {
