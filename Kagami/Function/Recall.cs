@@ -1,16 +1,36 @@
-﻿using Kagami.Utils;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using Kagami.Attributes;
+using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Kagami.Attributes;
 
 namespace Kagami.Function;
+
+internal static class ReplyChainExtension
+{
+    private static PropertyInfo[] Properties { get; } = typeof(ReplyChain).GetProperties(BindingFlags.NonPublic | BindingFlags.Instance);
+    private static PropertyInfo Uin { get; } = Properties.First(x => x.Name == nameof(Uin));
+    private static PropertyInfo Sequence { get; } = Properties.First(x => x.Name == nameof(Sequence));
+
+    internal static uint GetUin(this ReplyChain chain) => (uint)Uin.GetValue(chain)!;
+    internal static uint GetSequence(this ReplyChain chain) => (uint)Sequence.GetValue(chain)!;
+}
+
+internal static class MessageStructExtension
+{
+    private static PropertyInfo[] Properties { get; } = typeof(MessageStruct).GetProperties(BindingFlags.NonPublic | BindingFlags.Instance);
+    private static PropertyInfo Receiver { get; } = Properties.First(x => x.Name == nameof(Receiver));
+    private static PropertyInfo Sequence { get; } = Properties.First(x => x.Name == nameof(Sequence));
+
+    internal static void SetReceiver(this MessageStruct message, uint uin, string name = "") => Receiver.SetValue(message, (uin, name));
+    internal static void SetSequence(this MessageStruct message, uint value) => Sequence.SetValue(message, value);
+}
 
 public static partial class Commands
 {
@@ -22,34 +42,14 @@ public static partial class Commands
             if (group.Chain.FetchChains<TextChain>().All(t => !t.Content.ToLower().Contains("recall")))
                 return false;
 
-            var replyChainProperties = typeof(ReplyChain).GetProperties(BindingFlags.NonPublic | BindingFlags.Instance);
-            uint uin = 0;
-            uint sequence = 0;
-            foreach (var propertyInfo in replyChainProperties)
-                switch (propertyInfo.Name)
-                {
-                    case "Uin":
-                        uin = (uint)propertyInfo.GetValue(replyChain)!;
-                        break;
-                    case "Sequence":
-                        sequence = (uint)propertyInfo.GetValue(replyChain)!;
-                        break;
-                }
+            uint uin = replyChain.GetUin();
+            uint sequence = replyChain.GetSequence();
+
             if (uin == bot.Uin)
             {
                 var messageStruct = new MessageStruct(0, "", DateTime.Now);
-                var messageStructProperties = typeof(MessageStruct).GetProperties(BindingFlags.Public | BindingFlags.Instance) ?? throw new ArgumentNullException("typeof(MessageStruct).GetProperties(BindingFlags.Public | BindingFlags.Instance)");
-                foreach (var propertyInfo in messageStructProperties)
-                    switch (propertyInfo.Name)
-                    {
-                        case "Receiver":
-                            propertyInfo.SetValue(messageStruct, (group.GroupUin, ""));
-                            break;
-                        case "Sequence":
-                            propertyInfo.SetValue(messageStruct, sequence);
-                            break;
-                    }
-
+                messageStruct.SetReceiver(uin);
+                messageStruct.SetSequence(sequence);
                 try
                 {
                     _ = await bot.RecallMessage(messageStruct);
