@@ -1,4 +1,10 @@
-﻿using Kagami.ArgTypes;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Kagami.Utils;
 using Konata.Core;
@@ -7,11 +13,6 @@ using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using System;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Kagami.Function;
 
@@ -71,8 +72,24 @@ public static partial class Commands
     {
         if (text.Content[2..].Trim().Bv2Av() is not { } avCode)
             return Text("BV号不对哦");
+
+        return await Av(avCode);
+    }
+
+    [Help("展示视频信息", "av号")]
+    [CommandArgs(typeof(string))]
+    private static async Task<MessageBuilder> Av(TextChain text)
+    {
+        if (string.IsNullOrWhiteSpace(text.Content))
+            return Text("AV号不对哦");
+
+        return await Av(text.Content);
+    }
+
+    private static async Task<MessageBuilder> Av(string av)
+    {
         // UrlDownload the page
-        var html = await $"https://www.bilibili.com/video/av{avCode}".UrlDownloadString();
+        var html = await $"https://www.bilibili.com/video/{av}".UrlDownloadString();
         // Get meta data
         var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];
@@ -84,7 +101,58 @@ public static partial class Commands
 
         // Build message
         return Text($"{titleMeta}")
-            .TextLine($"https://www.bilibili.com/video/{avCode}")
+            .TextLine($"https://www.bilibili.com/video/{av}")
+            .TextLine()
+            .Image(image);
+        // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
+    }
+
+    [Help("展示视频信息", "ac号")]
+    [CommandArgs(typeof(string))]
+    private static async Task<MessageBuilder> Ac(TextChain text)
+    {
+        if (string.IsNullOrWhiteSpace(text.Content))
+            return Text("AC号不对哦");
+
+        return await Ac(text.Content);
+    }
+
+    private static async Task<MessageBuilder> Ac(string ac)
+    {
+        // UrlDownload the page
+        var html = await $"https://www.acfun.cn/v/{ac}".UrlDownloadString();
+        // Get meta data
+
+        string titleMeta = string.Empty;
+        string imageMeta = string.Empty;
+        string descriptionMeta = string.Empty;
+
+        // UrlDownload the image
+        const string flag = "window.pageInfo = window.videoInfo = ";
+        StringReader sr = new(html);
+        while (sr.Peek() >= 0)
+        {
+            var line = await sr.ReadLineAsync();
+            if (line?.Contains(flag) ?? false)
+            {
+                var raw_json = line.Replace(flag, string.Empty).Trim().TrimEnd(';');
+                var json = System.Text.Json.JsonDocument.Parse(raw_json);
+                if (json.RootElement.TryGetProperty("title", out var element))
+                    titleMeta = element.GetString() ?? string.Empty;
+                if (json.RootElement.TryGetProperty("description", out element))
+                    descriptionMeta = element.GetString() ?? string.Empty;
+                if (json.RootElement.TryGetProperty("coverUrl", out element))
+                    imageMeta = element.GetString() ?? string.Empty;
+                break;
+            }
+        }
+
+        var image = await imageMeta.UrlDownloadBytes();
+
+        // Build message
+        return Text($"{titleMeta}")
+            .TextLine(descriptionMeta)
+            .TextLine($"https://www.acfun.cn/v/{ac}")
             .TextLine()
             .Image(image);
         // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
