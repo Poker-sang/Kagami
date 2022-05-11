@@ -15,18 +15,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="..\.gitignore">
-			<Link>.gitignore</Link>
-		</Content>
-		<Content Include="..\LICENSE">
-			<Link>LICENSE</Link>
-		</Content>
-		<Content Include="..\README.md">
-			<Link>README.md</Link>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Kagami.SourceGenerator\Kagami.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
