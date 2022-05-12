@@ -68,7 +68,7 @@ public static partial class Commands
 
     [Help("展示视频信息", "BV号")]
     [CommandArgs(typeof(string))]
-    private static async Task<MessageBuilder> Bv(TextChain text)
+    public static async Task<MessageBuilder> Bv(TextChain text)
     {
         string bv = text.Content[2..].Trim();
         if (string.IsNullOrEmpty(bv.Bv2Av()))
