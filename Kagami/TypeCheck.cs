@@ -20,6 +20,7 @@ public static class TypeCheck
         { typeof(ArgTypes.PicCommands), Enum<ArgTypes.PicCommands> },
         { typeof(ArgTypes.At), At },
         { typeof(Konata.Core.Message.MessageChain), MessageChain },
+        { typeof(string[]), StringArray },
     };
     private static bool String([NotNullWhen(true)] in string raw!!, [NotNullWhen(true)] out object? obj, in GroupMessageEvent? group = null)
         => !string.IsNullOrWhiteSpace((obj = raw) as string);
@@ -45,6 +46,12 @@ public static class TypeCheck
     {
         obj = group?.Chain;
         return obj is Konata.Core.Message.MessageChain;
+    }
+
+    private static bool StringArray([NotNullWhen(true)] in string raw!!, [NotNullWhen(true)] out object? obj, in GroupMessageEvent? group)
+    {
+        obj = group?.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).Select(x => x.As<Konata.Core.Message.Model.TextChain>()!.Content).ToArray();
+        return obj is string[];
     }
 
     private static bool Set(this bool b, in object i!!, out object o)
