@@ -3,8 +3,22 @@ name: .NET
 on:
   push:
     branches: [ main ]
+    paths:
+      - "**/*.csproj"
+      - "**/*.xaml"
+      - "**/*.cs"
+      - "**/*.sln"
+      - ".github/workflows/dotnet.yml"
   pull_request:
     branches: [ main ]
+    types: 
+      - opened
+      - review_requested
+    paths:
+      - "**/*.csproj"
+      - "**/*.xaml"
+      - "**/*.cs"
+      - "**/*.sln"
 
 jobs:
   build:
@@ -13,13 +27,35 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+
+    - name: Cache .Nuget packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+          
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build --no-restore
+
     - name: Test
       run: dotnet test --no-build --verbosity normal
+
+    - name: Build Release
+      run: dotnet build --no-restore -c:Release
+
+
+    - name: Publish
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact
+        path: Kagami/bin/Release/net6.0/
