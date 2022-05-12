@@ -80,10 +80,11 @@ public static partial class Commands
     [CommandArgs(typeof(string))]
     private static async Task<MessageBuilder> Av(TextChain text)
     {
-        if (string.IsNullOrWhiteSpace(text.Content))
+        string av = text.Content[2..].Trim();
+        if (string.IsNullOrWhiteSpace(av))
             return Text("AV号不对哦");
 
-        return await Av(text.Content);
+        return await Av(av);
     }
 
     private static async Task<MessageBuilder> Av(string av)
@@ -111,10 +112,11 @@ public static partial class Commands
     [CommandArgs(typeof(string))]
     private static async Task<MessageBuilder> Ac(TextChain text)
     {
-        if (string.IsNullOrWhiteSpace(text.Content))
+        string ac = text.Content[2..].Trim();
+        if (string.IsNullOrWhiteSpace(ac))
             return Text("AC号不对哦");
 
-        return await Ac(text.Content);
+        return await Ac(ac);
     }
 
     private static async Task<MessageBuilder> Ac(string ac)
