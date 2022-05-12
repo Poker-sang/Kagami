@@ -83,19 +83,12 @@ public static class Kernel
         .TextLine($"总内存 {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB");
 
 
-    private static readonly string[] RollMessage = {
-        "嗯让我想想ww......果然还是{0}好！",
-        "emmm我想选{0}吧x",
-        "要不还是选{0}呢？",
-        "就你了！{0}！",
-    };
+
     public static async Task<MessageBuilder> RollAsync(params string[] items)
     {
         return new (
             items.Length < 2
                 ? "没有选项让我怎么选，笨！"
-                : string.Format(await RollMessage.RandomGetAsync(), await items.RandomGetAsync()));
+                : string.Format(await StringResources.RollMessage.RandomGetAsync(), await items.RandomGetAsync()));
     }
-    public static async Task<T> RandomGetAsync<T>(this IReadOnlyList<T> array)
-     => int.TryParse(await Dice.RollAsync(array.Count), out var index) ? array[index] : array[Random.Shared.Next(array.Count)];
 }
