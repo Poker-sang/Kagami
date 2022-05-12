@@ -35,6 +35,7 @@ public static class Entry
         { typeof(string), str=> !string.IsNullOrWhiteSpace(str) },
         { typeof(int), str => int.TryParse(str,out _) },
         { typeof(uint), str => uint.TryParse(str,out _) },
+        { typeof(ArgTypes.PicCommands), str => Enum.TryParse<ArgTypes.PicCommands>(str,true, out _) },
     };
 
     /// <summary>
