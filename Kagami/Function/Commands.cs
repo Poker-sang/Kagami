@@ -70,10 +70,11 @@ public static partial class Commands
     [CommandArgs(typeof(string))]
     private static async Task<MessageBuilder> Bv(TextChain text)
     {
-        if (text.Content[2..].Trim().Bv2Av() is not { } avCode)
+        string bv = text.Content[2..].Trim();
+        if (string.IsNullOrEmpty(bv.Bv2Av()))
             return Text("BV号不对哦");
 
-        return await Av(avCode);
+        return await GetFromBilibili(bv);
     }
 
     [Help("展示视频信息", "av号")]
@@ -84,13 +85,13 @@ public static partial class Commands
         if (string.IsNullOrWhiteSpace(av))
             return Text("AV号不对哦");
 
-        return await Av(av);
+        return await GetFromBilibili(av);
     }
 
-    private static async Task<MessageBuilder> Av(string av)
+    private static async Task<MessageBuilder> GetFromBilibili(string code)
     {
         // UrlDownload the page
-        var html = await $"https://www.bilibili.com/video/{av}".UrlDownloadString();
+        var html = await $"https://www.bilibili.com/video/{code}".UrlDownloadString();
         // Get meta data
         var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];
@@ -102,7 +103,7 @@ public static partial class Commands
 
         // Build message
         return Text($"{titleMeta}")
-            .TextLine($"https://www.bilibili.com/video/{av}")
+            .TextLine($"https://www.bilibili.com/video/{code}")
             .TextLine()
             .Image(image);
         // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
@@ -116,10 +117,10 @@ public static partial class Commands
         if (string.IsNullOrWhiteSpace(ac))
             return Text("AC号不对哦");
 
-        return await Ac(ac);
+        return await GetFromAcfun(ac);
     }
 
-    private static async Task<MessageBuilder> Ac(string ac)
+    private static async Task<MessageBuilder> GetFromAcfun(string ac)
     {
         // UrlDownload the page
         var html = await $"https://www.acfun.cn/v/{ac}".UrlDownloadString();
