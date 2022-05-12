@@ -47,7 +47,8 @@ public static class Program
         _bot.OnGroupPoke += Poke.OnGroupPoke;
 
         // Handle messages from group
-        _bot.OnGroupMessage += Commands.OnGroupMessage;
+        // TODO: 需要改掉这里的内容
+        _bot.OnGroupMessage += Function.Commands.OnGroupMessage;
 
         // Login the bot
         var result = await _bot.Login();
