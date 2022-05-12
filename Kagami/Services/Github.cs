@@ -22,13 +22,13 @@ public static class Github
             // if (text.Content[6..].Trim().Split(' ') is not { Length: 2 } args)
             //     return Text(ArgumentError);
             // _ = await bot.SendGroupMessage(group.GroupUin, Text("获取仓库中..."));
-            var html = await $"https://github.com/{owner}/{repo}.git".DownloadString();
+            var html = await $"https://github.com/{owner}/{repo}.git".DownloadStringAsync();
             // Get meta data
             var metaData = html.GetMetaData("property");
             var imageMeta = metaData["og:image"];
 
             // Build message
-            var image = await imageMeta.DownloadBytes();
+            var image = await imageMeta.DownloadBytesAsync();
             return new MessageBuilder().Image(image);
         }
         catch (HttpRequestException e)

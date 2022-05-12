@@ -14,7 +14,7 @@ public static class Dice
     /// <returns>以换行符分割的字符串</returns>
     public static Task<string> RollAsync(int num, int min, int max)
         => $"https://www.random.org/integers/?num={num}&min={min}&max={max}&col=1&base=10&format=plain&rnd=new"
-        .DownloadString();
+        .DownloadStringAsync();
 
     /// <summary>
     /// 投掷一次骰子

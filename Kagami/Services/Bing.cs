@@ -12,7 +12,7 @@ public static class Bing
 
     public static async Task<MessageBuilder> PictureAsync()
     {
-        JsonDocument json = JsonDocument.Parse(await (BASE_URI + IMAGE).DownloadString());
+        JsonDocument json = await (BASE_URI + IMAGE).DownloadJsonAsync();
         var obj = json.RootElement.GetProperty("images")[0];
         string uri = obj.GetProperty("url").GetString()!.TrimStart('/');
         var data = await (BASE_URI + uri).UrlDownloadBytes();

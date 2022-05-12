@@ -20,7 +20,7 @@ public static class AcFun
         Debug.WriteLine($"[{nameof(AcFun)}]::({nameof(GetVideoInfoFrom)}): Get From: \"{uri}\"");
 
         // UrlDownload the page
-        var html = await uri.DownloadString();
+        var html = await uri.DownloadStringAsync();
         // Get meta data
         string titleMeta = string.Empty;
         string imageMeta = string.Empty;
@@ -46,7 +46,7 @@ public static class AcFun
         }
 
         // UrlDownload the image
-        var image = await imageMeta.DownloadBytes();
+        var image = await imageMeta.DownloadBytesAsync();
 
         // Build message
         return new MessageBuilder($"{titleMeta}")

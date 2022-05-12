@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Kagami.Extesnions;
 
@@ -35,13 +36,17 @@ internal static class HttpClientExtensions
         return client;
     }
 
-    public static Task<string> DownloadString(this string uri, Dictionary<string, string>? header = null)
+    public static Task<string> DownloadStringAsync(this string uri, Dictionary<string, string>? header = null)
         => Client.InitializeHeader(header).GetStringAsync(uri);
 
-    public static Task<Stream> DownloadStream(this string uri, Dictionary<string, string>? header = null)
+    public static Task<Stream> DownloadStreamAsync(this string uri, Dictionary<string, string>? header = null)
         => Client.InitializeHeader(header).GetStreamAsync(uri);
 
-    public static Task<byte[]> DownloadBytes(this string uri, Dictionary<string, string>? header = null)
+    public static Task<byte[]> DownloadBytesAsync(this string uri, Dictionary<string, string>? header = null)
         => Client.InitializeHeader(header).GetByteArrayAsync(uri);
+
+    public static async Task<JsonDocument> DownloadJsonAsync(this string uri, Dictionary<string, string>? header = null)
+        => await JsonDocument.ParseAsync(await uri.DownloadStreamAsync(header));
+
 
 }
