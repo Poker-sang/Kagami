@@ -9,30 +9,25 @@ namespace Kagami.Commands;
 /// <summary>
 /// <inheritdoc/>
 /// </summary>
-public sealed class MuteCommand : IKagamiCommand
+public sealed class TitleCommand : IKagamiCommand
 {
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public string Command { get; } = "mute";
+    public string Command { get; } = "title";
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public string Description { get; } = "禁言成员";
+    public string Description { get; } = "赋予头衔";
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
     public (Type, string)[] Arguments { get; } = new[] {
         (typeof(ArgTypes.At), "成员"),
-        (typeof(uint), "时间(分钟)")
+        (typeof(string), "头衔")
     };
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    public int ArgumentCount => 1;
 
     /// <summary>
     /// <inheritdoc/>
@@ -46,20 +41,18 @@ public sealed class MuteCommand : IKagamiCommand
         if (args[0] is not ArgTypes.At at)
             return new(await StringResources.ArgumentErrorMessage.RandomGetAsync());
 
-        // Parse time
-        var time = 10U;
-        if (args.Length > 1)
-            time = (uint)args[1];
+        if (args[0] is not string title)
+            return new(await StringResources.ArgumentErrorMessage.RandomGetAsync());
 
         try
         {
-            if (await bot.GroupMuteMember(group.GroupUin, at.Uin, time * 60))
-                return new($"禁言 [{at.Uin}] {time}分钟");
+            if (await bot.GroupSetSpecialTitle(group.GroupUin, at.Uin, title.Trim(), uint.MaxValue))
+                return new($"为 [{at.Uin}] 设置头衔");
             return new(await StringResources.UnknownErrorMessage.RandomGetAsync());
         }
         catch (OperationFailedException e)
         {
-            Console.WriteLine(e.Message);
+            Console.WriteLine($"{e.Message} ({e.HResult})");
             return new(await StringResources.OperationFailedMessage.RandomGetAsync());
         }
     }

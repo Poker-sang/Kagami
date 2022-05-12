@@ -32,9 +32,4 @@ public sealed class PicCommand : IKagamiCommand
         ArgTypes.PicCommands.Bing => await Services.Bing.PictureAsync(),
         _ => new(await StringResources.ArgumentErrorMessage.RandomGetAsync()),
     };
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    public CommandType CommandType => CommandType.Prefix;
 }
