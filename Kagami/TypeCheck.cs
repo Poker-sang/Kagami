@@ -19,6 +19,7 @@ public static class TypeCheck
         { typeof(uint), UInt32 },
         { typeof(ArgTypes.PicCommands), Enum<ArgTypes.PicCommands> },
         { typeof(ArgTypes.At), At },
+        { typeof(Konata.Core.Message.MessageChain), MessageChain },
     };
     private static bool String([NotNullWhen(true)] in string raw!!, [NotNullWhen(true)] out object? obj, in GroupMessageEvent? group = null)
         => !string.IsNullOrWhiteSpace((obj = raw) as string);
@@ -32,17 +33,18 @@ public static class TypeCheck
 
     private static bool At([NotNullWhen(true)] in string raw!!, [NotNullWhen(true)] out object? obj, in GroupMessageEvent? group)
     {
-        switch (group)
-        {
-            case not null
-                when group.Chain.FirstOrDefault(x => x.Type is Konata.Core.Message.BaseChain.ChainType.At)
-                    is Konata.Core.Message.Model.AtChain atChain:
-                obj = atChain.AsAt();
-                return true;
-            default:
-                obj = null;
-                return false;
-        }
+        obj = group
+            ?.Chain
+            .FirstOrDefault(x => x.Type is Konata.Core.Message.BaseChain.ChainType.At)
+            ?.As<Konata.Core.Message.Model.AtChain>()
+            ?.AsAt();
+        return obj is ArgTypes.At;
+    }
+
+    private static bool MessageChain([NotNullWhen(true)] in string raw!!, [NotNullWhen(true)] out object? obj, in GroupMessageEvent? group)
+    {
+        obj = group?.Chain;
+        return obj is Konata.Core.Message.MessageChain;
     }
 
     private static bool Set(this bool b, in object i!!, out object o)
