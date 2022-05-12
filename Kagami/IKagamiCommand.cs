@@ -34,7 +34,7 @@ public interface IKagamiCommand
     /// <summary>
     /// 命令的参数列表
     /// </summary>
-    ValueTuple<Type, string>[] Arguments { get; }
+    ValueTuple<Type, string>[] Arguments => Array.Empty<ValueTuple<Type, string>>();
 
     /// <summary>
     /// 命令需要的最少参数
