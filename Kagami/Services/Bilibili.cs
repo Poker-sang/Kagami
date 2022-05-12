@@ -20,7 +20,7 @@ public static class Bilibili
         Debug.WriteLine($"[{nameof(Bilibili)}]::({nameof(GetVideoInfoFrom)}): Get From: \"{uri}\"");
 
         // UrlDownload the page
-        var html = await $"https://www.bilibili.com/video/{code}".DownloadString();
+        var html = await uri.DownloadString();
         // Get meta data
         var metaData = html.GetMetaData("itemprop");
         var titleMeta = metaData["description"];
@@ -32,7 +32,7 @@ public static class Bilibili
 
         // Build message
         return new MessageBuilder($"{titleMeta}")
-            .TextLine($"https://www.bilibili.com/video/{code}")
+            .TextLine(uri)
             .TextLine()
             .Image(image);
         // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
