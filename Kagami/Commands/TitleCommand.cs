@@ -41,7 +41,7 @@ public sealed class TitleCommand : IKagamiCommand
         if (args[0] is not ArgTypes.At at)
             return new(await StringResources.ArgumentErrorMessage.RandomGetAsync());
 
-        if (args[0] is not string title)
+        if (args[1] is not string title)
             return new(await StringResources.ArgumentErrorMessage.RandomGetAsync());
 
         try
