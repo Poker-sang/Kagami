@@ -5,7 +5,7 @@ namespace Kagami.Commands;
 /// <summary>
 /// <inheritdoc/>
 /// </summary>
-public sealed class PingCommand : IKagamiCommand
+public sealed class Ping : IKagamiCmdlet
 {
     /// <summary>
     /// <inheritdoc/>

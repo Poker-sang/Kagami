@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Konata.Core.Message;
-using Konata.Core.Message.Model;
+﻿using Konata.Core.Message;
 
 namespace Kagami;
 
@@ -14,7 +8,7 @@ namespace Kagami;
 /// <remarks>
 /// 表示这是一个可用的命令
 /// </remarks>
-public interface IKagamiCommand
+public interface IKagamiCmdlet
 {
     /// <summary>
     /// 命令的标识
@@ -34,12 +28,12 @@ public interface IKagamiCommand
     /// <summary>
     /// 命令的参数列表
     /// </summary>
-    ValueTuple<Type, string>[] Arguments => Array.Empty<ValueTuple<Type, string>>();
+    (Type Type, string Description)[][] OverloadableArgumentList => Array.Empty<ValueTuple<Type, string>[]>();
 
     /// <summary>
     /// 命令需要的最少参数
     /// </summary>
-    int ArgumentCount => Arguments.Length;
+    int ArgumentCount => OverloadableArgumentList[0].Length;
 
     /// <summary>
     /// 执行命令

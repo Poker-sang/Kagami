@@ -5,7 +5,7 @@ namespace Kagami.Commands;
 /// <summary>
 /// 从Acfun通过ac号获取视频信息
 /// </summary>
-public sealed class AcCommand : IKagamiCommand
+public sealed class Ac : IKagamiCmdlet
 {
     /// <summary>
     /// <inheritdoc/>
@@ -20,9 +20,9 @@ public sealed class AcCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type, string)[] Arguments { get; } = new[] {
+    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
         (typeof(uint), "ac号")
-    };
+    }};
 
     /// <summary>
     /// <inheritdoc/>

@@ -5,7 +5,7 @@ namespace Kagami.Commands;
 /// <summary>
 /// 获取图片
 /// </summary>
-public sealed class PicCommand : IKagamiCommand
+public sealed class Pic : IKagamiCmdlet
 {
     /// <summary>
     /// <inheritdoc/>
@@ -20,9 +20,9 @@ public sealed class PicCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type, string)[] Arguments { get; } = new[] {
+    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
         (typeof(ArgTypes.PicCommands), "来源")
-    };
+    }};
 
     /// <summary>
     /// <inheritdoc/>

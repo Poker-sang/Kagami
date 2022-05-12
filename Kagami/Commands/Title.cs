@@ -9,7 +9,7 @@ namespace Kagami.Commands;
 /// <summary>
 /// <inheritdoc/>
 /// </summary>
-public sealed class TitleCommand : IKagamiCommand
+public sealed class Title : IKagamiCmdlet
 {
     /// <summary>
     /// <inheritdoc/>
@@ -24,10 +24,10 @@ public sealed class TitleCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type, string)[] Arguments { get; } = new[] {
+    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
         (typeof(ArgTypes.At), "成员"),
         (typeof(string), "头衔")
-    };
+    }};
 
     /// <summary>
     /// <inheritdoc/>

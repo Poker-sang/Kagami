@@ -16,17 +16,17 @@ public static class Entry
     /// <summary>
     /// 通过反射获取所有可用命令
     /// </summary>
-    public static Dictionary<CommandType, HashSet<IKagamiCommand>> Commands { get; }
+    public static Dictionary<CommandType, HashSet<IKagamiCmdlet>> Commands { get; }
         = AppDomain
             .CurrentDomain
             .GetAssemblies()
             .SelectMany(asm => asm.GetTypes())
-            .Where(t => t.GetInterfaces().Contains(typeof(IKagamiCommand)))
-            .Select(t => (IKagamiCommand)Activator.CreateInstance(t)!)
+            .Where(t => t.GetInterfaces().Contains(typeof(IKagamiCmdlet)))
+            .Select(t => (IKagamiCmdlet)Activator.CreateInstance(t)!)
             .GroupBy(o => o.CommandType)
             .ToDictionary(
                 group => group.Key,
-                group => new HashSet<IKagamiCommand>(group));
+                group => new HashSet<IKagamiCmdlet>(group));
 
     /// <summary>
     /// 给机器人挂事件的入口
@@ -52,7 +52,7 @@ public static class Entry
         string[] args = SplitCommand(raw);
         string cmd = args[0]; // 获取第一个元素用作命令
 
-        if (Commands.TryGetValue(CommandType.Normal, out HashSet<IKagamiCommand>? set))
+        if (Commands.TryGetValue(CommandType.Normal, out HashSet<IKagamiCmdlet>? set))
             return await ParseNormalCommand(cmd, args, set);
         else if (Commands.TryGetValue(CommandType.Prefix, out set))
             return await ParsePrefixCommand(cmd, args, set);
@@ -68,23 +68,46 @@ public static class Entry
     /// <exception cref="ArgumentException">断言工具抛出</exception>
     /// <exception cref="KeyNotFoundException">当类型检查器不存在时抛出此异常</exception>
     /// <returns></returns>
-    private static async Task<MessageBuilder?> InvokeCommand(IKagamiCommand command!!, string[] args!!, Bot? bot = null, GroupMessageEvent? group = null)
+    private static async Task<MessageBuilder?> InvokeCommand(IKagamiCmdlet command!!, string[] args!!, Bot? bot = null, GroupMessageEvent? group = null)
+    {
+        try
+        {
+            return await command.InvokeAsync(bot, group, ParseArguments(command, args, group));
+        }
+        catch(Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return new MessageBuilder(ex.GetType().FullName)
+                .TextLine(ex.Message);
+        }
+    }
+
+    private static object[] ParseArguments(IKagamiCmdlet command!!, string[] args!!, GroupMessageEvent? group = null)
     {
         object[] tArgs = new object[args.Length];
 
         Assert.ThrowIfNot<ArgumentException>(args.Length >= command.ArgumentCount, "不满足最少所需要的参数数量");
 
-        for (int i = 0; i < command.Arguments.Length && i < args.Length; i++)
+        for (int j = 0; j < command.OverloadableArgumentList.Length; j++)
         {
-            if (!TypeCheck.Map[command.Arguments[i].Item1](in args[i], out object? obj, in group))
+            var ArgumentList = command.OverloadableArgumentList[j];
+            bool pass = true;
+            for (int i = 0; i < ArgumentList.Length && i < args.Length; i++)
             {
-                Assert.ThrowIf<ArgumentException>(true, $"参数类型不正确, 需要类型: \"{command.Arguments[i].Item1.Name}\"", $"arg{i}");
-                break;
+                (Type Type, string Description) = ArgumentList[i];
+                if (!TypeCheck.Map[Type](in args[i], out object? obj, in group))
+                {
+                    pass = false;
+                    break;
+                }
+                tArgs[i] = obj;
             }
-            tArgs[i] = obj;
+
+            if (pass)
+                return tArgs;
         }
 
-        return await command.InvokeAsync(bot, group, tArgs);
+        throw new InvalidOperationException("找不到合适的cmdlet重载");
     }
 
     /// <summary>
@@ -94,7 +117,7 @@ public static class Entry
     /// <param name="args">命令参数</param>
     /// <param name="set">命令字典</param>
     /// <returns></returns>
-    private static async Task<MessageBuilder?> ParseNormalCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCommand> set!!, Bot? bot = null, GroupMessageEvent? group = null)
+    private static async Task<MessageBuilder?> ParseNormalCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCmdlet> set!!, Bot? bot = null, GroupMessageEvent? group = null)
     {
         if (string.IsNullOrEmpty(sz_cmd))
             throw new ArgumentException($"“{nameof(sz_cmd)}”不能为 null 或空。", nameof(sz_cmd));
@@ -113,7 +136,7 @@ public static class Entry
         // 匹配命令
         if (set.FirstOrDefault(cmd => sz_cmd.Equals(cmd.Command, cmd.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal)) is not IKagamiCommand command)
+            : StringComparison.Ordinal)) is not IKagamiCmdlet command)
             return null; // 找不到匹配的命令
 
         args = args.Skip(1).ToArray(); // 跳过用于表示命令的第一个元素
@@ -128,7 +151,7 @@ public static class Entry
     /// <param name="args"> 命令参数 </param>
     /// <param name="set"> 命令字典 </param>
     /// <returns> </returns>
-    private static async Task<MessageBuilder?> ParsePrefixCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCommand> set!!, Bot? bot = null, GroupMessageEvent? group = null)
+    private static async Task<MessageBuilder?> ParsePrefixCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCmdlet> set!!, Bot? bot = null, GroupMessageEvent? group = null)
     {
         if (string.IsNullOrEmpty(sz_cmd))
             throw new ArgumentException($"“{nameof(sz_cmd)}”不能为 null 或空。", nameof(sz_cmd));
@@ -136,7 +159,7 @@ public static class Entry
         // 匹配命令
         if (set.FirstOrDefault(cmd => sz_cmd.StartsWith(cmd.Command, cmd.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal)) is not IKagamiCommand command)
+            : StringComparison.Ordinal)) is not IKagamiCmdlet command)
             return null; // 找不到匹配的命令
 
         args[0] = sz_cmd[command.Command.Length..]; // 首个参数需要跳过前缀

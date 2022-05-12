@@ -11,7 +11,7 @@ namespace Kagami.Commands;
 /// <summary>
 /// 从Bilibili通过BV号获取视频信息
 /// </summary>
-public sealed class BvCommand : IKagamiCommand
+public sealed class Bv : IKagamiCmdlet
 {
     /// <summary>
     /// <inheritdoc/>
@@ -26,9 +26,9 @@ public sealed class BvCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type, string)[] Arguments { get; } = new[] {
+    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
         (typeof(string), "BV号")
-    };
+    }};
 
     /// <summary>
     /// <inheritdoc/>

@@ -9,7 +9,7 @@ namespace Kagami.Commands;
 /// <summary>
 /// <inheritdoc/>
 /// </summary>
-public sealed class MuteCommand : IKagamiCommand
+public sealed class Mute : IKagamiCmdlet
 {
     /// <summary>
     /// <inheritdoc/>
@@ -24,10 +24,10 @@ public sealed class MuteCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type, string)[] Arguments { get; } = new[] {
+    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
         (typeof(ArgTypes.At), "成员"),
         (typeof(uint), "时间(分钟)")
-    };
+    }};
 
     /// <summary>
     /// <inheritdoc/>

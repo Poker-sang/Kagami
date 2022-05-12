@@ -11,7 +11,7 @@ namespace Kagami.Commands;
 /// <summary>
 /// 从Bilibili通过av号获取视频信息
 /// </summary>
-public sealed class AvCommand : IKagamiCommand
+public sealed class Av : IKagamiCmdlet
 {
     /// <summary>
     /// <inheritdoc/>
@@ -26,9 +26,9 @@ public sealed class AvCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type, string)[] Arguments { get; } = new[] {
+    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
         (typeof(uint), "av号")
-    };
+    }};
 
     /// <summary>
     /// <inheritdoc/>
