@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -13,6 +14,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using Wolfram.NETLink;
 
 namespace Kagami.Function;
 
@@ -70,7 +72,8 @@ public static partial class Commands
     [CommandArgs(typeof(string))]
     public static async Task<MessageBuilder> Bv(TextChain text)
     {
-        string bv = text.Content[2..].Trim();
+        var bv = text.Content[2..].Trim();
+
         if (string.IsNullOrEmpty(bv.Bv2Av()))
             return Text("BV号不对哦");
 
@@ -213,5 +216,24 @@ public static partial class Commands
         }
 
         return Text(ArgumentError);
+    }
+
+    [Help("用Mathematica计算", "Mathematica语句")]
+    public static async Task<MessageBuilder> Mma(TextChain text)
+    {
+        return Text("爪巴");
+        await Task.Yield();
+        var command = text.Content[3..].Trim();
+        var ml = MathLinkFactory.CreateKernelLink();
+        try
+        {
+            ml.WaitAndDiscardAnswer();
+            return Text(ml.EvaluateToInputForm(command, 0));
+        }
+        finally
+        {
+            ml.Close();
+        }
+        return null;
     }
 }
