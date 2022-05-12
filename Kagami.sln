@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.GenerateHelpImage", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.HelpDisplay", "Kagami.HelpDisplay\Kagami.HelpDisplay.csproj", "{CDD2A1EF-6E87-40C3-8A1A-7964F7DD7F4E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kagami.Test", "Kagami.Test\Kagami.Test.csproj", "{771325FB-9825-4327-8C7D-47B9D9EA6A56}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Folder", "Solution Folder", "{65A4AAE9-42BF-46B6-B739-3147BEC83808}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -40,6 +42,10 @@ Global
 		{CDD2A1EF-6E87-40C3-8A1A-7964F7DD7F4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDD2A1EF-6E87-40C3-8A1A-7964F7DD7F4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDD2A1EF-6E87-40C3-8A1A-7964F7DD7F4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{771325FB-9825-4327-8C7D-47B9D9EA6A56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{771325FB-9825-4327-8C7D-47B9D9EA6A56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{771325FB-9825-4327-8C7D-47B9D9EA6A56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{771325FB-9825-4327-8C7D-47B9D9EA6A56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

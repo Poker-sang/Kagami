@@ -78,7 +78,7 @@ public static partial class Commands
 
     [Help("展示视频信息", "av号")]
     [CommandArgs(typeof(string))]
-    private static async Task<MessageBuilder> Av(TextChain text)
+    public static async Task<MessageBuilder> Av(TextChain text)
     {
         string av = text.Content[2..].Trim();
         if (string.IsNullOrWhiteSpace(av))
@@ -110,7 +110,7 @@ public static partial class Commands
 
     [Help("展示视频信息", "ac号")]
     [CommandArgs(typeof(string))]
-    private static async Task<MessageBuilder> Ac(TextChain text)
+    public static async Task<MessageBuilder> Ac(TextChain text)
     {
         string ac = text.Content[2..].Trim();
         if (string.IsNullOrWhiteSpace(ac))
