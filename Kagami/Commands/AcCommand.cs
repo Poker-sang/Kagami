@@ -27,7 +27,7 @@ public sealed class AcCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public Task<MessageBuilder> InvokeAsync(string[] args)
+    public Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args)
         => Services.AcFun.GetVideoInfoFrom($"ac{args[0]}");
 
     /// <summary>

@@ -33,7 +33,7 @@ public sealed class AvCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public Task<MessageBuilder> InvokeAsync(string[] args)
+    public Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args)
         => Services.Bilibili.GetVideoInfoFrom($"av{args[0]}");
 
     /// <summary>

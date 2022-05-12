@@ -1,6 +1,3 @@
 ﻿namespace Kagami.ArgTypes;
 
-public struct At
-{
-
-}
+public sealed record class At(uint Uin);

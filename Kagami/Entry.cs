@@ -7,6 +7,7 @@ using Konata.Core.Message.Model;
 
 namespace Kagami;
 
+
 /// <summary>
 /// 入口
 /// </summary>
@@ -28,17 +29,6 @@ public static class Entry
                 group => new HashSet<IKagamiCommand>(group));
 
     /// <summary>
-    /// 类型检查器字典
-    /// </summary>
-    public static Dictionary<Type, Func<string, bool>> TypeCheck { get; } = new()
-    {
-        { typeof(string), str=> !string.IsNullOrWhiteSpace(str) },
-        { typeof(int), str => int.TryParse(str,out _) },
-        { typeof(uint), str => uint.TryParse(str,out _) },
-        { typeof(ArgTypes.PicCommands), str => Enum.TryParse<ArgTypes.PicCommands>(str,true, out _) },
-    };
-
-    /// <summary>
     /// 给机器人挂事件的入口
     /// </summary>
     /// <param name="bot"></param>
@@ -46,7 +36,7 @@ public static class Entry
     /// <returns></returns>
     public static async Task<MessageBuilder?> ParseCommand(Bot bot!!, GroupMessageEvent group!!)
     {
-        return group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content) : null;
+        return group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
     }
 
     /// <summary>
@@ -54,7 +44,7 @@ public static class Entry
     /// </summary>
     /// <param name="raw">原始字符串</param>
     /// <returns></returns>
-    public static async Task<MessageBuilder?> ParseCommand(string raw)
+    public static async Task<MessageBuilder?> ParseCommand(string raw, Bot? bot = null, GroupMessageEvent? group = null)
     {
         if (string.IsNullOrWhiteSpace(raw))
             throw new ArgumentException($"“{nameof(raw)}”不能为 null 或空白。", nameof(raw));
@@ -78,23 +68,23 @@ public static class Entry
     /// <exception cref="ArgumentException">断言工具抛出</exception>
     /// <exception cref="KeyNotFoundException">当类型检查器不存在时抛出此异常</exception>
     /// <returns></returns>
-    private static async Task<MessageBuilder?> InvokeCommand(IKagamiCommand command!!, string[] args!!)
+    private static async Task<MessageBuilder?> InvokeCommand(IKagamiCommand command!!, string[] args!!, Bot? bot = null, GroupMessageEvent? group = null)
     {
-        bool pass = true;
+        object[] tArgs = new object[args.Length];
 
         Assert.ThrowIfNot<ArgumentException>(args.Length >= command.ArgumentCount, "不满足最少所需要的参数数量");
 
         for (int i = 0; i < command.Arguments.Length && i < args.Length; i++)
         {
-            if (!TypeCheck[command.Arguments[i].Item1](args[i]))
+            if (!TypeCheck.Map[command.Arguments[i].Item1](in args[i], out object? obj, in group))
             {
-                pass = false;
+                Assert.ThrowIf<ArgumentException>(true, $"参数类型不正确, 需要类型: \"{command.Arguments[i].Item1.Name}\"", $"arg{i}");
                 break;
             }
+            tArgs[i] = obj;
         }
-        Assert.ThrowIfNot<ArgumentException>(pass, "参数类型不正确");
 
-        return await command.InvokeAsync(args);
+        return await command.InvokeAsync(bot, group, tArgs);
     }
 
     /// <summary>
@@ -104,7 +94,7 @@ public static class Entry
     /// <param name="args">命令参数</param>
     /// <param name="set">命令字典</param>
     /// <returns></returns>
-    private static async Task<MessageBuilder?> ParseNormalCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCommand> set!!)
+    private static async Task<MessageBuilder?> ParseNormalCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCommand> set!!, Bot? bot = null, GroupMessageEvent? group = null)
     {
         if (string.IsNullOrEmpty(sz_cmd))
             throw new ArgumentException($"“{nameof(sz_cmd)}”不能为 null 或空。", nameof(sz_cmd));
@@ -138,7 +128,7 @@ public static class Entry
     /// <param name="args"> 命令参数 </param>
     /// <param name="set"> 命令字典 </param>
     /// <returns> </returns>
-    private static async Task<MessageBuilder?> ParsePrefixCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCommand> set!!)
+    private static async Task<MessageBuilder?> ParsePrefixCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCommand> set!!, Bot? bot = null, GroupMessageEvent? group = null)
     {
         if (string.IsNullOrEmpty(sz_cmd))
             throw new ArgumentException($"“{nameof(sz_cmd)}”不能为 null 或空。", nameof(sz_cmd));

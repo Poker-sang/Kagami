@@ -1,10 +1,10 @@
-﻿using Konata.Core.Message;
-using Konata.Core.Message.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Konata.Core.Message;
+using Konata.Core.Message.Model;
 
 namespace Kagami;
 
@@ -46,7 +46,7 @@ public interface IKagamiCommand
     /// </summary>
     /// <param name="args">参数</param>
     /// <returns><seealso cref="MessageBuilder"/></returns>
-    Task<MessageBuilder> InvokeAsync(string[] args);
+    Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args);
 
     /// <summary>
     /// 命令的激活方式

@@ -1,10 +1,10 @@
-﻿using Konata.Core.Message;
-using Konata.Core.Message.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Konata.Core.Message;
+using Konata.Core.Message.Model;
 
 namespace Kagami.Commands;
 
@@ -33,7 +33,7 @@ public sealed class BvCommand : IKagamiCommand
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public Task<MessageBuilder> InvokeAsync(string[] args)
+    public Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args)
         => Services.Bilibili.GetVideoInfoFrom($"BV{args[0]}");
 
     /// <summary>
