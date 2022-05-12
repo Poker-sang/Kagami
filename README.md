@@ -2,6 +2,10 @@
 
 用 [Konata.Core](https://github.com/KonataDev/Konata.Core) 框架搭建的QQ机器人
 
+|构建状态|
+|:-:|
+|[![.NET](https://github.com/Poker-sang/Kagami/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Poker-sang/Kagami/actions/workflows/dotnet.yml)|
+
 ![C#](https://img.shields.io/badge/C%23-latest-green)
 [License](https://img.shields.io/static/v1?label=LICENSE&message=GNU%20GPLv3&color=lightrey)
 <img width="20" src="https://github.com/KonataDev/Konata.Core/raw/main/Resources/konata_icon_512_round64.png">
