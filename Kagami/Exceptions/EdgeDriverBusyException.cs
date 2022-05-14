@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kagami.Exceptions;
+﻿namespace Kagami.Exceptions;
 
 public class EdgeDriverBusyException : Exception
 {

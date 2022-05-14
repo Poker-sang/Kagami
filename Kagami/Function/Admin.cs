@@ -8,9 +8,6 @@ using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Kagami.Function;
 

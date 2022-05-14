@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kagami.Attributes;
+﻿namespace Kagami.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public class GenerateHelpAttribute : Attribute

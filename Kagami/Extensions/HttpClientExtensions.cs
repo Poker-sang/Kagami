@@ -47,6 +47,4 @@ internal static class HttpClientExtensions
 
     public static async Task<JsonDocument> DownloadJsonAsync(this string uri, Dictionary<string, string>? header = null)
         => await JsonDocument.ParseAsync(await uri.DownloadStreamAsync(header));
-
-
 }

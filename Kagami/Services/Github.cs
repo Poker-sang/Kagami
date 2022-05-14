@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Kagami.Utils;
 using Konata.Core.Message;
 
@@ -34,7 +33,7 @@ public static class Github
         catch (HttpRequestException e)
         {
             Console.WriteLine($"Not a repository link. \n{e.Message}");
-            return new ("不是一个仓库链接");
+            return new("不是一个仓库链接");
         }
     }
 }

@@ -2,7 +2,6 @@
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
-using System;
 
 namespace Kagami.Function;
 

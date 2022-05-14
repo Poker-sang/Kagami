@@ -1,12 +1,11 @@
-﻿using System.Text;
-using Kagami.Utils;
+﻿using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using System.Text;
 
 namespace Kagami;
-
 
 /// <summary>
 /// 入口
@@ -34,7 +33,7 @@ public static class Entry
     /// <param name="bot"></param>
     /// <param name="group"></param>
     /// <returns></returns>
-    public static async Task<MessageBuilder?> ParseCommand(Bot bot!!, GroupMessageEvent group!!)
+    public static async Task<MessageBuilder?> ParseCommand(Bot bot, GroupMessageEvent group)
     {
         return group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
     }
@@ -44,7 +43,7 @@ public static class Entry
     /// </summary>
     /// <param name="raw">原始字符串</param>
     /// <returns></returns>
-    public static async Task<MessageBuilder?> ParseCommand(string raw, Bot? bot = null, GroupMessageEvent? group = null)
+    public static async Task<MessageBuilder?> ParseCommand(string raw, Bot bot, GroupMessageEvent group)
     {
         if (string.IsNullOrWhiteSpace(raw))
             throw new ArgumentException($"“{nameof(raw)}”不能为 null 或空白。", nameof(raw));
@@ -52,10 +51,10 @@ public static class Entry
         string[] args = SplitCommand(raw);
         string cmd = args[0]; // 获取第一个元素用作命令
 
-        if (Commands.TryGetValue(CommandType.Normal, out HashSet<IKagamiCmdlet>? set))
-            return await ParseNormalCommand(cmd, args, set);
+        if (Commands.TryGetValue(CommandType.Normal, out var set))
+            return await ParseNormalCommand(cmd, args, set, bot, group);
         else if (Commands.TryGetValue(CommandType.Prefix, out set))
-            return await ParsePrefixCommand(cmd, args, set);
+            return await ParsePrefixCommand(cmd, args, set, bot, group);
         else
             return null;
     }
@@ -68,13 +67,13 @@ public static class Entry
     /// <exception cref="ArgumentException">断言工具抛出</exception>
     /// <exception cref="KeyNotFoundException">当类型检查器不存在时抛出此异常</exception>
     /// <returns></returns>
-    private static async Task<MessageBuilder?> InvokeCommand(IKagamiCmdlet command!!, string[] args!!, Bot? bot = null, GroupMessageEvent? group = null)
+    private static async Task<MessageBuilder?> InvokeCommand(IKagamiCmdlet command, string[] args, Bot bot, GroupMessageEvent group)
     {
         try
         {
             return await command.InvokeAsync(bot, group, ParseArguments(command, args, group));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Console.Error.WriteLine(ex);
             return new MessageBuilder(ex.GetType().FullName)
@@ -82,17 +81,17 @@ public static class Entry
         }
     }
 
-    private static object[] ParseArguments(IKagamiCmdlet command!!, string[] args!!, GroupMessageEvent? group = null)
+    private static object[] ParseArguments(IKagamiCmdlet command, string[] args, GroupMessageEvent group)
     {
-        object[] tArgs = new object[args.Length];
-
         Assert.ThrowIfNot<ArgumentException>(args.Length >= command.ArgumentCount, "不满足最少所需要的参数数量");
 
-        for (int j = 0; j < command.OverloadableArgumentList.Length; j++)
+        var tArgs = new object[args.Length];
+
+        for (int j = 0; j < command.OverloadableArgumentList.Length; ++j)
         {
             var ArgumentList = command.OverloadableArgumentList[j];
             bool pass = true;
-            for (int i = 0; i < ArgumentList.Length && i < args.Length; i++)
+            for (int i = 0; i < ArgumentList.Length && i < args.Length; ++i)
             {
                 (Type Type, string Description) = ArgumentList[i];
                 if (!TypeCheck.Map[Type](in args[i], out object? obj, in group))
@@ -117,7 +116,7 @@ public static class Entry
     /// <param name="args">命令参数</param>
     /// <param name="set">命令字典</param>
     /// <returns></returns>
-    private static async Task<MessageBuilder?> ParseNormalCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCmdlet> set!!, Bot? bot = null, GroupMessageEvent? group = null)
+    private static async Task<MessageBuilder?> ParseNormalCommand(string sz_cmd, string[] args, HashSet<IKagamiCmdlet> set, Bot bot, GroupMessageEvent group)
     {
         if (string.IsNullOrEmpty(sz_cmd))
             throw new ArgumentException($"“{nameof(sz_cmd)}”不能为 null 或空。", nameof(sz_cmd));
@@ -141,7 +140,7 @@ public static class Entry
 
         args = args.Skip(1).ToArray(); // 跳过用于表示命令的第一个元素
 
-        return await InvokeCommand(command, args);
+        return await InvokeCommand(command, args, bot, group);
     }
 
     /// <summary>
@@ -151,7 +150,7 @@ public static class Entry
     /// <param name="args"> 命令参数 </param>
     /// <param name="set"> 命令字典 </param>
     /// <returns> </returns>
-    private static async Task<MessageBuilder?> ParsePrefixCommand(string sz_cmd, string[] args!!, HashSet<IKagamiCmdlet> set!!, Bot? bot = null, GroupMessageEvent? group = null)
+    private static async Task<MessageBuilder?> ParsePrefixCommand(string sz_cmd, string[] args, HashSet<IKagamiCmdlet> set, Bot bot, GroupMessageEvent group)
     {
         if (string.IsNullOrEmpty(sz_cmd))
             throw new ArgumentException($"“{nameof(sz_cmd)}”不能为 null 或空。", nameof(sz_cmd));
@@ -164,7 +163,7 @@ public static class Entry
 
         args[0] = sz_cmd[command.Command.Length..]; // 首个参数需要跳过前缀
 
-        return await InvokeCommand(command, args);
+        return await InvokeCommand(command, args, bot, group);
     }
 
     /// <summary>

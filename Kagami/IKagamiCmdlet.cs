@@ -28,7 +28,7 @@ public interface IKagamiCmdlet
     /// <summary>
     /// 命令的参数列表
     /// </summary>
-    (Type Type, string Description)[][] OverloadableArgumentList => Array.Empty<ValueTuple<Type, string>[]>();
+    (Type Type, string Description)[][] OverloadableArgumentList => Array.Empty<(Type, string)[]>();
 
     /// <summary>
     /// 命令需要的最少参数
@@ -40,7 +40,7 @@ public interface IKagamiCmdlet
     /// </summary>
     /// <param name="args">参数</param>
     /// <returns><seealso cref="MessageBuilder"/></returns>
-    Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args);
+    Task<MessageBuilder> InvokeAsync(Konata.Core.Bot bot, Konata.Core.Events.Model.GroupMessageEvent group, object[] args);
 
     /// <summary>
     /// 命令的激活方式

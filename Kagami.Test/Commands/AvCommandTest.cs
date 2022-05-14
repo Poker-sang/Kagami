@@ -1,6 +1,4 @@
-﻿using Kagami.Commands;
-
-namespace Kagami.Test.Commands;
+﻿namespace Kagami.Test.Commands;
 
 [TestClass]
 public class AvCommandTest
@@ -9,7 +7,7 @@ public class AvCommandTest
 
     private static async Task TestCommandAsync(string cmd)
     {
-        var result = await Entry.ParseCommand(cmd);
+        var result = await Entry.ParseCommand(cmd, null!, null!);
         Assert.IsNotNull(result);
         Console.WriteLine(result.Build().ToString());
     }
@@ -31,9 +29,9 @@ public class AvCommandTest
     {
         try
         {
-            var result = await Entry.ParseCommand("av553BB0774");
+            var result = await Entry.ParseCommand("av553BB0774", null!, null!);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Assert.IsInstanceOfType(ex, typeof(ArgumentException));
             Assert.AreEqual(ex.Message, "参数类型不正确");

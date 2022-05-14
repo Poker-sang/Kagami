@@ -20,7 +20,7 @@ public sealed class Ac : IKagamiCmdlet
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
+    public (Type Type, string Description)[][] OverloadableArgumentList { get; } = { new []{
         (typeof(uint), "ac号")
     }};
 

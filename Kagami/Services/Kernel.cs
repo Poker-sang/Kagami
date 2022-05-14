@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Common;
@@ -6,6 +5,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using System.Diagnostics;
 
 namespace Kagami.Services;
 
@@ -42,7 +42,7 @@ public static class Kernel
     /// <param name="group"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static async Task<MessageBuilder> Member(AtChain at!!, Bot bot!!, GroupMessageEvent group!!)
+    public static async Task<MessageBuilder> Member(AtChain at, Bot bot, GroupMessageEvent group)
     {
         // Get group info
         var memberInfo = await bot.GetGroupMemberInfo(group.GroupUin, at.AtUin, true);
@@ -86,7 +86,7 @@ public static class Kernel
 
     public static async Task<MessageBuilder> RollAsync(params string[] items)
     {
-        return new (
+        return new(
             items.Length < 2
                 ? "没有选项让我怎么选，笨！"
                 : string.Format(await StringResources.RollMessage.RandomGetAsync(), await items.RandomGetAsync()));

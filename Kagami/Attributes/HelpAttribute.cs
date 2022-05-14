@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kagami.Attributes;
+﻿namespace Kagami.Attributes;
 
 /// <summary>
 /// 使用DefaultPrefix（Prefix）+方法名+DefaultSuffix（Suffix）或Name作为调用指令

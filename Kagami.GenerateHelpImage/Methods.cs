@@ -34,6 +34,6 @@ public static class Methods
             Color.Summary => SummaryColor,
             Color.Comment => CommentColor,
             _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
-        }}"" >{ text}</Run> ";
+        }}"" >{text}</Run> ";
     }
 }

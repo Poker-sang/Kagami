@@ -1,7 +1,4 @@
-﻿using Kagami.Commands;
-using Konata.Core.Message.Model;
-
-namespace Kagami.Test.Commands;
+﻿namespace Kagami.Test.Commands;
 
 [TestClass]
 public class BvCommandTest
@@ -12,7 +9,7 @@ public class BvCommandTest
     {
         try
         {
-            var result = await Entry.ParseCommand(cmd);
+            var result = await Entry.ParseCommand(cmd, null!, null!);
         }
         catch (Exception ex)
         {
@@ -24,7 +21,7 @@ public class BvCommandTest
     [TestMethod("BV号测试 - 大写")]
     public async Task TestBvUpperCaseCommandAsync()
     {
-        var result = await Entry.ParseCommand($"BV{bvid}");
+        var result = await Entry.ParseCommand($"BV{bvid}", null!, null!);
         Assert.IsNotNull(result);
         Console.WriteLine(result.Build().ToString());
     }

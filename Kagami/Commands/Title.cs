@@ -1,8 +1,6 @@
-﻿using Kagami.Utils;
-using Konata.Core.Exceptions.Model;
+﻿using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-using Konata.Core.Message.Model;
 
 namespace Kagami.Commands;
 
@@ -24,7 +22,7 @@ public sealed class Title : IKagamiCmdlet
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
+    public (Type Type, string Description)[][] OverloadableArgumentList { get; } = { new []{
         (typeof(ArgTypes.At), "成员"),
         (typeof(string), "头衔")
     }};
@@ -32,11 +30,8 @@ public sealed class Title : IKagamiCmdlet
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public async Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args)
+    public async Task<MessageBuilder> InvokeAsync(Konata.Core.Bot bot, Konata.Core.Events.Model.GroupMessageEvent group, object[] args)
     {
-        Assert.IsNotNull<ArgumentException>(bot, "内部错误 - bot不能为空", nameof(bot));
-        Assert.IsNotNull<ArgumentException>(group, "内部错误 - group不能为空", nameof(group));
-
         // Get at
         if (args[0] is not ArgTypes.At at)
             return new(await StringResources.ArgumentErrorMessage.RandomGetAsync());

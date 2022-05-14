@@ -2,7 +2,6 @@
 using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-using Konata.Core.Message.Model;
 
 namespace Kagami.Commands;
 
@@ -24,7 +23,7 @@ public sealed class Mute : IKagamiCmdlet
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
+    public (Type Type, string Description)[][] OverloadableArgumentList { get; } = { new []{
         (typeof(ArgTypes.At), "成员"),
         (typeof(uint), "时间(分钟)")
     }};

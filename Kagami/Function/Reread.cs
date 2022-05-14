@@ -1,8 +1,7 @@
-﻿using Konata.Core.Events.Model;
+﻿using Kagami.Attributes;
+using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using System.Collections.Generic;
-using Kagami.Attributes;
 
 namespace Kagami.Function;
 

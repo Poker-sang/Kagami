@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Konata.Core.Message;
-using Konata.Core.Message.Model;
+﻿using Konata.Core.Message;
 
 namespace Kagami.Commands;
 
@@ -26,7 +20,7 @@ public sealed class Bv : IKagamiCmdlet
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
+    public (Type Type, string Description)[][] OverloadableArgumentList { get; } = { new []{
         (typeof(string), "BV号")
     }};
 

@@ -1,6 +1,4 @@
 ﻿using Konata.Core.Message;
-using System;
-using System.Collections.Generic;
 
 namespace Kagami.Function;
 

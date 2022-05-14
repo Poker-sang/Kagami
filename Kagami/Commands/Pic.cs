@@ -1,4 +1,5 @@
-﻿using Konata.Core.Message;
+﻿using Kagami.ArgTypes;
+using Konata.Core.Message;
 
 namespace Kagami.Commands;
 
@@ -20,16 +21,17 @@ public sealed class Pic : IKagamiCmdlet
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public (Type Type, string Description)[][] OverloadableArgumentList{ get; } = { new []{
-        (typeof(ArgTypes.PicCommands), "来源")
+    public (Type Type, string Description)[][] OverloadableArgumentList { get; } = { new []{
+        (typeof(PicCommands), "来源")
     }};
 
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public async Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args) => (ArgTypes.PicCommands)args[0] switch
-    {
-        ArgTypes.PicCommands.Bing => await Services.Bing.PictureAsync(),
-        _ => new(await StringResources.ArgumentErrorMessage.RandomGetAsync()),
-    };
+    public async Task<MessageBuilder> InvokeAsync(Konata.Core.Bot? bot, Konata.Core.Events.Model.GroupMessageEvent? group, object[] args)
+        => (PicCommands)args[0] switch
+        {
+            PicCommands.Bing => await Services.Bing.PictureAsync(),
+            _ => new(await StringResources.ArgumentErrorMessage.RandomGetAsync()),
+        };
 }

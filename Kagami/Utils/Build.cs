@@ -1,5 +1,4 @@
 ﻿using Konata.Core;
-using System.Linq;
 using System.Reflection;
 
 // ReSharper disable ConvertToAutoProperty

@@ -1,14 +1,11 @@
-﻿using Kagami.Utils;
+﻿using Kagami.Attributes;
+using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using System;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Kagami.Attributes;
 
 namespace Kagami.Function;
 

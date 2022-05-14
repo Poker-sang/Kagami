@@ -1,10 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Kagami.ArgTypes;
+﻿using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Kagami.Utils;
 using Konata.Core;
@@ -13,6 +7,8 @@ using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Kagami.Function;
 

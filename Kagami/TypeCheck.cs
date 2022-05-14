@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using Konata.Core.Events.Model;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Kagami;
 
