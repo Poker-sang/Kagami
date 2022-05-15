@@ -1,6 +1,7 @@
 ﻿using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using System.Text;
@@ -33,9 +34,11 @@ public static class Entry
     /// <param name="bot"></param>
     /// <param name="group"></param>
     /// <returns></returns>
-    public static async Task<MessageBuilder?> ParseCommand(Bot bot, GroupMessageEvent group)
+    public static async void ParseCommand(Bot bot, GroupMessageEvent group)
     {
-        return group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
+        var value = group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
+        if (value is not null)
+            _ = await bot.SendGroupMessage(group.GroupUin, value);
     }
 
     /// <summary>

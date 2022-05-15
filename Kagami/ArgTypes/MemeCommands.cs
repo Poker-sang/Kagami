@@ -1,13 +1,11 @@
-﻿using Kagami.Attributes;
+﻿using System.ComponentModel;
 
 namespace Kagami.ArgTypes;
 
 public enum MemeCommands
 {
-    [EnumHelp("发送沙雕图")]
-    None,
-    [EnumHelp("更新沙雕图")]
+    [Description("更新沙雕图")]
     Update,
-    [EnumHelp("列出全部沙雕图")]
+    [Description("列出全部沙雕图")]
     List
 }

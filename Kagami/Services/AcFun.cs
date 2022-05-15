@@ -11,7 +11,7 @@ public static class AcFun
     /// <summary>
     /// 获取A站的视频基本信息
     /// </summary>
-    /// <param name="code">aid/bvid</param>
+    /// <param name="code">id</param>
     /// <returns></returns>
     public static async Task<MessageBuilder> GetVideoInfoFrom(string code)
     {
@@ -21,25 +21,25 @@ public static class AcFun
         // UrlDownload the page
         var html = await uri.DownloadStringAsync();
         // Get meta data
-        string titleMeta = string.Empty;
-        string imageMeta = string.Empty;
-        string descriptionMeta = string.Empty;
+        var titleMeta = "";
+        var imageMeta = "";
+        var descriptionMeta = "";
 
         const string flag = "window.pageInfo = window.videoInfo = ";
-        StringReader sr = new(html);
+        var sr = new StringReader(html);
         while (sr.Peek() >= 0)
         {
             var line = await sr.ReadLineAsync();
             if (line?.Contains(flag) ?? false)
             {
-                var raw_json = line.Replace(flag, string.Empty).Trim().TrimEnd(';');
-                var json = System.Text.Json.JsonDocument.Parse(raw_json);
-                if (json.RootElement.TryGetProperty("title", out var element))
-                    titleMeta = element.GetString() ?? string.Empty;
-                if (json.RootElement.TryGetProperty("description", out element))
-                    descriptionMeta = element.GetString() ?? string.Empty;
-                if (json.RootElement.TryGetProperty("coverUrl", out element))
-                    imageMeta = element.GetString() ?? string.Empty;
+                var raw_json = line.Replace(flag, "").Trim().TrimEnd(';');
+                var json = System.Text.Json.JsonDocument.Parse(raw_json).RootElement;
+                if (json.TryGetProperty("title", out var element))
+                    titleMeta = element.GetString() ?? "";
+                if (json.TryGetProperty("description", out element))
+                    descriptionMeta = element.GetString() ?? "";
+                if (json.TryGetProperty("coverUrl", out element))
+                    imageMeta = element.GetString() ?? "";
                 break;
             }
         }

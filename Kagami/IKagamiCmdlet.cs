@@ -13,12 +13,12 @@ public interface IKagamiCmdlet
     /// <summary>
     /// 命令的标识
     /// </summary>
-    string Command { get; }
+    abstract string Command { get; }
 
     /// <summary>
     /// 命令的友好名称
     /// </summary>
-    string Name => Command;
+    abstract string Name { get; }
 
     /// <summary>
     /// 命令的说明
