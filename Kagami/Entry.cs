@@ -29,7 +29,7 @@ internal record class KagamiCmdlet(
 /// </summary>
 public static class Entry
 {
-    public static void Initialize()
+    static Entry()
     {
         var types = AppDomain
             .CurrentDomain
@@ -99,7 +99,7 @@ public static class Entry
     /// <summary>
     /// 通过反射获取所有可用命令
     /// </summary>
-    internal static Dictionary<CmdletType, HashSet<KagamiCmdlet>>? Cmdlets { get; private set; }
+    internal static Dictionary<CmdletType, HashSet<KagamiCmdlet>> Cmdlets { get; }
 
     /// <summary>
     /// 给机器人挂事件的入口
@@ -124,9 +124,6 @@ public static class Entry
         MessageBuilder? result = null;
         try
         {
-            if (Cmdlets is null) // 当不小心忘记初始化时执行
-                Initialize();
-
             if (string.IsNullOrWhiteSpace(raw))
                 throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
 
@@ -134,7 +131,7 @@ public static class Entry
             string cmd = args[0]; // 获取第一个元素用作命令
             Assert.ThrowIf<InvalidOperationException>(cmd.Contains(' '), "命令名中不能包括空格");
 
-            if (Cmdlets!.TryGetValue(CmdletType.Normal, out var set))
+            if (Cmdlets.TryGetValue(CmdletType.Normal, out var set))
                 result = await ParseCommand(cmd, args[1..], set, bot, group, string.Equals);
             if (result is null && Cmdlets.TryGetValue(CmdletType.Prefix, out set))
                 result = await ParseCommand(cmd, args, set, bot, group, (i, o, s) => i?.StartsWith(o, s) ?? false, true);
