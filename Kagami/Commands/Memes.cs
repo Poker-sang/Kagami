@@ -9,7 +9,6 @@ using static Kagami.Services.Meme;
 
 namespace Kagami.Commands;
 
-[KagamiCmdletClass]
 public static class Memes
 {
     public static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group,

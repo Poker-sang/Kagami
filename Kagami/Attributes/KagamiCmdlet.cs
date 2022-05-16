@@ -5,10 +5,9 @@ namespace Kagami.Attributes;
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 internal class KagamiCmdletAttribute : Attribute
 {
-    public KagamiCmdletAttribute(string name)
-    {
+    public KagamiCmdletAttribute(string name) => Name = name;
 
-    }
+    public string Name { get; init; }
 
     /// <summary>
     /// Default <see cref="RoleType.Member"/>
@@ -16,9 +15,9 @@ internal class KagamiCmdletAttribute : Attribute
     public RoleType Permission { get; init; } = RoleType.Member;
 
     /// <summary>
-    /// Default <see cref="CommandType.Normal"/>
+    /// Default <see cref="CmdletType.Normal"/>
     /// </summary>
-    public CommandType CommandType { get; init; } = CommandType.Normal;
+    public CmdletType CommandType { get; init; } = CmdletType.Normal;
 
     /// <summary>
     /// Default <see langword="true"/>

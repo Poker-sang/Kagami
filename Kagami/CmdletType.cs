@@ -3,7 +3,7 @@ namespace Kagami;
 /// <summary>
 /// 命令类型
 /// </summary>
-public enum CommandType : byte
+public enum CmdletType : byte
 {
     /// <summary>
     /// 普通命令

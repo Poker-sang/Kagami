@@ -8,7 +8,6 @@ namespace Kagami.Commands;
 /// <summary>
 /// 获取图片
 /// </summary>
-[KagamiCmdletClass]
 public static class Picture
 {
     [KagamiCmdlet(nameof(Pic)), Description("获取图片")]

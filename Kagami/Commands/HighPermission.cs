@@ -9,7 +9,6 @@ using System.ComponentModel;
 
 namespace Kagami.Commands;
 
-[KagamiCmdletClass]
 public static class HighPermission
 {
     public static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group,

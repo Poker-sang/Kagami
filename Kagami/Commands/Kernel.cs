@@ -8,7 +8,6 @@ using System.ComponentModel;
 
 namespace Kagami.Commands;
 
-[KagamiCmdletClass]
 public static class Kernel
 {
     [KagamiCmdlet(nameof(Ping)), Description("看看我是否还在线")]
