@@ -44,7 +44,6 @@ public static class Program
         _bot.OnGroupPoke += Poke.OnGroupPoke;
 
         // Handle messages from group
-        // TODO: 需要改掉这里的内容
         _bot.OnGroupMessage += Entry.ParseCommand;
 
         // Login the bot
