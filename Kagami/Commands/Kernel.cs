@@ -23,8 +23,8 @@ public static class Kernel
     public static MessageBuilder Repeat(GroupMessageEvent group) => Services.Kernel.Repeat(group.Chain);
 
     [KagamiCmdlet(nameof(Roll)), Description("帮我选一个")]
-    public static async ValueTask<MessageBuilder> Roll([Description("一些选项")] string[] items)
-        => await Services.Kernel.RollAsync(items);
+    public static MessageBuilder Roll([Description("一些选项")] string[] items)
+        => Services.Kernel.Roll(items);
 
     [KagamiCmdlet(nameof(Member)), Description("获取成员信息")]
     public static async ValueTask<MessageBuilder> Member(Bot bot, GroupMessageEvent group,

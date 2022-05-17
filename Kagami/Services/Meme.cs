@@ -114,7 +114,7 @@ public static class Meme
         catch (FormatException e)
         {
             Console.WriteLine(e);
-            return new(await StringResources.ArgumentErrorMessage.RandomGetAsync());
+            return new(StringResources.ArgumentErrorMessage.RandomGet());
         }
         catch (Exception e)
         {
@@ -154,7 +154,7 @@ public static class Meme
                 if (!int.TryParse(issue, out intIssue))
                 {
                     Console.WriteLine("Meme int parse failed!");
-                    return new(await StringResources.ArgumentErrorMessage.RandomGetAsync());
+                    return new(StringResources.ArgumentErrorMessage.RandomGet());
                 }
                 // 记录下载的图片
                 await DownloadMemesAsync(issuePath, imgUrls);

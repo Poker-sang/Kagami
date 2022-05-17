@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Kagami.Extensions"/>
+    <Using Include="Kagami.Extensions" />
   </ItemGroup>
   
 </Project>

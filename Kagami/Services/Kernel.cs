@@ -78,10 +78,10 @@ public static class Kernel
         .Text($"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)")
         .TextLine($"总内存 {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB");
 
-    public static async Task<MessageBuilder> RollAsync(params string[] items)
+    public static MessageBuilder Roll(params string[] items)
         => new(items.Length < 2
             ? "没有选项让我怎么选，笨！"
-            : string.Format(await StringResources.RollMessage.RandomGetAsync(), await items.RandomGetAsync()));
+            : string.Format(StringResources.RollMessage.RandomGet(), items.RandomGet()));
 
 
     public static double Bytes2MiB(this long bytes, int round) => Math.Round(bytes / 1048576.0, round);

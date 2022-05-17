@@ -221,7 +221,7 @@ public static class Entry
 
         if (asyncResult is not null)
         {
-            _ = bot.SendGroupMessage(group.GroupUin, await StringResources.ProcessingMessage.RandomGetAsync()).ConfigureAwait(false);
+            _ = bot.SendGroupMessage(group.GroupUin, StringResources.ProcessingMessage.RandomGet()).ConfigureAwait(false);
             result = await asyncResult;
         }
 

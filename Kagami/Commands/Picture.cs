@@ -15,6 +15,6 @@ public static class Picture
         => command switch
         {
             PicCommands.Bing => await Services.Bing.PictureAsync(),
-            _ => new(await StringResources.ArgumentErrorMessage.RandomGetAsync()),
+            _ => new(StringResources.ArgumentErrorMessage.RandomGet()),
         };
 }

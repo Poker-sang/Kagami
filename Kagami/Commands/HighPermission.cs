@@ -22,12 +22,12 @@ public static class HighPermission
         {
             return await bot.GroupMuteMember(group.GroupUin, at.Uin, time * 60)
                 ? (new($"禁言 [{at.Uin}] {minutes}分钟"))
-                : (new(await StringResources.UnknownErrorMessage.RandomGetAsync()));
+                : (new(StringResources.UnknownErrorMessage.RandomGet()));
         }
         catch (OperationFailedException e)
         {
             Console.WriteLine(e.Message);
-            return new(await StringResources.OperationFailedMessage.RandomGetAsync());
+            return new(StringResources.OperationFailedMessage.RandomGet());
         }
     }
 
@@ -40,12 +40,12 @@ public static class HighPermission
         {
             return await bot.GroupSetSpecialTitle(group.GroupUin, at.Uin, title, uint.MaxValue)
                 ? (new($"为 [{at.Uin}] 设置头衔"))
-                : (new(await StringResources.UnknownErrorMessage.RandomGetAsync()));
+                : (new(StringResources.UnknownErrorMessage.RandomGet()));
         }
         catch (OperationFailedException e)
         {
             Console.WriteLine($"{e.Message} ({e.HResult})");
-            return new(await StringResources.OperationFailedMessage.RandomGetAsync());
+            return new(StringResources.OperationFailedMessage.RandomGet());
         }
     }
 }
