@@ -68,7 +68,6 @@ public static class Entry
                             parameter.GetCustomAttribute<DescriptionAttribute>()?.Description ?? string.Empty))
                         .ToArray();
 
-
                 // 静态类的修饰符是abstract sealed
                 // 它不是抽象类
                 if (!type.IsAbstract && target is null)
@@ -90,6 +89,7 @@ public static class Entry
                 cmdlets.Add(cmdlet);
             }
         }
+
         Cmdlets = cmdlets.GroupBy(i => i.CommandType)
             .ToDictionary(
             i => i.Key,
@@ -109,6 +109,8 @@ public static class Entry
     /// <returns></returns>
     public static async void ParseCommand(Bot bot, GroupMessageEvent group)
     {
+        if (group.Message.Chain is { Count: 0 })
+            return;
         var value = group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
         if (value is not null)
             _ = await bot.SendGroupMessage(group.GroupUin, value);
@@ -127,8 +129,8 @@ public static class Entry
             if (string.IsNullOrWhiteSpace(raw))
                 throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
 
-            string[] args = SplitCommand(raw);
-            string cmd = args[0]; // 获取第一个元素用作命令
+            var args = SplitCommand(raw);
+            var cmd = args[0]; // 获取第一个元素用作命令
             Assert.ThrowIf<InvalidOperationException>(cmd.Contains(' '), "命令名中不能包括空格");
 
             if (Cmdlets.TryGetValue(CmdletType.Normal, out var set))
@@ -138,10 +140,11 @@ public static class Entry
             if (result is null)
                 throw new NotSupportedException("不支持的Cmdlet类型");
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Console.Error.WriteLine(ex.ToString());
+            Console.Error.WriteLine(e.ToString());
         }
+
         return result;
     }
 
@@ -166,7 +169,7 @@ public static class Entry
                 case '"':
                 case '\'':
                     if (quotes.TryPeek(out var tmp) && tmp == ch)
-                        quotes.Pop();
+                        _ = quotes.Pop();
                     else
                         quotes.Push(ch);
                     break;
@@ -176,23 +179,25 @@ public static class Entry
                     {
                         if (sb.Length > 0)
                             result.Add(sb.ToString());
-                        sb.Clear();
+                        _ = sb.Clear();
                     }
                     else
                     {
-                        sb.Append(ch);
+                        _ = sb.Append(ch);
                     }
+
                     break;
 
                 default:
-                    sb.Append(ch);
+                    _ = sb.Append(ch);
                     break;
             }
         }
+
         Assert.ThrowIfNot<FormatException>(quotes.Count is 0, "输入的格式不正确");
 
         result.Add(sb.ToString());
-        sb.Clear();
+        _ = sb.Clear();
 
         return result.ToArray();
     }
@@ -210,7 +215,7 @@ public static class Entry
 
         if (asyncResult is not null)
         {
-            _ = bot.SendGroupMessage(group.GroupUin, "正在执行, 请稍候...").ConfigureAwait(false);
+            _ = bot.SendGroupMessage(group.GroupUin, await StringResources.ProcessingMessage.RandomGetAsync()).ConfigureAwait(false);
             result = await asyncResult;
         }
 
@@ -231,7 +236,7 @@ public static class Entry
     private static bool ParseArguments(in KagamiCmdlet cmdlet, in Bot bot, in GroupMessageEvent group, in string[] args, out object?[]? parameters)
     {
         parameters = null;
-        int minArgCount = cmdlet.Parameters.Where(i => i.Default is null).Count();
+        var minArgCount = cmdlet.Parameters.Where(i => i.Default is null).Count();
 
         // 断言Cmdlet最少参数数量比传入参数数量多
         if (args.Length < minArgCount)
@@ -239,12 +244,12 @@ public static class Entry
 
         List<object?> arguments = new(cmdlet.Parameters.Length);
         TypeParser.Clear();
-        for (int i = 0; i < cmdlet.Parameters.Length && i < args.Length; i++)
+        for (var i = 0; i < cmdlet.Parameters.Length && i < args.Length; i++)
         {
-            KagamiCmdletParameter parameter = cmdlet.Parameters[i];
+            var parameter = cmdlet.Parameters[i];
             if (!TypeParser.Map.TryGetValue(parameter.Type, out var parser)) // 获取解析器
                 throw new NotSupportedException($"类型解析器器不支持的类型 \"{parameter.Type.FullName}\". ");
-            else if (parser(bot, group, args[i], out object? obj)) // 解析字符串
+            else if (parser(bot, group, args[i], out var obj)) // 解析字符串
                 arguments.Add(obj);
             else if (parameter.HasDefault) // failback使用默认值
                 arguments.Add(parameter.Default);
@@ -254,9 +259,9 @@ public static class Entry
 
         if (arguments.Count < cmdlet.Parameters.Length)
         {
-            for (int i = arguments.Count; i < cmdlet.Parameters.Length; i++)
+            for (var i = arguments.Count; i < cmdlet.Parameters.Length; i++)
             {
-                KagamiCmdletParameter parameter = cmdlet.Parameters[i];
+                var parameter = cmdlet.Parameters[i];
                 if (!parameter.HasDefault)
                     return false;
 
@@ -310,6 +315,7 @@ public static class Entry
             if (ParseArguments(cmdlet, bot, group, args, out var parameters))
                 return await cmdlet.InvokeCommandAsync(bot, group, parameters);
         }
+
         throw new InvalidOperationException("找不到合适的cmdlet重载");
     }
 }

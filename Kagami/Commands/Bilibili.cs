@@ -10,11 +10,11 @@ namespace Kagami.Commands;
 public static class Bilibili
 {
     [KagamiCmdlet(nameof(Av), CommandType = CmdletType.Prefix), Description("从Bilibili通过av号获取视频信息")]
-    public static Task<MessageBuilder> Av(string av)
-        => Services.Bilibili.GetVideoInfoFrom($"av{av}");
+    public static async ValueTask<MessageBuilder> Av(string av)
+        => await Services.Bilibili.GetVideoInfoFrom($"av{av}");
 
     [KagamiCmdlet("BV", CommandType = CmdletType.Prefix, IgnoreCase = false)]
     [Description("从Bilibili通过BV号获取视频信息")]
-    public static Task<MessageBuilder> Bv(string bv)
-        => Services.Bilibili.GetVideoInfoFrom($"BV{bv}");
+    public static async ValueTask<MessageBuilder> Bv(string bv)
+        => await Services.Bilibili.GetVideoInfoFrom($"BV{bv}");
 }

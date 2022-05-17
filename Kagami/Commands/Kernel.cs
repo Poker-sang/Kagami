@@ -23,11 +23,11 @@ public static class Kernel
     public static MessageBuilder Repeat(GroupMessageEvent group) => Services.Kernel.Repeat(group.Chain);
 
     [KagamiCmdlet(nameof(Roll)), Description("帮我选一个")]
-    public static async Task<MessageBuilder> Roll([Description("一些选项")] string[] items)
+    public static async ValueTask<MessageBuilder> Roll([Description("一些选项")] string[] items)
         => await Services.Kernel.RollAsync(items);
 
     [KagamiCmdlet(nameof(Member)), Description("获取成员信息")]
-    public static async Task<MessageBuilder> Member(Bot bot, GroupMessageEvent group,
+    public static async ValueTask<MessageBuilder> Member(Bot bot, GroupMessageEvent group,
         [Description("成员")] At at)
         => await bot.GetGroupMemberInfo(group.GroupUin, at.Uin, true) is { } memberInfo
             ? Services.Kernel.Member(memberInfo)

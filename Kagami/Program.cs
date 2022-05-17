@@ -26,12 +26,12 @@ public static class Program
             {
                 case CaptchaEvent.CaptchaType.Sms:
                     Console.WriteLine(e.Phone);
-                    s.SubmitSmsCode(Console.ReadLine());
+                    _ = s.SubmitSmsCode(Console.ReadLine());
                     break;
 
                 case CaptchaEvent.CaptchaType.Slider:
                     Console.WriteLine(e.SliderUrl);
-                    s.SubmitSliderTicket(Console.ReadLine());
+                    _ = s.SubmitSliderTicket(Console.ReadLine());
                     break;
 
                 default:
@@ -50,7 +50,7 @@ public static class Program
         var result = await _bot.Login();
         // Update the keystore
         if (result)
-            UpdateKeystore(_bot.KeyStore);
+            _ = UpdateKeystore(_bot.KeyStore);
 
         // cli
         while (true)
@@ -60,7 +60,7 @@ public static class Program
                 switch (Console.ReadLine())
                 {
                     case @"\stop":
-                        await _bot.Logout();
+                        _ = await _bot.Logout();
                         _bot.Dispose();
                         return;
                 }
@@ -76,15 +76,12 @@ public static class Program
     /// Get bot config
     /// </summary>
     /// <returns></returns>
-    private static BotConfig GetConfig()
+    private static BotConfig GetConfig() => new()
     {
-        return new BotConfig
-        {
-            EnableAudio = true,
-            TryReconnect = true,
-            HighwayChunkSize = 8192,
-        };
-    }
+        EnableAudio = true,
+        TryReconnect = true,
+        HighwayChunkSize = 8192,
+    };
 
     /// <summary>
     /// Load or create device 

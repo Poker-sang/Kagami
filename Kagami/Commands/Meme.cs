@@ -12,7 +12,7 @@ namespace Kagami.Commands;
 public static class Meme
 {
     [KagamiCmdlet(nameof(Meme)), Description("弔图相关指令")]
-    public static async Task<MessageBuilder> GetMeme(Bot bot, GroupMessageEvent group,
+    public static async ValueTask<MessageBuilder> GetMeme(Bot bot, GroupMessageEvent group,
         [Description("弔图指令")] MemeCommands? commands = null,
         [Description("期数")] uint? intIssue = null)
     {
