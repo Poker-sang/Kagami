@@ -11,6 +11,7 @@ namespace Kagami.Commands;
 
 public static class HighPermission
 {
+    [KagamiCmdlet(nameof(Mute), Permission = Konata.Core.Common.RoleType.Admin), Description("禁言成员（默认10分钟）")]
     public static async Task<MessageBuilder> Mute(Bot bot, GroupMessageEvent group,
         [Description("成员")] At at,
         [Description("禁言时长")] uint? minutes)

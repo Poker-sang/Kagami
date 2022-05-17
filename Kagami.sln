@@ -5,8 +5,6 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami", "Kagami\Kagami.csproj", "{B10F8933-2FDC-4CAE-9A14-E503DACBB029}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.SourceGenerator", "Kagami.SourceGenerator\Kagami.SourceGenerator.csproj", "{19809C72-6999-48BB-BB92-DB0E779370EA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.Test", "Kagami.Test\Kagami.Test.csproj", "{771325FB-9825-4327-8C7D-47B9D9EA6A56}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Folder", "Solution Folder", "{65A4AAE9-42BF-46B6-B739-3147BEC83808}"
@@ -26,10 +24,6 @@ Global
 		{B10F8933-2FDC-4CAE-9A14-E503DACBB029}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B10F8933-2FDC-4CAE-9A14-E503DACBB029}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B10F8933-2FDC-4CAE-9A14-E503DACBB029}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19809C72-6999-48BB-BB92-DB0E779370EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19809C72-6999-48BB-BB92-DB0E779370EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19809C72-6999-48BB-BB92-DB0E779370EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19809C72-6999-48BB-BB92-DB0E779370EA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{771325FB-9825-4327-8C7D-47B9D9EA6A56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{771325FB-9825-4327-8C7D-47B9D9EA6A56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{771325FB-9825-4327-8C7D-47B9D9EA6A56}.Release|Any CPU.ActiveCfg = Release|Any CPU

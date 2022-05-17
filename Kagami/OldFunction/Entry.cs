@@ -1,11 +1,9 @@
-﻿using Kagami.Attributes;
-using Konata.Core;
+﻿using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 
 namespace Kagami.Function;
 
-[GenerateHelp("Poker Kagami Help")]
 public static partial class Commands
 {
     /// <summary>

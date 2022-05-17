@@ -9,9 +9,10 @@ using static Kagami.Services.Meme;
 
 namespace Kagami.Commands;
 
-public static class Memes
+public static class Meme
 {
-    public static async Task<MessageBuilder> Meme(Bot bot, GroupMessageEvent group,
+    [KagamiCmdlet(nameof(Meme)), Description("弔图相关指令")]
+    public static async Task<MessageBuilder> GetMeme(Bot bot, GroupMessageEvent group,
         [Description("弔图指令")] MemeCommands? commands = null,
         [Description("期数")] uint? intIssue = null)
     {
@@ -44,7 +45,6 @@ public static class Memes
             {
                 Console.WriteLine(e);
                 return new(e.Message);
-
             }
     }
 }

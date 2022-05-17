@@ -31,7 +31,7 @@ public static class Utilities
         {
             var r = sed.Select((t, i) => chars[bvCode[t]] * (long)Math.Pow(table.Length, i)).Sum();
 
-            var result = r - add ^ xor;
+            var result = (r - add) ^ xor;
             return result is > 10000000000 or < 0 ? "" : result.ToString();
         }
         catch
@@ -59,13 +59,14 @@ public static class Utilities
             var temp = integer % 10;
             if (temp is not 0)
             {
-                cnNumber.Insert(0, CnUnit[i]);
-                cnNumber.Insert(0, CnNumber[temp]);
+                _ = cnNumber.Insert(0, CnUnit[i]);
+                _ = cnNumber.Insert(0, CnNumber[temp]);
             }
             else if (cnNumber.Length is not 0 && cnNumber[0] is not '零')
-                cnNumber.Insert(0, "零");
+                _ = cnNumber.Insert(0, "零");
             integer /= 10;
         }
+
         return cnNumber.ToString();
     }
 
@@ -80,6 +81,7 @@ public static class Utilities
                 integer += (int)Math.Pow(10, i) * CnNumber.IndexOf(splitCnNumber[0], StringComparison.Ordinal);
                 cnNumber = splitCnNumber[1];
             }
+
         integer += CnNumber.IndexOf(cnNumber, StringComparison.Ordinal);
         return integer;
     }
@@ -145,12 +147,11 @@ public static class Utilities
 
             // Match results
             foreach (Match j in Regex.Matches(html, pattern, RegexOptions.Multiline))
-                metaDict.TryAdd(j.Groups[1].Value, j.Groups[3].Value);
+                _ = metaDict.TryAdd(j.Groups[1].Value, j.Groups[3].Value);
         }
 
         return metaDict;
     }
-
 
     public static TChain? FetchChain<TChain>(this MessageChain chain) where TChain : BaseChain => (TChain?)chain.FirstOrDefault(i => i is TChain);
     public static IEnumerable<TChain> FetchChains<TChain>(this MessageChain chain) where TChain : BaseChain => chain.Where(i => i is TChain).Cast<TChain>();

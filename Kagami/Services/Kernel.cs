@@ -57,7 +57,7 @@ public static class Kernel
     /// </summary>
     /// <returns></returns>
     public static MessageBuilder Status()
-    => new MessageBuilder("[Poker Kagami] 内核信息")
+    => new MessageBuilder("[Poker Shimakaze] 内核信息")
         // Core descriptions
         .TextLine($"[分支:{BuildStamp.Branch}]")
         .TextLine($"[提交:{BuildStamp.CommitHash[..12]}]")
