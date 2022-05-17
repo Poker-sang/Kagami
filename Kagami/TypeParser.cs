@@ -44,7 +44,7 @@ public static class TypeParser
         { typeof(ArgTypes.PicCommands), Enum<ArgTypes.PicCommands> },
         { typeof(ArgTypes.MemeCommands), Enum<ArgTypes.MemeCommands> },
         { typeof(ArgTypes.At), At },
-        { typeof(Konata.Core.Message.MessageChain), MessageChain },
+        { typeof(GroupMessageEvent), GroupMessageEvent },
         { typeof(string[]), StringArray },
     };
 
@@ -58,7 +58,7 @@ public static class TypeParser
         => uint.TryParse(raw, out uint tmp).Set(tmp, out obj);
     private static bool Enum<TEnum>(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
         where TEnum : struct
-        => System.Enum.TryParse(raw, out TEnum tmp).Set(tmp, out obj);
+        => System.Enum.TryParse(raw, true, out TEnum tmp).Set(tmp, out obj);
     private static bool At(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
     {
         bool result = Chain<Konata.Core.Message.Model.AtChain>(group, out object? tmp);
@@ -102,16 +102,18 @@ public static class TypeParser
         s_cache[cacheIndexName] = index + 1;
         return true;
     }
-    private static bool MessageChain(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-    {
-        obj = group?.Chain;
-        return obj is Konata.Core.Message.MessageChain;
-    }
+    //private static bool MessageChain(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+    //{
+    //    obj = group?.Chain;
+    //    return obj is Konata.Core.Message.MessageChain;
+    //}
     private static bool StringArray(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
     {
         obj = group?.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).SelectMany(x => Entry.SplitCommand(x.As<Konata.Core.Message.Model.TextChain>()!.Content)).ToArray();
         return obj is string[];
     }
+    private static bool GroupMessageEvent(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+        => (group is not null).Set(group!, out obj);
 
 
     private static bool Set(this bool b, in object i, out object o)

@@ -2,8 +2,6 @@ namespace Kagami;
 
 internal static class StringResources
 {
-    public const string EnvPath = @"C:\Users\poker\Desktop\Bot\";
-
     public static readonly string[] RollMessage = {
         "嗯让我想想ww......果然还是{0}好！",
         "emmm我想选{0}吧x",

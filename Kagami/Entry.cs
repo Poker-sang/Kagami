@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
+
 using Kagami.Attributes;
+
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
@@ -112,6 +114,10 @@ public static class Entry
     /// <returns></returns>
     public static async void ParseCommand(Bot bot, GroupMessageEvent group)
     {
+        if (group.GroupUin == bot.Uin)
+            return;
+
+        Console.WriteLine($"[\x1b[38;2;0;255;255m{DateTime.Now:T}\u001b[0m]  [\x1b[38;2;0;0;255m{group.GroupName}/\x1b[38;2;0;255;0m{group.MemberCard.Replace("\x7", string.Empty)}\u001b[0m] : {group.Chain}\u001b[0m");
         if (group.Message.Chain is { Count: 0 })
             return;
         MessageBuilder? value = group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
@@ -243,7 +249,17 @@ public static class Entry
     private static bool ParseArguments(in KagamiCmdlet cmdlet, in Bot bot, in GroupMessageEvent group, in string[] args, out object?[]? parameters)
     {
         parameters = null;
-        int minArgCount = cmdlet.Parameters.Where(i => i.Default is null).Count();
+
+        // 这个变量表示不计入参数数量的参数个数
+        byte appendArgCount = 0;
+        if (cmdlet.Parameters.Any(i => i.Type == typeof(Bot)))
+            appendArgCount++;
+        if (cmdlet.Parameters.Any(i => i.Type == typeof(GroupMessageEvent)))
+            appendArgCount++;
+
+        int minArgCount = cmdlet.Parameters.Length - appendArgCount - cmdlet.Parameters
+            .Where(i => i.HasDefault)
+            .Count();
 
         // 断言Cmdlet最少参数数量比传入参数数量多
         if (args.Length < minArgCount)
@@ -251,12 +267,25 @@ public static class Entry
 
         List<object?> arguments = new(cmdlet.Parameters.Length);
         TypeParser.Clear();
-        for (int i = 0; i < cmdlet.Parameters.Length && i < args.Length; i++)
+        for (int i = 0; i < cmdlet.Parameters.Length && i < args.Length + appendArgCount; i++)
         {
             KagamiCmdletParameter? parameter = cmdlet.Parameters[i];
-            if (!TypeParser.Map.TryGetValue(parameter.Type, out TypeParserDelegate? parser)) // 获取解析器
-                throw new NotSupportedException($"类型解析器器不支持的类型 \"{parameter.Type.FullName}\". ");
-            else if (parser(bot, group, args[i], out object? obj)) // 解析字符串
+
+
+
+            Type type = parameter.Type;
+
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                type = type.GenericTypeArguments[0];
+            }
+
+            if ((parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent)) && TypeParser.Map[parameter.Type](bot, group, string.Empty, out object? obj))
+                arguments.Add(obj);
+            else if (!TypeParser.Map.TryGetValue(type, out TypeParserDelegate? parser)) // 获取解析器
+                throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
+            else if (parser(bot, group, args[i - appendArgCount], out obj)) // 解析字符串
                 arguments.Add(obj);
             else if (parameter.HasDefault) // failback使用默认值
                 arguments.Add(parameter.Default);
@@ -269,6 +298,12 @@ public static class Entry
             for (int i = arguments.Count; i < cmdlet.Parameters.Length; i++)
             {
                 KagamiCmdletParameter? parameter = cmdlet.Parameters[i];
+
+                if ((parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent)) && TypeParser.Map[parameter.Type](bot, group, string.Empty, out object? obj))
+                {
+                    arguments.Add(obj);
+                    continue;
+                }
                 if (!parameter.HasDefault)
                     return false;
 

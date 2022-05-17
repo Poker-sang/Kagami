@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Konata.Core;
 using Konata.Core.Common;
@@ -13,10 +14,11 @@ public static class Program
 
     public static async Task Main()
     {
+        Console.WriteLine("Running...");
         s_bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 
         // Print the log
-        s_bot.OnLog += (_, e) => Console.WriteLine(e.EventMessage);
+        s_bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
 
         // Handle the captcha
         s_bot.OnCaptcha += (s, e) =>

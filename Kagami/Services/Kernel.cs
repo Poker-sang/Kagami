@@ -28,7 +28,11 @@ public static class Kernel
     /// </summary>
     /// <param name="message">消息</param>
     /// <returns></returns>
-    public static MessageBuilder Repeat(MessageChain message) => new(message[1..]);
+    public static MessageBuilder Repeat(MessageChain message)
+        => new MessageBuilder(
+            message[0].As<Konata.Core.Message.Model.TextChain>()
+                !.Content[(nameof(Repeat).Length + 1)..])
+        .Add(message[1..]);
 
     /// <summary>
     /// 获取成员信息
@@ -70,7 +74,7 @@ public static class Kernel
         .TextLine($"[提交:{KagamiBuildStamp.Revision}]")
         .TextLine($"[版本:{KagamiBuildStamp.Version}]")
         .TextLine($"[{KagamiBuildStamp.BuildTime}]")
-        .TextLine("Poker Kagami Project © 2022 Shimakaze & Poker, All Rights Reserved.")
+        .TextLine("Poker Kagami Project © 2022 frg2089 & Poker, All Rights Reserved.")
         .TextLine()
         // System status
         .TextLine($"处理了 {Entry.MessageCounter} 条消息")

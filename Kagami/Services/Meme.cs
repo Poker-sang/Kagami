@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+
 using Kagami.Extensions;
+
 using Konata.Core.Message;
 
 namespace Kagami.Services;
@@ -13,11 +15,11 @@ public static class Meme
     /// <summary>
     /// 图片存放总路径
     /// </summary>
-    public const string MemePath = StringResources.EnvPath + @"memes\";
+    public static string MemePath { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memes");
     /// <summary>
     /// 记录目前文件夹中最新一期期数的指针
     /// </summary>
-    public const string NewPath = MemePath + "new.ptr";
+    public static string NewPath { get; } = Path.Combine(MemePath, "new.ptr");
     /// <summary>
     /// 记录现在已经发到第几张图片的指针
     /// </summary>
@@ -89,7 +91,7 @@ public static class Meme
     {
         try
         {
-            var directory = new DirectoryInfo(MemePath + issue);
+            var directory = new DirectoryInfo(Path.Combine(MemePath, issue));
 
             // 指定期数不存在
             if (!directory.Exists)
@@ -150,7 +152,7 @@ public static class Meme
                 (imgUrls, string? cnIssue) = await GetMemeImageSourcesRssAsync();
 
                 issue = cnIssue.CnToInt().ToString();
-                issuePath = MemePath + issue;
+                issuePath = Path.Combine(MemePath, issue);
                 if (!int.TryParse(issue, out intIssue))
                 {
                     Console.WriteLine("Meme int parse failed!");
@@ -162,7 +164,7 @@ public static class Meme
             // 指定期数
             else
             {
-                issuePath = MemePath + issue;
+                issuePath = Path.Combine(MemePath, issue);
                 // 下载图片
                 imgUrls = await DownloadMemesAsync(issuePath, intIssue);
             }
@@ -212,9 +214,9 @@ public static class Meme
         else
         {
             // 记录索引和指针
+            _ = Directory.CreateDirectory(issuePath);
             await File.WriteAllTextAsync(Path.Combine(issuePath, Pointer), "0");
             await File.WriteAllLinesAsync(Path.Combine(issuePath, Indexer), imgUrls);
-            _ = Directory.CreateDirectory(issuePath);
         }
     }
 
@@ -242,9 +244,9 @@ public static class Meme
             // may throw FileNotFoundException
             imgUrls = await GetMemeImageSourcesAsync(intIssue.IntToCn());
             // 记录索引和指针
+            _ = Directory.CreateDirectory(issuePath);
             await File.WriteAllTextAsync(Path.Combine(issuePath, Pointer), "0");
             await File.WriteAllLinesAsync(Path.Combine(issuePath, Indexer), imgUrls);
-            _ = Directory.CreateDirectory(issuePath);
         }
         return imgUrls;
     }
