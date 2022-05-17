@@ -2,7 +2,7 @@ name: .NET
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - "**/*.csproj"
       - "**/*.xaml"
@@ -10,7 +10,7 @@ on:
       - "**/*.sln"
       - ".github/workflows/dotnet.yml"
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
     types: 
       - opened
       - review_requested
