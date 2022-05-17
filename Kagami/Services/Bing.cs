@@ -14,7 +14,7 @@ public static class Bing
         JsonDocument json = await (BaseUri + Image).DownloadJsonAsync();
         var obj = json.RootElement.GetProperty("images")[0];
         string uri = obj.GetProperty("url").GetString()!.TrimStart('/');
-        var data = await (BaseUri + uri).UrlDownloadBytes();
+        var data = await (BaseUri + uri).DownloadBytesAsync();
         return new MessageBuilder()
             .Image(data)
             .TextLine()

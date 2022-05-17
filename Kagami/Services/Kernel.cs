@@ -57,16 +57,23 @@ public static class Kernel
     /// </summary>
     /// <returns></returns>
     public static MessageBuilder Status()
-    => new MessageBuilder("[Poker Shimakaze] 内核信息")
+    => new MessageBuilder("[Konata] 内核信息")
         // Core descriptions
-        .TextLine($"[分支:{BuildStamp.Branch}]")
-        .TextLine($"[提交:{BuildStamp.CommitHash[..12]}]")
-        .TextLine($"[版本:{BuildStamp.Version}]")
-        .TextLine($"[{BuildStamp.BuildTime}]")
+        .TextLine($"[分支:{KonataBuildStamp.Branch}]")
+        .TextLine($"[提交:{KonataBuildStamp.CommitHash[..12]}]")
+        .TextLine($"[版本:{KonataBuildStamp.Version}]")
+        .TextLine($"[{KonataBuildStamp.BuildTime}]")
         .TextLine("Konata Project (C) 2022")
         .TextLine()
+        .TextLine("[Poker Kagami] 构建信息")
+        .TextLine($"[分支:{KagamiBuildStamp.Branch}]")
+        .TextLine($"[提交:{KagamiBuildStamp.Revision}]")
+        .TextLine($"[版本:{KagamiBuildStamp.Version}]")
+        .TextLine($"[{KagamiBuildStamp.BuildTime}]")
+        .TextLine("Poker Kagami Project © 2022 Shimakaze & Poker, All Rights Reserved.")
+        .TextLine()
         // System status
-        // .TextLine($"处理了 {_messageCounter} 条消息")
+        .TextLine($"处理了 {Entry.MessageCounter} 条消息")
         .TextLine($"GC内存 {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB ")
         .Text($"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)")
         .TextLine($"总内存 {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB");
@@ -75,4 +82,7 @@ public static class Kernel
         => new(items.Length < 2
             ? "没有选项让我怎么选，笨！"
             : string.Format(await StringResources.RollMessage.RandomGetAsync(), await items.RandomGetAsync()));
+
+
+    public static double Bytes2MiB(this long bytes, int round) => Math.Round(bytes / 1048576.0, round);
 }

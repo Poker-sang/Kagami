@@ -1,21 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>preview</LangVersion>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
-	
-	<ItemGroup>
-		<PackageReference Include="Konata.Core" Version="1.*-*" />
-	</ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <AnalysisLevel>preview-recommended</AnalysisLevel>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <None Update="Assets\*">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Konata.Core" Version="1.*-*" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Assets\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Compile Remove="OldFunction\*.cs" />
+    <None Include="OldFunction\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Kagami.Extensions"/>
+  </ItemGroup>
+  
 </Project>

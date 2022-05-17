@@ -1,5 +1,4 @@
 ﻿using Kagami.Attributes;
-using Kagami.Utils;
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
@@ -29,6 +28,10 @@ internal record class KagamiCmdlet(
 /// </summary>
 public static class Entry
 {
+
+    private static volatile nuint _messageCounter = 0;
+    public static nuint MessageCounter => _messageCounter;
+
     static Entry()
     {
         var types = AppDomain
@@ -131,7 +134,8 @@ public static class Entry
 
             var args = SplitCommand(raw);
             var cmd = args[0]; // 获取第一个元素用作命令
-            Assert.ThrowIf<InvalidOperationException>(cmd.Contains(' '), "命令名中不能包括空格");
+            if (cmd.Contains(' '))
+                throw new InvalidOperationException("命令名中不能包括空格");
 
             if (Cmdlets.TryGetValue(CmdletType.Normal, out var set))
                 result = await ParseCommand(cmd, args[1..], set, bot, group, string.Equals);
@@ -194,7 +198,8 @@ public static class Entry
             }
         }
 
-        Assert.ThrowIfNot<FormatException>(quotes.Count is 0, "输入的格式不正确");
+        if (quotes.Count is not 0)
+            throw new FormatException("输入的格式不正确");
 
         result.Add(sb.ToString());
         _ = sb.Clear();
@@ -204,6 +209,7 @@ public static class Entry
 
     private static async Task<MessageBuilder> InvokeCommandAsync(this KagamiCmdlet cmdlet, Bot bot, GroupMessageEvent group, params object?[]? parameters)
     {
+        _messageCounter++;
         MessageBuilder? result = null;
         Task<MessageBuilder>? asyncResult = null;
         if (cmdlet.ReturnType == typeof(MessageBuilder))
@@ -219,7 +225,8 @@ public static class Entry
             result = await asyncResult;
         }
 
-        Assert.IsNotNull<InvalidOperationException>(result, "命令返回的类型不正确");
+        if (result is null)
+            throw new InvalidOperationException("命令返回的类型不正确");
 
         return result;
     }
