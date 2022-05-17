@@ -1,10 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Kagami.Test;
 
@@ -14,7 +11,7 @@ public class BuildStampTest
     [TestMethod("BuildStamp验证")]
     public void GenerateBuildStampTest()
     {
-        var list = typeof(Entry)
+        Dictionary<string, string?>? list = typeof(Entry)
             .Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .ToDictionary(

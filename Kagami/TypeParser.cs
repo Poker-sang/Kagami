@@ -32,8 +32,8 @@ public delegate bool TypeParserDelegate(
 /// </summary>
 public static class TypeParser
 {
-    private static readonly Dictionary<string, object?> _cache = new();
-    public static void Clear() => _cache.Clear();
+    private static readonly Dictionary<string, object?> s_cache = new();
+    public static void Clear() => s_cache.Clear();
 
     public static Dictionary<Type, TypeParserDelegate> Map { get; } = new()
     {
@@ -53,19 +53,19 @@ public static class TypeParser
     private static bool String(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
         => !string.IsNullOrWhiteSpace(raw).Set(raw, out obj);
     private static bool Int32(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        => int.TryParse(raw, out var tmp).Set(tmp, out obj);
+        => int.TryParse(raw, out int tmp).Set(tmp, out obj);
     private static bool UInt32(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        => uint.TryParse(raw, out var tmp).Set(tmp, out obj);
+        => uint.TryParse(raw, out uint tmp).Set(tmp, out obj);
     private static bool Enum<TEnum>(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
         where TEnum : struct
-        => System.Enum.TryParse<TEnum>(raw, out var tmp).Set(tmp, out obj);
+        => System.Enum.TryParse(raw, out TEnum tmp).Set(tmp, out obj);
     private static bool At(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
     {
-        var result = Chain<Konata.Core.Message.Model.AtChain>(bot, group, raw, out var tmp);
+        bool result = Chain<Konata.Core.Message.Model.AtChain>(group, out object? tmp);
         obj = ((Konata.Core.Message.Model.AtChain)tmp!).AsAt();
         return result;
     }
-    private static bool Chain<TChain>(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+    private static bool Chain<TChain>(in GroupMessageEvent? group, [NotNullWhen(true)] out object? obj)
         where TChain : Konata.Core.Message.BaseChain
     {
         if (group is null)
@@ -78,16 +78,16 @@ public static class TypeParser
 
         TChain[] chains;
         int index;
-        if (_cache.TryGetValue(cacheName, out var oAts))
+        if (s_cache.TryGetValue(cacheName, out object? oAts))
         {
-            _cache.TryGetValue(cacheIndexName, out var oIndex);
+            s_cache.TryGetValue(cacheIndexName, out object? oIndex);
             index = (int)(oIndex ?? 0);
             chains = (TChain[])(oAts ?? throw new InvalidProgramException("程序内部逻辑错误!"));
         }
         else
         {
-            _cache[cacheIndexName] = index = 0;
-            _cache[cacheName] = chains = group
+            s_cache[cacheIndexName] = index = 0;
+            s_cache[cacheName] = chains = group
                 .Chain
                 .Where(i => i is TChain)
                 .Select(i => i.As<TChain>()!)
@@ -99,7 +99,7 @@ public static class TypeParser
             }
         }
         obj = chains[index];
-        _cache[cacheIndexName] = index + 1;
+        s_cache[cacheIndexName] = index + 1;
         return true;
     }
     private static bool MessageChain(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)

@@ -1,7 +1,7 @@
-using Kagami.Extensions;
-using Konata.Core.Message;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Kagami.Extensions;
+using Konata.Core.Message;
 
 namespace Kagami.Services;
 
@@ -34,9 +34,9 @@ public static class Meme
     {
         await Task.Yield();
 
-        var uri = UriTemplate + $"第{issue}期";
-        var json = await uri.DownloadJsonAsync();
-        var content = json.RootElement.GetProperty("data")[0].GetProperty("content").GetString()!;
+        string? uri = UriTemplate + $"第{issue}期";
+        System.Text.Json.JsonDocument? json = await uri.DownloadJsonAsync();
+        string? content = json.RootElement.GetProperty("data")[0].GetProperty("content").GetString()!;
         // TODO: 404 NotFound
         return GetImageTags(content).ToArray();
     }
@@ -53,13 +53,13 @@ public static class Meme
         var xDocument = XDocument.Parse((await "https://cangku.icu/feed".DownloadStringAsync())[1..]);
         XNamespace d = "http://www.w3.org/2005/Atom";
         if (xDocument.Root is { } root)
-            foreach (var entry in root.Descendants(d + "entry"))
+            foreach (XElement? entry in root.Descendants(d + "entry"))
             {
                 // xElement.Element(d + "author")?.Element(d + "name")?.Value is not "錒嗄锕"
                 if (entry.Element(d + "title")?.Value is { } entryTitle && entryTitle.Contains("沙雕图集锦"))
                 {
-                    var first = entryTitle.IndexOf('第');
-                    var last = entryTitle.IndexOf('期');
+                    int first = entryTitle.IndexOf('第');
+                    int last = entryTitle.IndexOf('期');
                     if (first is not -1 && last is not -1 && entry.Element(d + "content") is { } content)
                     {
                         // 直接获取图片链接索引、期数
@@ -72,8 +72,8 @@ public static class Meme
 
     private static IEnumerable<string> GetImageTags(string content)
     {
-        var matches = Regex.Matches(content, Pattern);
-        var images = matches.Select(i => i.Groups[1].Value);
+        MatchCollection? matches = Regex.Matches(content, Pattern);
+        IEnumerable<string>? images = matches.Select(i => i.Groups[1].Value);
         return (content.Contains("语录") ? images.SkipLast(2) : images);
     }
 
@@ -95,12 +95,12 @@ public static class Meme
             if (!directory.Exists)
                 return new($"第{issue}期不存在");
 
-            var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
-            var files = directory.GetFiles();
+            uint pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
+            FileInfo[]? files = directory.GetFiles();
             if (pointer >= files.Length - 2)
                 pointer = 0;
 
-            var image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName,
+            byte[]? image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName,
                 (pointer + 2).ToString()));
 
             ++pointer;
@@ -147,7 +147,7 @@ public static class Meme
             if (issue is null || intIssue is -1)
             {
                 // 未指定期数，RSS获取订阅
-                (imgUrls, var cnIssue) = await GetMemeImageSourcesRssAsync();
+                (imgUrls, string? cnIssue) = await GetMemeImageSourcesRssAsync();
 
                 issue = cnIssue.CnToInt().ToString();
                 issuePath = MemePath + issue;
@@ -168,7 +168,7 @@ public static class Meme
             }
 
             // 获取图片
-            for (var i = 0; i < imgUrls.Length; ++i)
+            for (int i = 0; i < imgUrls.Length; ++i)
                 await File.WriteAllBytesAsync(Path.Combine(issuePath, (i + 2).ToString()),
                     await imgUrls[i].DownloadBytesAsync());
 

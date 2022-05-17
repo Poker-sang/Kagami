@@ -1,25 +1,25 @@
-﻿using Konata.Core;
+using System.Text.Json;
+using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
-using System.Text.Json;
 
 namespace Kagami;
 
 public static class Program
 {
-    private static Bot _bot = null!;
+    private static Bot s_bot = null!;
 
     public static async Task Main()
     {
-        _bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
+        s_bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 
         // Print the log
-        _bot.OnLog += (_, e) => Console.WriteLine(e.EventMessage);
+        s_bot.OnLog += (_, e) => Console.WriteLine(e.EventMessage);
 
         // Handle the captcha
-        _bot.OnCaptcha += (s, e) =>
+        s_bot.OnCaptcha += (s, e) =>
         {
             switch (e.Type)
             {
@@ -44,13 +44,13 @@ public static class Program
         //_bot.OnGroupPoke += Poke.OnGroupPoke;
 
         // Handle messages from group
-        _bot.OnGroupMessage += Entry.ParseCommand;
+        s_bot.OnGroupMessage += Entry.ParseCommand;
 
         // Login the bot
-        var result = await _bot.Login();
+        bool result = await s_bot.Login();
         // Update the keystore
         if (result)
-            _ = UpdateKeystore(_bot.KeyStore);
+            _ = UpdateKeystore(s_bot.KeyStore);
 
         // cli
         while (true)
@@ -60,8 +60,8 @@ public static class Program
                 switch (Console.ReadLine())
                 {
                     case @"\stop":
-                        _ = await _bot.Logout();
-                        _bot.Dispose();
+                        _ = await s_bot.Logout();
+                        s_bot.Dispose();
                         return;
                 }
             }
@@ -99,7 +99,7 @@ public static class Program
         // Create new one
         var device = BotDevice.Default();
         {
-            var deviceJson = JsonSerializer.Serialize(device,
+            string? deviceJson = JsonSerializer.Serialize(device,
                 new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText("device.json", deviceJson);
         }
@@ -121,10 +121,10 @@ public static class Program
         Console.WriteLine("For first running, please type your account and password.");
 
         Console.Write("Account: ");
-        var account = Console.ReadLine();
+        string? account = Console.ReadLine();
 
         Console.Write("Password: ");
-        var password = Console.ReadLine();
+        string? password = Console.ReadLine();
 
         // Create new one
         Console.WriteLine("Bot created.");
@@ -138,7 +138,7 @@ public static class Program
     /// <returns></returns>
     private static BotKeyStore UpdateKeystore(BotKeyStore keystore)
     {
-        var deviceJson = JsonSerializer.Serialize(keystore,
+        string? deviceJson = JsonSerializer.Serialize(keystore,
             new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText("keystore.json", deviceJson);
         return keystore;

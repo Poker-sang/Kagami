@@ -1,5 +1,5 @@
-using Konata.Core.Message;
 using System.Diagnostics;
+using Konata.Core.Message;
 
 namespace Kagami.Services;
 
@@ -15,26 +15,26 @@ public static class AcFun
     /// <returns></returns>
     public static async Task<MessageBuilder> GetVideoInfoFrom(string code)
     {
-        var uri = $"https://www.acfun.cn/v/{code}";
+        string? uri = $"https://www.acfun.cn/v/{code}";
         Debug.WriteLine($"[{nameof(AcFun)}]::({nameof(GetVideoInfoFrom)}): Get From: \"{uri}\"");
 
         // UrlDownload the page
-        var html = await uri.DownloadStringAsync();
+        string? html = await uri.DownloadStringAsync();
         // Get meta data
-        var titleMeta = "";
-        var imageMeta = "";
-        var descriptionMeta = "";
+        string? titleMeta = "";
+        string? imageMeta = "";
+        string? descriptionMeta = "";
 
         const string flag = "window.pageInfo = window.videoInfo = ";
         var sr = new StringReader(html);
         while (sr.Peek() >= 0)
         {
-            var line = await sr.ReadLineAsync();
+            string? line = await sr.ReadLineAsync();
             if (line?.Contains(flag) ?? false)
             {
-                var raw_json = line.Replace(flag, "").Trim().TrimEnd(';');
-                var json = System.Text.Json.JsonDocument.Parse(raw_json).RootElement;
-                if (json.TryGetProperty("title", out var element))
+                string? raw_json = line.Replace(flag, "").Trim().TrimEnd(';');
+                System.Text.Json.JsonElement json = System.Text.Json.JsonDocument.Parse(raw_json).RootElement;
+                if (json.TryGetProperty("title", out System.Text.Json.JsonElement element))
                     titleMeta = element.GetString() ?? "";
                 if (json.TryGetProperty("description", out element))
                     descriptionMeta = element.GetString() ?? "";
@@ -45,7 +45,7 @@ public static class AcFun
         }
 
         // UrlDownload the image
-        var image = await imageMeta.DownloadBytesAsync();
+        byte[]? image = await imageMeta.DownloadBytesAsync();
 
         // Build message
         return new MessageBuilder($"{titleMeta}")

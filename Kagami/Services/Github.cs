@@ -1,4 +1,3 @@
-using Kagami.Utils;
 using Konata.Core.Message;
 
 namespace Kagami.Services;
@@ -18,13 +17,13 @@ public static class GitHub
     {
         try
         {
-            var html = await $"https://github.com/{owner}/{repo}.git".DownloadStringAsync();
+            string? html = await $"https://github.com/{owner}/{repo}.git".DownloadStringAsync();
             // Get meta data
-            var metaData = html.GetMetaData("property");
-            var imageMeta = metaData["og:image"];
+            Dictionary<string, string>? metaData = html.GetMetaData("property");
+            string? imageMeta = metaData["og:image"];
 
             // Build message
-            var image = await imageMeta.DownloadBytesAsync();
+            byte[]? image = await imageMeta.DownloadBytesAsync();
             return new MessageBuilder().Image(image);
         }
         catch (HttpRequestException e)

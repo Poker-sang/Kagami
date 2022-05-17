@@ -1,11 +1,11 @@
-﻿using Kagami.ArgTypes;
+using System.ComponentModel;
+using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-using System.ComponentModel;
 
 namespace Kagami.Commands;
 
@@ -16,7 +16,7 @@ public static class HighPermission
         [Description("成员")] At at,
         [Description("禁言时长")] uint? minutes)
     {
-        var time = minutes ?? 10U;
+        uint time = minutes ?? 10U;
 
         try
         {

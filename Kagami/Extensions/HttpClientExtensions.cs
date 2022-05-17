@@ -24,11 +24,11 @@ internal static class HttpClientExtensions
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("PokerKagami", "1.0"));
         if (header is not null)
         {
-            foreach (var (k, v) in header)
+            foreach ((string k, string v) in header)
                 client.DefaultRequestHeaders.Add(k, v);
         }
         Debug.WriteLine($"[{nameof(HttpClientExtensions)}]::{nameof(InitializeHeader)}(): Header: [");
-        foreach (var i in client.DefaultRequestHeaders)
+        foreach (KeyValuePair<string, IEnumerable<string>> i in client.DefaultRequestHeaders)
         {
             Debug.WriteLine($"  {i.Key}:{string.Join(';', i.Value)},");
         }

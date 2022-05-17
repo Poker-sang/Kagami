@@ -16,6 +16,6 @@ internal static class StringResources
     public static readonly string[] ProcessingMessage = { "正在执行中x", "请稍后噢", "很快就完成叻", "开始获取~..." };
 
     public static async Task<T> RandomGetAsync<T>(this IReadOnlyList<T> array)
-        => int.TryParse(await Services.Dice.RollAsync(array.Count), out var index) ? array[index] : array[Random.Shared.Next(array.Count)];
+        => int.TryParse(await Services.Dice.RollAsync(array.Count), out int index) ? array[index] : array[Random.Shared.Next(array.Count)];
 
 }

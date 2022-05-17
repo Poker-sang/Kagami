@@ -1,15 +1,18 @@
-﻿namespace Kagami.Test.Commands;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Kagami.Test.Commands;
 
 [TestClass]
 public class BvCommandTest
 {
-    private const string bvid = "1Fv4y1T7Cc";
+    private const string Bvid = "1Fv4y1T7Cc";
 
     private static async Task TestCommandAsync(string cmd)
     {
         try
         {
-            var result = await Entry.ParseCommand(cmd, null!, null!);
+            Konata.Core.Message.MessageBuilder? result = await Entry.ParseCommand(cmd, null!, null!);
         }
         catch (Exception ex)
         {
@@ -21,19 +24,19 @@ public class BvCommandTest
     [TestMethod("BV号测试 - 大写")]
     public async Task TestBvUpperCaseCommandAsync()
     {
-        var result = await Entry.ParseCommand($"BV{bvid}", null!, null!);
+        Konata.Core.Message.MessageBuilder? result = await Entry.ParseCommand($"BV{Bvid}", null!, null!);
         Assert.IsNotNull(result);
         Console.WriteLine(result.Build().ToString());
     }
 
     [TestMethod("BV号测试 - 小写")]
-    public async Task TestBvLowerCaseCommandAsync() => await TestCommandAsync($"BV{bvid}");
+    public async Task TestBvLowerCaseCommandAsync() => await TestCommandAsync($"BV{Bvid}");
 
     [TestMethod("BV号测试 - 大小写")]
-    public async Task TestBvUpperLowerCaseCommandAsync() => await TestCommandAsync($"BV{bvid}");
+    public async Task TestBvUpperLowerCaseCommandAsync() => await TestCommandAsync($"BV{Bvid}");
 
     [TestMethod("BV号测试 - 小大写")]
-    public async Task TestBvLowerUpperCaseCommandAsync() => await TestCommandAsync($"BV{bvid}");
+    public async Task TestBvLowerUpperCaseCommandAsync() => await TestCommandAsync($"BV{Bvid}");
 
     [TestMethod("BV号测试 - 参数错写")]
     public async Task TestBvErrorCommandAsync() => await TestCommandAsync("BV1Fv4y21T7Cc");

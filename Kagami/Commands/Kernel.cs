@@ -1,35 +1,35 @@
+using System.ComponentModel;
 using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-using System.ComponentModel;
 
 namespace Kagami.Commands;
 
 public static class Kernel
 {
-    [KagamiCmdlet(nameof(Ping)), Description("¿´¿´ÎÒÊÇ·ñ»¹ÔÚÏß")]
+    [KagamiCmdlet(nameof(Ping)), Description("çœ‹çœ‹æˆ‘æ˜¯å¦è¿˜åœ¨çº¿")]
     public static MessageBuilder Ping() => Services.Kernel.Ping;
 
-    [KagamiCmdlet(nameof(Greeting)), Description("×ÔÎÒ½éÉÜ")]
+    [KagamiCmdlet(nameof(Greeting)), Description("è‡ªæˆ‘ä»‹ç»")]
     public static MessageBuilder Greeting() => Services.Kernel.Greeting;
 
-    [KagamiCmdlet(nameof(Status)), Description("ÄÚºËĞÅÏ¢")]
+    [KagamiCmdlet(nameof(Status)), Description("å†…æ ¸ä¿¡æ¯")]
     public static MessageBuilder Status() => Services.Kernel.Status();
 
-    [KagamiCmdlet(nameof(Repeat)), Description("¸´¶ÁÒ»ÌõÏûÏ¢")]
+    [KagamiCmdlet(nameof(Repeat)), Description("å¤è¯»ä¸€æ¡æ¶ˆæ¯")]
     public static MessageBuilder Repeat(GroupMessageEvent group) => Services.Kernel.Repeat(group.Chain);
 
-    [KagamiCmdlet(nameof(Roll)), Description("°ïÎÒÑ¡Ò»¸ö")]
-    public static async ValueTask<MessageBuilder> Roll([Description("Ò»Ğ©Ñ¡Ïî")] string[] items)
+    [KagamiCmdlet(nameof(Roll)), Description("å¸®æˆ‘é€‰ä¸€ä¸ª")]
+    public static async ValueTask<MessageBuilder> Roll([Description("ä¸€äº›é€‰é¡¹")] string[] items)
         => await Services.Kernel.RollAsync(items);
 
-    [KagamiCmdlet(nameof(Member)), Description("»ñÈ¡³ÉÔ±ĞÅÏ¢")]
+    [KagamiCmdlet(nameof(Member)), Description("è·å–æˆå‘˜ä¿¡æ¯")]
     public static async ValueTask<MessageBuilder> Member(Bot bot, GroupMessageEvent group,
-        [Description("³ÉÔ±")] At at)
+        [Description("æˆå‘˜")] At at)
         => await bot.GetGroupMemberInfo(group.GroupUin, at.Uin, true) is { } memberInfo
             ? Services.Kernel.Member(memberInfo)
-            : (new("Ã»ÓĞÕÒµ½Õâ¸öÈËx"));
+            : (new("æ²¡æœ‰æ‰¾åˆ°è¿™ä¸ªäººx"));
 }

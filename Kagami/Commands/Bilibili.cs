@@ -1,6 +1,6 @@
-﻿using Kagami.Attributes;
-using Konata.Core.Message;
 using System.ComponentModel;
+using Kagami.Attributes;
+using Konata.Core.Message;
 
 namespace Kagami.Commands;
 

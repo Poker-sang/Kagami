@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Text;
@@ -28,7 +28,7 @@ public static class Help
     public static string GenerateHtml()
     {
         StringBuilder sb = new(HTML_HEADER);
-        foreach (var cmdlet in Entry.Cmdlets.SelectMany(i => i.Value))
+        foreach (KagamiCmdlet? cmdlet in Entry.Cmdlets.SelectMany(i => i.Value))
         {
             sb.AppendLine(HTML_BLOCK_START);
             if (cmdlet.Permission is not Konata.Core.Common.RoleType.Member)
@@ -48,7 +48,7 @@ public static class Help
             sb.AppendLine(string.Format(HTML_BLOCK_NAME, cmdlet.Name, GenerateArgumentList(cmdlet.Parameters)));
             sb.AppendLine(string.Format(HTML_BLOCK_DESCRIPTION, cmdlet.Description));
             sb.AppendLine(HTML_BLOCK_ARGUMENTS_START);
-            foreach (var parameter in cmdlet.Parameters)
+            foreach (KagamiCmdletParameter? parameter in cmdlet.Parameters)
             {
                 if (parameter.Type == typeof(Konata.Core.Bot) || parameter.Type == typeof(Konata.Core.Events.Model.GroupMessageEvent))
                     continue;
@@ -62,7 +62,7 @@ public static class Help
                 if (parameter.Type.IsEnum)
                 {
                     sb.AppendLine(HTML_BLOCK_ARGUMENTS_ENUM_START);
-                    foreach (var item in parameter.Type.GetFields())
+                    foreach (FieldInfo? item in parameter.Type.GetFields())
                     {
                         if (string.Equals(item.Name, "value__"))
                             continue;
@@ -89,9 +89,9 @@ public static class Help
         if (File.Exists(CACHE_HELP_IMAGE_PATH))
             return File.ReadAllBytes(CACHE_HELP_IMAGE_PATH);
 
-        var bytes = await GenerateImageWithoutCacheAsync();
+        byte[]? bytes = await GenerateImageWithoutCacheAsync();
 
-        await using var fs = File.Create(CACHE_HELP_IMAGE_PATH);
+        await using FileStream? fs = File.Create(CACHE_HELP_IMAGE_PATH);
         await fs.WriteAsync(bytes);
         await fs.FlushAsync();
 
@@ -102,14 +102,14 @@ public static class Help
     {
         string html = GenerateHtml();
         string css = await File.ReadAllTextAsync("Assets/style.css");
-        var client = HttpClientExtensions.Client.InitializeHeader();
+        HttpClient? client = HttpClientExtensions.Client.InitializeHeader();
 
         // 仅在使用 "https://hcti.io/v1/image" 时需要这步操作
         //string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes("user_id:api_key"));
         //client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
-        var response = await client.PostAsync(URI, JsonContent.Create(new RequestArgs(html, css)));
-        var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        var imgUri = json.RootElement.GetProperty("url").GetString();
+        HttpResponseMessage? response = await client.PostAsync(URI, JsonContent.Create(new RequestArgs(html, css)));
+        JsonDocument? json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        string? imgUri = json.RootElement.GetProperty("url").GetString();
         return imgUri switch
         {
             null => throw new InvalidOperationException("请求失败"),
@@ -120,7 +120,7 @@ public static class Help
     private static string GenerateArgumentList(KagamiCmdletParameter[] parameters)
     {
         StringBuilder sb = new();
-        foreach (var parameter in parameters)
+        foreach (KagamiCmdletParameter? parameter in parameters)
         {
             if (parameter.HasDefault)
                 sb.Append('[');

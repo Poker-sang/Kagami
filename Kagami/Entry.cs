@@ -1,13 +1,13 @@
-﻿using Kagami.Attributes;
+using System.ComponentModel;
+using System.Reflection;
+using System.Text;
+using Kagami.Attributes;
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using System.ComponentModel;
-using System.Reflection;
-using System.Text;
 
 namespace Kagami;
 
@@ -29,12 +29,12 @@ internal record class KagamiCmdlet(
 public static class Entry
 {
 
-    private static volatile nuint _messageCounter = 0;
-    public static nuint MessageCounter => _messageCounter;
+    private static volatile nuint s_messageCounter = 0;
+    public static nuint MessageCounter => s_messageCounter;
 
     static Entry()
     {
-        var types = AppDomain
+        IEnumerable<Type>? types = AppDomain
             .CurrentDomain
             .GetAssemblies()
             .SelectMany(asm => asm.GetTypes());
@@ -42,11 +42,11 @@ public static class Entry
         // 不要标注KagamiCmdletClassAttribute了
         //.Where(t => t.CustomAttributes.Any(i => i.AttributeType == typeof(KagamiCmdletClassAttribute)));
         List<KagamiCmdlet> cmdlets = new();
-        foreach (var type in types)
+        foreach (Type? type in types)
         {
             object? target = null;
 
-            foreach (var method in type.GetMethods())
+            foreach (MethodInfo? method in type.GetMethods())
             {
                 // 没有标注是命令的
                 if (method.GetCustomAttribute<KagamiCmdletAttribute>() is not KagamiCmdletAttribute attribute)
@@ -61,7 +61,7 @@ public static class Entry
                     continue;
                 }
 
-                var parameters = method
+                KagamiCmdletParameter[]? parameters = method
                         .GetParameters()
                         .Select(parameter => new KagamiCmdletParameter(
                             parameter.ParameterType,
@@ -114,7 +114,7 @@ public static class Entry
     {
         if (group.Message.Chain is { Count: 0 })
             return;
-        var value = group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
+        MessageBuilder? value = group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
         if (value is not null)
             _ = await bot.SendGroupMessage(group.GroupUin, value);
     }
@@ -132,12 +132,12 @@ public static class Entry
             if (string.IsNullOrWhiteSpace(raw))
                 throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
 
-            var args = SplitCommand(raw);
-            var cmd = args[0]; // 获取第一个元素用作命令
+            string[]? args = SplitCommand(raw);
+            string? cmd = args[0]; // 获取第一个元素用作命令
             if (cmd.Contains(' '))
                 throw new InvalidOperationException("命令名中不能包括空格");
 
-            if (Cmdlets.TryGetValue(CmdletType.Normal, out var set))
+            if (Cmdlets.TryGetValue(CmdletType.Normal, out HashSet<KagamiCmdlet>? set))
                 result = await ParseCommand(cmd, args[1..], set, bot, group, string.Equals);
             if (result is null && Cmdlets.TryGetValue(CmdletType.Prefix, out set))
                 result = await ParseCommand(cmd, args, set, bot, group, (i, o, s) => i?.StartsWith(o, s) ?? false, true);
@@ -166,13 +166,13 @@ public static class Entry
         List<string> result = new();
         StringBuilder sb = new();
         Stack<char> quotes = new();
-        foreach (var ch in raw)
+        foreach (char ch in raw)
         {
             switch (ch)
             {
                 case '"':
                 case '\'':
-                    if (quotes.TryPeek(out var tmp) && tmp == ch)
+                    if (quotes.TryPeek(out char tmp) && tmp == ch)
                         _ = quotes.Pop();
                     else
                         quotes.Push(ch);
@@ -209,7 +209,7 @@ public static class Entry
 
     private static async Task<MessageBuilder> InvokeCommandAsync(this KagamiCmdlet cmdlet, Bot bot, GroupMessageEvent group, params object?[]? parameters)
     {
-        _messageCounter++;
+        s_messageCounter++;
         MessageBuilder? result = null;
         Task<MessageBuilder>? asyncResult = null;
         if (cmdlet.ReturnType == typeof(MessageBuilder))
@@ -243,7 +243,7 @@ public static class Entry
     private static bool ParseArguments(in KagamiCmdlet cmdlet, in Bot bot, in GroupMessageEvent group, in string[] args, out object?[]? parameters)
     {
         parameters = null;
-        var minArgCount = cmdlet.Parameters.Where(i => i.Default is null).Count();
+        int minArgCount = cmdlet.Parameters.Where(i => i.Default is null).Count();
 
         // 断言Cmdlet最少参数数量比传入参数数量多
         if (args.Length < minArgCount)
@@ -251,12 +251,12 @@ public static class Entry
 
         List<object?> arguments = new(cmdlet.Parameters.Length);
         TypeParser.Clear();
-        for (var i = 0; i < cmdlet.Parameters.Length && i < args.Length; i++)
+        for (int i = 0; i < cmdlet.Parameters.Length && i < args.Length; i++)
         {
-            var parameter = cmdlet.Parameters[i];
-            if (!TypeParser.Map.TryGetValue(parameter.Type, out var parser)) // 获取解析器
+            KagamiCmdletParameter? parameter = cmdlet.Parameters[i];
+            if (!TypeParser.Map.TryGetValue(parameter.Type, out TypeParserDelegate? parser)) // 获取解析器
                 throw new NotSupportedException($"类型解析器器不支持的类型 \"{parameter.Type.FullName}\". ");
-            else if (parser(bot, group, args[i], out var obj)) // 解析字符串
+            else if (parser(bot, group, args[i], out object? obj)) // 解析字符串
                 arguments.Add(obj);
             else if (parameter.HasDefault) // failback使用默认值
                 arguments.Add(parameter.Default);
@@ -266,9 +266,9 @@ public static class Entry
 
         if (arguments.Count < cmdlet.Parameters.Length)
         {
-            for (var i = arguments.Count; i < cmdlet.Parameters.Length; i++)
+            for (int i = arguments.Count; i < cmdlet.Parameters.Length; i++)
             {
-                var parameter = cmdlet.Parameters[i];
+                KagamiCmdletParameter? parameter = cmdlet.Parameters[i];
                 if (!parameter.HasDefault)
                     return false;
 
@@ -306,7 +306,7 @@ public static class Entry
         if (string.IsNullOrEmpty(cmd))
             throw new ArgumentException($"\"{nameof(cmd)}\" 不能为 null 或空。", nameof(cmd));
 
-        var cmdset = set.Where(i => matcher(cmd, i.Name, i.IgnoreCase
+        KagamiCmdlet[]? cmdset = set.Where(i => matcher(cmd, i.Name, i.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal))
             .OrderBy(i => i.Parameters.Length) // 按参数数量从小到大排序
@@ -315,11 +315,11 @@ public static class Entry
         if (cmdset.Length is 0)
             return null; // 找不到匹配的命令
 
-        foreach (var cmdlet in cmdset)
+        foreach (KagamiCmdlet? cmdlet in cmdset)
         {
             if (skipPrefix)
                 args[0] = args[0][cmdlet.Name.Length..];
-            if (ParseArguments(cmdlet, bot, group, args, out var parameters))
+            if (ParseArguments(cmdlet, bot, group, args, out object?[]? parameters))
                 return await cmdlet.InvokeCommandAsync(bot, group, parameters);
         }
 

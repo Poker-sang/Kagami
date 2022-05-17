@@ -28,6 +28,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: setup git config
+      run: |
+        # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
@@ -44,6 +50,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
+    - name: Format
+      run: dotnet format --no-restore
+
     - name: Build
       run: dotnet build --no-restore
 
@@ -53,6 +62,12 @@ jobs:
     - name: Build Release
       run: dotnet build --no-restore -c:Release
 
+    - name: commit
+      run: |
+        # Stage the file, commit and push
+        git add .
+        git commit -m "format code"
+        git push
 
     - name: Publish
       uses: actions/upload-artifact@v3

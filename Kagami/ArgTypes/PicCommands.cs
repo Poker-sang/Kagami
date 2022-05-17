@@ -1,4 +1,4 @@
-﻿namespace Kagami.ArgTypes;
+namespace Kagami.ArgTypes;
 
 public enum PicCommands
 {

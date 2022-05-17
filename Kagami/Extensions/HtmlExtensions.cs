@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,12 +18,12 @@ internal static class HtmlExtensions
     {
         var metaDict = new Dictionary<string, string>();
 
-        foreach (var i in keys)
+        foreach (string? i in keys)
         {
-            var pattern = i + @"=""(.*?)""(.|\s)*?content=""(.*?)"".*?>";
+            string? pattern = i + @"=""(.*?)""(.|\s)*?content=""(.*?)"".*?>";
 
             // Match results
-            foreach (Match j in Regex.Matches(html, pattern, RegexOptions.Multiline))
+            foreach (Match j in Regex.Matches(html, pattern, RegexOptions.Multiline).Cast<Match>())
                 _ = metaDict.TryAdd(j.Groups[1].Value, j.Groups[3].Value);
         }
 
