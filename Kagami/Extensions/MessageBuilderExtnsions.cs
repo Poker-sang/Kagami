@@ -1,6 +1,6 @@
 using Konata.Core.Message;
 
-namespace Kagami.Extesnions;
+namespace Kagami.Extensions;
 
 public static class MessageBuilderExtensions
 {

@@ -1,1 +1,1 @@
-global using Kagami.Extesnions;
+global using Kagami.Extensions;

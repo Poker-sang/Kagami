@@ -1,4 +1,4 @@
-namespace Kagami.Extesnions;
+namespace Kagami.Extensions;
 
 internal static class WeakReferenceExtensions
 {

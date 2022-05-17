@@ -1,4 +1,4 @@
-namespace Kagami.Extesnions;
+namespace Kagami.Extensions;
 
 public static class BaseChainExtensions
 {
