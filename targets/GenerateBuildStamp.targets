@@ -14,9 +14,9 @@
     </Exec>
 
     <ItemGroup>
-      <AssemblyMetadata Include="BuildTime" Value="$(__BuildTime)" />
+      <AssemblyMetadata Include="BuildTime" Value="$([System.DateTime]::Now.ToString('O'))" />
       <AssemblyMetadata Include="Revision" Value="$(__GitRevision)" />
-      <AssemblyMetadata Include="Branch" Value="$([System.DateTime]::Now.ToString('O'))" />
+      <AssemblyMetadata Include="Branch" Value="$(__GitBranch)" />
     </ItemGroup>
   </Target>
 
