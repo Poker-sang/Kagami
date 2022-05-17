@@ -25,4 +25,10 @@
 		</Reference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="Assets\style.css">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>

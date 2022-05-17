@@ -1,0 +1,107 @@
+﻿@import url('http://fonts.cdnfonts.com/css/cascadia-code');
+
+:root {
+    --argument-description: rgb(87, 166, 74);
+    --argument-type: rgb(78, 201, 176);
+    --background: rgb(30, 30, 30);
+    /* 背景图像 */
+    --background-image: url('https://static.wikia.nocookie.net/kancolle/images/6/69/Shimakaze_Full.png');
+    --command-arguments: rgb(156, 220, 254);
+    --command-attribute: rgb(78, 201, 176);
+    --command-description: rgb(87, 166, 74);
+    --command-name: rgb(220, 220, 170);
+    --default: rgb(220, 220, 220);
+    --enum-description: rgb(87, 166, 74);
+    --enum-item: rgb(220, 220, 220);
+}
+
+body {
+    background-color: var(--background);
+}
+
+p {
+    margin: 0;
+    margin-bottom: 4px;
+}
+
+code {
+    display: inline-block;
+    background-color: #cccccc30;
+    border-radius: 5px;
+    padding: 3px;
+    font-family: 'Cascadia Code';
+    margin-right: 4px;
+}
+
+ul {
+    margin: 0;
+}
+
+li {
+    list-style: none;
+    margin-bottom: 4px;
+}
+
+.cmd.box::before {
+    content: '';
+    z-index: -1;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-image: var(--background-image);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: right;
+    opacity: 10%;
+}
+
+.cmd.box {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    color: var(--default);
+    row-gap: 16px;
+    column-gap: 8px;
+}
+
+.cmd.block {
+    width: calc((100% - 8px)/2);
+}
+
+.cmd.attribute {
+    color: var(--command-attribute);
+}
+
+.cmd.format {
+    color: var(--command-arguments);
+}
+
+    .cmd.format > code {
+        color: var(--command-name);
+    }
+
+.cmd.description {
+    color: var(--command-description);
+}
+
+.cmd.arguments > li {
+    color: var(--argument-description);
+}
+
+code.type {
+    color: var(--argument-type);
+}
+
+.cmd.arguments > li > code.name {
+    color: var(--command-arguments);
+    color: var(--command-arguments);
+}
+
+.cmd.arguments > ul > li {
+    color: var(--enum-description);
+}
+
+    .cmd.arguments > ul > li > code {
+        color: var(--enum-item);
+    }

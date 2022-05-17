@@ -17,7 +17,7 @@ internal static class HttpClientExtensions
         MaxResponseContentBufferSize = ((long)2 << 30) - 1
     };
 
-    private static HttpClient InitializeHeader(this HttpClient client, Dictionary<string, string>? header = null)
+    public static HttpClient InitializeHeader(this HttpClient client, Dictionary<string, string>? header = null)
     {
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
