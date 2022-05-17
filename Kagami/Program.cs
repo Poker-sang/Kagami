@@ -40,8 +40,7 @@ public static class Program
         };
 
         // Handle poke messages
-        // TODO: 这里需要修改
-        //_bot.OnGroupPoke += Poke.OnGroupPoke;
+        s_bot.OnGroupPoke += Services.Poke.OnGroupPoke;
 
         // Handle messages from group
         s_bot.OnGroupMessage += Entry.ParseCommand;
