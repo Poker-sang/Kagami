@@ -44,6 +44,7 @@ public static class TypeParser
         { typeof(ArgTypes.PicCommands), Enum<ArgTypes.PicCommands> },
         { typeof(ArgTypes.MemeCommand), Enum<ArgTypes.MemeCommand> },
         { typeof(ArgTypes.At), At },
+        { typeof(ArgTypes.Reply), Reply },
         { typeof(GroupMessageEvent), GroupMessageEvent },
         { typeof(string[]), StringArray },
     };
@@ -63,6 +64,12 @@ public static class TypeParser
     {
         bool result = Chain<Konata.Core.Message.Model.AtChain>(group, out object? tmp);
         obj = ((Konata.Core.Message.Model.AtChain)tmp!).AsAt();
+        return result;
+    }
+    private static bool Reply(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+    {
+        bool result = Chain<Konata.Core.Message.Model.ReplyChain>(group, out object? tmp);
+        obj = ((Konata.Core.Message.Model.ReplyChain)tmp!).AsReply();
         return result;
     }
     private static bool Chain<TChain>(in GroupMessageEvent? group, [NotNullWhen(true)] out object? obj)
