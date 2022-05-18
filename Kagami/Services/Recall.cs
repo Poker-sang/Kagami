@@ -18,8 +18,13 @@ internal static class Recall
                 ?.ToDictionary(i => i.Name)
                 ?? throw new InvalidOperationException($"不能成功反射类型{typeof(MessageStruct).FullName}的属性");
 
+    public static async Task<MessageBuilder?> RecallBotMessageAsync(Bot bot, uint groupid, ArgTypes.Reply reply)
+    {
+        if (bot.Uin == reply.Uin)
+            return await RecallAsync(bot, groupid, reply);
+        return null;
+    }
 
-    //[Trigger("撤回我被回复的消息", "回复我的某条信息")]
     public static async Task<MessageBuilder?> RecallAsync(Bot bot, uint groupid, ArgTypes.Reply reply)
     {
         MessageStruct messageStruct = new(0, "", DateTime.Now);
