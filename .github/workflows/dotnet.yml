@@ -57,7 +57,12 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: |
+        dotnet test --no-build --verbosity normal
+        rm .github/help.png
+        cp ./Kagami.Test/bin/Debug/net6.0/test.png .github/help.png
+        git add ".github/help.png"
+        git commit -m "update help image"
 
     - name: Build Release
       run: dotnet build --no-restore -c:Release
