@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Text;
@@ -56,9 +57,17 @@ public static class Help
                 StringBuilder desc = new(parameter.Description);
                 if (parameter.HasDefault)
                     desc.Append(@"<code class=""default"">")
-                        .Append(parameter.Default)
+                        .Append(parameter.Default ?? "null")
                         .Append("</code>");
-                sb.AppendLine(string.Format(HTML_BLOCK_ARGUMENTS_NAME, parameter.Type.Name, parameter.Name, desc.ToString()));
+
+                string typeName = parameter.Type.Name;
+                if (parameter.Type.IsGenericType && parameter.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    typeName = parameter.Type.GenericTypeArguments[0].Name;
+                    typeName += "?";
+                }
+
+                sb.AppendLine(string.Format(HTML_BLOCK_ARGUMENTS_NAME, typeName, parameter.Name, desc.ToString()));
                 if (parameter.Type.IsEnum)
                 {
                     sb.AppendLine(HTML_BLOCK_ARGUMENTS_ENUM_START);
@@ -77,16 +86,18 @@ public static class Help
             sb.AppendLine();
         }
         sb.AppendLine(HTML_FOOTER);
+        Debug.WriteLine(sb);
         return sb.ToString();
     }
     private record class RequestArgs(
         [property: JsonPropertyName("html")] string Html,
         [property: JsonPropertyName(name: "css")] string Css,
-        [property: JsonPropertyName(name: "viewport_width")] uint ViewportWidth = 600
+        [property: JsonPropertyName(name: "viewport_width")] uint ViewportWidth = 600,
+        [property: JsonPropertyName(name: "viewport_height")] uint ViewportHeight = 1200
     );
-    public static async Task<byte[]?> GenerateImageAsync()
+    public static async Task<byte[]?> GenerateImageAsync(bool force = false)
     {
-        if (File.Exists(CACHE_HELP_IMAGE_PATH))
+        if (File.Exists(CACHE_HELP_IMAGE_PATH) && !force)
             return File.ReadAllBytes(CACHE_HELP_IMAGE_PATH);
 
         byte[]? bytes = await GenerateImageWithoutCacheAsync();
@@ -122,12 +133,16 @@ public static class Help
         StringBuilder sb = new();
         foreach (KagamiCmdletParameter? parameter in parameters)
         {
+            if (parameter.Type == typeof(Konata.Core.Bot) || parameter.Type == typeof(Konata.Core.Events.Model.GroupMessageEvent))
+                continue;
+
             if (parameter.HasDefault)
                 sb.Append('[');
             sb.Append(parameter.Name);
             if (parameter.HasDefault)
-                sb.Append(" = ")
-                    .Append(parameter.Default);
+                sb.Append(@" = <code class=""default"">")
+                    .Append(parameter.Default ?? "null")
+                    .Append("</code>");
             if (parameter.HasDefault)
                 sb.Append(']');
 

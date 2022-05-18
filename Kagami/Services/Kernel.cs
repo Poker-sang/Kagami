@@ -67,7 +67,7 @@ public static class Kernel
         .TextLine($"[提交:{KonataBuildStamp.CommitHash[..12]}]")
         .TextLine($"[版本:{KonataBuildStamp.Version}]")
         .TextLine($"[{KonataBuildStamp.BuildTime}]")
-        .TextLine("Konata Project (C) 2022")
+        .TextLine("Konata Project © 2022")
         .TextLine()
         .TextLine("[Poker Kagami] 构建信息")
         .TextLine($"[分支:{KagamiBuildStamp.Branch}]")

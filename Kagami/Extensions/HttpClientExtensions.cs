@@ -8,6 +8,9 @@ namespace Kagami.Extensions;
 internal static class HttpClientExtensions
 {
     private static HttpClient? s_client;
+
+    private static Queue<Task> task = new();
+
     public static HttpClient Client => s_client ??= new(new HttpClientHandler
     {
         AutomaticDecompression = DecompressionMethods.All
@@ -16,14 +19,19 @@ internal static class HttpClientExtensions
         Timeout = new TimeSpan(0, 0, 0, 8000),
         MaxResponseContentBufferSize = ((long)2 << 30) - 1
     };
-
+    private static bool s_shouldRefreshHeader = true;
     public static HttpClient InitializeHeader(this HttpClient client, Dictionary<string, string>? header = null)
     {
+        if (!s_shouldRefreshHeader && header is null)
+            return client;
+
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("PokerKagami", "1.0"));
+        s_shouldRefreshHeader = false;
         if (header is not null)
         {
+            s_shouldRefreshHeader = true;
             foreach ((string k, string v) in header)
                 client.DefaultRequestHeaders.Add(k, v);
         }

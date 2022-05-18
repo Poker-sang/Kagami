@@ -42,7 +42,7 @@ public static class TypeParser
         { typeof(int),  Int32 },
         { typeof(uint), UInt32 },
         { typeof(ArgTypes.PicCommands), Enum<ArgTypes.PicCommands> },
-        { typeof(ArgTypes.MemeCommands), Enum<ArgTypes.MemeCommands> },
+        { typeof(ArgTypes.MemeCommand), Enum<ArgTypes.MemeCommand> },
         { typeof(ArgTypes.At), At },
         { typeof(GroupMessageEvent), GroupMessageEvent },
         { typeof(string[]), StringArray },

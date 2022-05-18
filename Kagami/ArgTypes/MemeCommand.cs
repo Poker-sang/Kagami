@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace Kagami.ArgTypes;
 
-public enum MemeCommands
+public enum MemeCommand
 {
     [Description("更新沙雕图")]
     Update,

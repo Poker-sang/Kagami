@@ -1,4 +1,4 @@
-﻿@import url('http://fonts.cdnfonts.com/css/cascadia-code');
+@import url('http://fonts.cdnfonts.com/css/cascadia-code');
 
 :root {
     --argument-description: rgb(87, 166, 74);
@@ -63,10 +63,11 @@ li {
     color: var(--default);
     row-gap: 16px;
     column-gap: 8px;
+    margin: 8px;
 }
 
 .cmd.block {
-    width: calc((100% - 8px)/2);
+    width: calc((100% - 8px * 3) / 2);
 }
 
 .cmd.attribute {

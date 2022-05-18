@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -114,13 +115,42 @@ public static class Entry
     /// <returns></returns>
     public static async void ParseCommand(Bot bot, GroupMessageEvent group)
     {
-        if (group.GroupUin == bot.Uin)
+        Console.WriteLine($"[\x1b[38;2;0;255;255m{DateTime.Now:T}\u001b[0m]  [\x1b[38;2;0;0;255m{group.GroupName}/\x1b[38;2;0;255;0m{group.MemberCard.Replace("\x7", string.Empty)}\u001b[0m] : {group.Chain}\u001b[0m");
+
+        if (group.MemberUin == bot.Uin)
             return;
 
-        Console.WriteLine($"[\x1b[38;2;0;255;255m{DateTime.Now:T}\u001b[0m]  [\x1b[38;2;0;0;255m{group.GroupName}/\x1b[38;2;0;255;0m{group.MemberCard.Replace("\x7", string.Empty)}\u001b[0m] : {group.Chain}\u001b[0m");
-        if (group.Message.Chain is { Count: 0 })
+        if (!group.Message.Chain.Any())
             return;
-        MessageBuilder? value = group.Message.Chain[0] is TextChain textChain ? await ParseCommand(textChain.Content, bot, group) : null;
+
+        StringBuilder sb = new();
+        foreach (BaseChain chain in group.Message.Chain)
+        {
+            switch (chain.Type)
+            {
+                case BaseChain.ChainType.At:
+                case BaseChain.ChainType.Reply:
+                case BaseChain.ChainType.Image:
+                case BaseChain.ChainType.Flash:
+                case BaseChain.ChainType.Record:
+                case BaseChain.ChainType.Video:
+                case BaseChain.ChainType.QFace:
+                case BaseChain.ChainType.BFace:
+                case BaseChain.ChainType.Xml:
+                case BaseChain.ChainType.MultiMsg:
+                case BaseChain.ChainType.Json:
+                    sb.Append(@$" '<placeholder type=""{chain.Type}""/>' ");
+                    break;
+                case BaseChain.ChainType.Text:
+                    sb.Append(chain.As<TextChain>()?.Content);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        MessageBuilder? value = await ParseCommand(sb.ToString().Trim(), bot, group);
+
         if (value is not null)
             _ = await bot.SendGroupMessage(group.GroupUin, value);
     }
@@ -139,7 +169,7 @@ public static class Entry
                 throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
 
             string[]? args = SplitCommand(raw);
-            string? cmd = args[0]; // 获取第一个元素用作命令
+            string? cmd = args[0].Trim(); // 获取第一个元素用作命令
             if (cmd.Contains(' '))
                 throw new InvalidOperationException("命令名中不能包括空格");
 
@@ -166,6 +196,8 @@ public static class Entry
     /// <exception cref="FormatException">引号栈不平衡时引发的异常</exception>
     internal static string[] SplitCommand(string raw)
     {
+        Debug.WriteLine(raw);
+
         if (string.IsNullOrWhiteSpace(raw))
             throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
 
@@ -209,6 +241,8 @@ public static class Entry
 
         result.Add(sb.ToString());
         _ = sb.Clear();
+
+        result.ForEach(i => Debug.WriteLine($"[arg]: {i}"));
 
         return result.ToArray();
     }
@@ -265,32 +299,37 @@ public static class Entry
         if (args.Length < minArgCount)
             return false;
 
+        // 断言Cmdlet最多参数数量比传入参数数量少
+        if (args.Length > cmdlet.Parameters.Length - appendArgCount)
+            return false;
+
         List<object?> arguments = new(cmdlet.Parameters.Length);
         TypeParser.Clear();
-        for (int i = 0; i < cmdlet.Parameters.Length && i < args.Length + appendArgCount; i++)
+        for (ushort i = 0, p = 0;
+            i < cmdlet.Parameters.Length && i < args.Length + appendArgCount;
+            i++)
         {
             KagamiCmdletParameter? parameter = cmdlet.Parameters[i];
 
-
-
             Type type = parameter.Type;
 
-
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
                 type = type.GenericTypeArguments[0];
-            }
 
             if ((parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent)) && TypeParser.Map[parameter.Type](bot, group, string.Empty, out object? obj))
                 arguments.Add(obj);
             else if (!TypeParser.Map.TryGetValue(type, out TypeParserDelegate? parser)) // 获取解析器
                 throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
-            else if (parser(bot, group, args[i - appendArgCount], out obj)) // 解析字符串
+            else if (parser(bot, group, args[p], out obj)) // 解析字符串
+            {
                 arguments.Add(obj);
-            else if (parameter.HasDefault) // failback使用默认值
-                arguments.Add(parameter.Default);
+                p++;
+            }
+            //else if (parameter.HasDefault) // failback使用默认值
+            //    arguments.Add(parameter.Default);
             else // 失败
                 return false;
+
         }
 
         if (arguments.Count < cmdlet.Parameters.Length)
