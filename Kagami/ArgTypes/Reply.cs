@@ -1,4 +1,4 @@
-﻿namespace Kagami.ArgTypes;
+namespace Kagami.ArgTypes;
 
 /// <summary>
 /// 表示一个回复消息

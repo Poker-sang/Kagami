@@ -4,13 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Konata.Core.Events.Model;
-using Konata.Core.Message.Model;
-
-using Konata.Core.Message;
-
 using Konata.Core;
+using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
+using Konata.Core.Message;
+using Konata.Core.Message.Model;
 
 namespace Kagami.Services;
 internal static class Recall
