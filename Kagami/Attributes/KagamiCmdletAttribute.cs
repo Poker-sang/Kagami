@@ -1,3 +1,4 @@
+using Kagami.Enums;
 using Konata.Core.Common;
 
 namespace Kagami.Attributes;

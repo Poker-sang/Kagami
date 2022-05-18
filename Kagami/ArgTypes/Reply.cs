@@ -8,4 +8,4 @@ namespace Kagami.ArgTypes;
 /// <param name="Uuid"></param>
 /// <param name="Time"></param>
 /// <param name="Preview"></param>
-public sealed record class Reply(uint Uin, uint Sequence, long Uuid, uint Time, string Preview);
+public sealed record Reply(uint Uin, uint Sequence, long Uuid, uint Time, string Preview);

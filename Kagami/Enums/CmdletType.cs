@@ -1,4 +1,4 @@
-namespace Kagami;
+namespace Kagami.Enums;
 
 /// <summary>
 /// 命令类型

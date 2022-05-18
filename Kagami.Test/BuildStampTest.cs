@@ -11,7 +11,7 @@ public class BuildStampTest
     [TestMethod("BuildStamp验证")]
     public void GenerateBuildStampTest()
     {
-        Dictionary<string, string?>? list = typeof(Entry)
+        Dictionary<string, string?>? list = typeof(CommandParser)
             .Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .ToDictionary(

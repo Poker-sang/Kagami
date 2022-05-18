@@ -77,7 +77,7 @@ public static class Kernel
         .TextLine("Poker Kagami Project © 2022 frg2089 & Poker, All Rights Reserved.")
         .TextLine()
         // System status
-        .TextLine($"处理了 {Entry.MessageCounter} 条消息")
+        .TextLine($"处理了 {BotResponse.MessageCounter} 条消息")
         .TextLine($"GC内存 {GC.GetTotalAllocatedBytes().Bytes2MiB(2)} MiB ")
         .Text($"({Math.Round((double)GC.GetTotalAllocatedBytes() / GC.GetTotalMemory(false) * 100, 2)}%)")
         .TextLine($"总内存 {Process.GetCurrentProcess().WorkingSet64.Bytes2MiB(2)} MiB");

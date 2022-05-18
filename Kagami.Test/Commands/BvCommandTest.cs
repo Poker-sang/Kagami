@@ -12,7 +12,7 @@ public class BvCommandTest
     {
         try
         {
-            Konata.Core.Message.MessageBuilder? result = await Entry.ParseCommand(cmd, null!, null!);
+            Konata.Core.Message.MessageBuilder? result = await CommandParser.ParseRawCommand(cmd, null!, null!);
         }
         catch (Exception ex)
         {
@@ -24,7 +24,7 @@ public class BvCommandTest
     [TestMethod("BV号测试 - 大写")]
     public async Task TestBvUpperCaseCommandAsync()
     {
-        Konata.Core.Message.MessageBuilder? result = await Entry.ParseCommand($"BV{Bvid}", null!, null!);
+        Konata.Core.Message.MessageBuilder? result = await CommandParser.ParseRawCommand($"BV{Bvid}", null!, null!);
         Assert.IsNotNull(result);
         Console.WriteLine(result.Build().ToString());
     }

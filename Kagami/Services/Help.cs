@@ -29,67 +29,70 @@ public static class Help
     public static string GenerateHtml()
     {
         StringBuilder sb = new(HTML_HEADER);
-        foreach (KagamiCmdlet? cmdlet in Entry.Cmdlets.SelectMany(i => i.Value))
+        foreach (var cmdlet in BotResponse.Cmdlets.SelectMany(i => i.Value))
         {
-            sb.AppendLine(HTML_BLOCK_START);
+            _ = sb.AppendLine(HTML_BLOCK_START);
             if (cmdlet.Permission is not Konata.Core.Common.RoleType.Member)
             {
-                sb.AppendLine(string.Format(HTML_BLOCK_ATTRIBUTE, "需要" + cmdlet.Permission switch
+                _ = sb.AppendLine(string.Format(HTML_BLOCK_ATTRIBUTE, "需要" + cmdlet.Permission switch
                 {
                     Konata.Core.Common.RoleType.Admin => "管理员",
                     Konata.Core.Common.RoleType.Owner => "群主",
                     _ => "Unknown"
                 } + "特权"));
             }
+
             if (!cmdlet.IgnoreCase)
             {
-                sb.AppendLine(string.Format(HTML_BLOCK_ATTRIBUTE, "此命令区分大小写"));
+                _ = sb.AppendLine(string.Format(HTML_BLOCK_ATTRIBUTE, "此命令区分大小写"));
             }
 
-            sb.AppendLine(string.Format(HTML_BLOCK_NAME, cmdlet.Name, GenerateArgumentList(cmdlet.Parameters)));
-            sb.AppendLine(string.Format(HTML_BLOCK_DESCRIPTION, cmdlet.Description));
-            sb.AppendLine(HTML_BLOCK_ARGUMENTS_START);
-            foreach (KagamiCmdletParameter? parameter in cmdlet.Parameters)
+            _ = sb.AppendLine(string.Format(HTML_BLOCK_NAME, cmdlet.Name, GenerateArgumentList(cmdlet.Parameters)));
+            _ = sb.AppendLine(string.Format(HTML_BLOCK_DESCRIPTION, cmdlet.Description));
+            _ = sb.AppendLine(HTML_BLOCK_ARGUMENTS_START);
+            foreach (var parameter in cmdlet.Parameters)
             {
                 if (parameter.Type == typeof(Konata.Core.Bot) || parameter.Type == typeof(Konata.Core.Events.Model.GroupMessageEvent))
                     continue;
 
                 StringBuilder desc = new(parameter.Description);
                 if (parameter.HasDefault)
-                    desc.Append(@"<code class=""default"">")
+                    _ = desc.Append(@"<code class=""default"">")
                         .Append(parameter.Default ?? "null")
                         .Append("</code>");
 
-                string typeName = parameter.Type.Name;
+                var typeName = parameter.Type.Name;
                 if (parameter.Type.IsGenericType && parameter.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     typeName = parameter.Type.GenericTypeArguments[0].Name;
                     typeName += "?";
                 }
 
-                sb.AppendLine(string.Format(HTML_BLOCK_ARGUMENTS_NAME, typeName, parameter.Name, desc.ToString()));
+                _ = sb.AppendLine(string.Format(HTML_BLOCK_ARGUMENTS_NAME, typeName, parameter.Name, desc.ToString()));
                 if (parameter.Type.IsEnum)
                 {
-                    sb.AppendLine(HTML_BLOCK_ARGUMENTS_ENUM_START);
-                    foreach (FieldInfo? item in parameter.Type.GetFields())
+                    _ = sb.AppendLine(HTML_BLOCK_ARGUMENTS_ENUM_START);
+                    foreach (var item in parameter.Type.GetFields())
                     {
                         if (string.Equals(item.Name, "value__"))
                             continue;
-                        sb.AppendLine(string.Format(HTML_BLOCK_ARGUMENTS_ENUM_ITEM, item.Name, item.GetCustomAttribute<DescriptionAttribute>()?.Description));
+                        _ = sb.AppendLine(string.Format(HTML_BLOCK_ARGUMENTS_ENUM_ITEM, item.Name, item.GetCustomAttribute<DescriptionAttribute>()?.Description));
                     }
 
-                    sb.AppendLine(HTML_BLOCK_ARGUMENTS_ENUM_END);
+                    _ = sb.AppendLine(HTML_BLOCK_ARGUMENTS_ENUM_END);
                 }
             }
-            sb.AppendLine(HTML_BLOCK_END);
-            sb.AppendLine(HTML_BLOCK_END);
-            sb.AppendLine();
+
+            _ = sb.AppendLine(HTML_BLOCK_END);
+            _ = sb.AppendLine(HTML_BLOCK_END);
+            _ = sb.AppendLine();
         }
-        sb.AppendLine(HTML_FOOTER);
+
+        _ = sb.AppendLine(HTML_FOOTER);
         Debug.WriteLine(sb);
         return sb.ToString();
     }
-    private record class RequestArgs(
+    private record RequestArgs(
         [property: JsonPropertyName("html")] string Html,
         [property: JsonPropertyName(name: "css")] string Css,
         [property: JsonPropertyName(name: "viewport_width")] uint ViewportWidth = 600,
@@ -100,9 +103,9 @@ public static class Help
         if (File.Exists(CACHE_HELP_IMAGE_PATH) && !force)
             return File.ReadAllBytes(CACHE_HELP_IMAGE_PATH);
 
-        byte[]? bytes = await GenerateImageWithoutCacheAsync();
+        var bytes = await GenerateImageWithoutCacheAsync();
 
-        await using FileStream? fs = File.Create(CACHE_HELP_IMAGE_PATH);
+        await using var fs = File.Create(CACHE_HELP_IMAGE_PATH);
         await fs.WriteAsync(bytes);
         await fs.FlushAsync();
 
@@ -111,16 +114,16 @@ public static class Help
 
     public static async Task<byte[]?> GenerateImageWithoutCacheAsync()
     {
-        string html = GenerateHtml();
-        string css = await File.ReadAllTextAsync("Assets/style.css");
-        HttpClient? client = HttpClientExtensions.Client.InitializeHeader();
+        var html = GenerateHtml();
+        var css = await File.ReadAllTextAsync("Assets/style.css");
+        var client = HttpClientExtensions.Client.InitializeHeader();
 
         // 仅在使用 "https://hcti.io/v1/image" 时需要这步操作
         //string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes("user_id:api_key"));
         //client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
-        HttpResponseMessage? response = await client.PostAsync(URI, JsonContent.Create(new RequestArgs(html, css)));
-        JsonDocument? json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        string? imgUri = json.RootElement.GetProperty("url").GetString();
+        var response = await client.PostAsync(URI, JsonContent.Create(new RequestArgs(html, css)));
+        var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var imgUri = json.RootElement.GetProperty("url").GetString();
         return imgUri switch
         {
             null => throw new InvalidOperationException("请求失败"),
@@ -128,26 +131,27 @@ public static class Help
         };
     }
 
-    private static string GenerateArgumentList(KagamiCmdletParameter[] parameters)
+    private static string GenerateArgumentList(KagamiParameter[] parameters)
     {
         StringBuilder sb = new();
-        foreach (KagamiCmdletParameter? parameter in parameters)
+        foreach (var parameter in parameters)
         {
             if (parameter.Type == typeof(Konata.Core.Bot) || parameter.Type == typeof(Konata.Core.Events.Model.GroupMessageEvent))
                 continue;
 
             if (parameter.HasDefault)
-                sb.Append('[');
-            sb.Append(parameter.Name);
+                _ = sb.Append('[');
+            _ = sb.Append(parameter.Name);
             if (parameter.HasDefault)
-                sb.Append(@" = <code class=""default"">")
+                _ = sb.Append(@" = <code class=""default"">")
                     .Append(parameter.Default ?? "null")
                     .Append("</code>");
             if (parameter.HasDefault)
-                sb.Append(']');
+                _ = sb.Append(']');
 
-            sb.Append(' ');
+            _ = sb.Append(' ');
         }
+
         return sb.ToString();
     }
 }

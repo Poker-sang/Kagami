@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Kagami.Attributes;
+using Kagami.Enums;
 using Konata.Core.Message;
 
 namespace Kagami.Commands;

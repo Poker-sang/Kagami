@@ -4,4 +4,4 @@ namespace Kagami.ArgTypes;
 /// 表示一个@
 /// </summary>
 /// <param name="Uin">被@的成员</param>
-public sealed record class At(uint Uin);
+public sealed record At(uint Uin);

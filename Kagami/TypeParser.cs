@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-
+using Kagami.ArgTypes;
 using Konata.Core;
 using Konata.Core.Events.Model;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Kagami;
 
@@ -41,35 +41,38 @@ public static class TypeParser
         { typeof(string), String },
         { typeof(int),  Int32 },
         { typeof(uint), UInt32 },
-        { typeof(ArgTypes.PicSource), Enum<ArgTypes.PicSource> },
-        { typeof(ArgTypes.MemeOption), Enum<ArgTypes.MemeOption> },
-        { typeof(ArgTypes.At), At },
-        { typeof(ArgTypes.Reply), Reply },
+        { typeof(PicSource), Enum<PicSource> },
+        { typeof(MemeOption), Enum<MemeOption> },
+        { typeof(At), At },
+        { typeof(Reply), Reply },
         { typeof(GroupMessageEvent), GroupMessageEvent },
         { typeof(string[]), StringArray },
+        { typeof(Raw), Raw }
     };
 
     private static bool Bot(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
         => (bot is not null).Set(bot!, out obj);
     private static bool String(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        => !string.IsNullOrWhiteSpace(raw).Set(raw, out obj);
+        // 过滤<.../>
+        => (!string.IsNullOrWhiteSpace(raw) && (!raw.StartsWith('<') || !raw.EndsWith("/>"))).Set(raw, out obj);
+
     private static bool Int32(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        => int.TryParse(raw, out int tmp).Set(tmp, out obj);
+        => int.TryParse(raw, out var tmp).Set(tmp, out obj);
     private static bool UInt32(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        => uint.TryParse(raw, out uint tmp).Set(tmp, out obj);
+        => uint.TryParse(raw, out var tmp).Set(tmp, out obj);
     private static bool Enum<TEnum>(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
         where TEnum : struct
         => System.Enum.TryParse(raw, true, out TEnum tmp).Set(tmp, out obj);
     private static bool At(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
     {
-        bool result = Chain<Konata.Core.Message.Model.AtChain>(group, out object? tmp);
-        obj = ((Konata.Core.Message.Model.AtChain)tmp!).AsAt();
+        var result = Chain<Konata.Core.Message.Model.AtChain>(group, out var tmp);
+        obj = ((Konata.Core.Message.Model.AtChain?)tmp)?.AsAt();
         return result;
     }
     private static bool Reply(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
     {
-        bool result = Chain<Konata.Core.Message.Model.ReplyChain>(group, out object? tmp);
-        obj = ((Konata.Core.Message.Model.ReplyChain)tmp!).AsReply();
+        var result = Chain<Konata.Core.Message.Model.ReplyChain>(group, out var tmp);
+        obj = ((Konata.Core.Message.Model.ReplyChain?)tmp)?.AsReply();
         return result;
     }
     private static bool Chain<TChain>(in GroupMessageEvent? group, [NotNullWhen(true)] out object? obj)
@@ -80,14 +83,15 @@ public static class TypeParser
             obj = null;
             return false;
         }
-        string cacheName = typeof(TChain).Name;
-        string cacheIndexName = "p" + typeof(TChain).Name;
+
+        var cacheName = typeof(TChain).Name;
+        var cacheIndexName = "p" + typeof(TChain).Name;
 
         TChain[] chains;
         int index;
-        if (s_cache.TryGetValue(cacheName, out object? oAts))
+        if (s_cache.TryGetValue(cacheName, out var oAts))
         {
-            s_cache.TryGetValue(cacheIndexName, out object? oIndex);
+            _ = s_cache.TryGetValue(cacheIndexName, out var oIndex);
             index = (int)(oIndex ?? 0);
             chains = (TChain[])(oAts ?? throw new InvalidProgramException("程序内部逻辑错误!"));
         }
@@ -105,6 +109,7 @@ public static class TypeParser
                 return false;
             }
         }
+
         obj = chains[index];
         s_cache[cacheIndexName] = index + 1;
         return true;
@@ -116,16 +121,20 @@ public static class TypeParser
     //}
     private static bool StringArray(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
     {
-        obj = group?.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).SelectMany(x => Entry.SplitCommand(x.As<Konata.Core.Message.Model.TextChain>()!.Content)).ToArray();
+        obj = group?.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).SelectMany(x => ParserUtilities.SplitRawString(x.As<Konata.Core.Message.Model.TextChain>()!.Content)).ToArray();
         return obj is string[];
     }
     private static bool GroupMessageEvent(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
         => (group is not null).Set(group!, out obj);
 
-
     private static bool Set(this bool b, in object i, out object o)
     {
         o = i;
         return b;
+    }
+    private static bool Raw(in Bot? bot, in GroupMessageEvent? group, in string raw, out object obj)
+    {
+        obj = new Raw(raw);
+        return true;
     }
 }

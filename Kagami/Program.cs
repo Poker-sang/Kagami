@@ -1,11 +1,10 @@
-using System.Diagnostics;
-using System.Text.Json;
-
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace Kagami;
 
@@ -48,23 +47,23 @@ public static class Program
         s_bot.OnGroupPoke += Services.Poke.OnGroupPoke;
 
         // Handle messages from group
-        s_bot.OnGroupMessage += Entry.ParseCommand;
+        s_bot.OnGroupMessage += BotResponse.Entry;
 
         // Login the bot
-        bool result = await s_bot.Login();
+        var result = await s_bot.Login();
         // Update the keystore
         if (result)
             _ = UpdateKeystore(s_bot.KeyStore);
 
         // cli
-        bool isGroup = false;
+        var isGroup = false;
         uint uid = 0;
         while (true)
         {
             try
             {
-                string? message = Console.ReadLine() ?? string.Empty;
-                string[] args = Entry.SplitCommand(message);
+                var message = Console.ReadLine() ?? "";
+                var args = ParserUtilities.SplitRawString(message);
                 if (args.Length is 0)
                     continue;
                 switch (args[0])
@@ -79,6 +78,7 @@ public static class Program
                             Console.WriteLine("[Error]: /refresh <command>");
                             continue;
                         }
+
                         switch (args[1])
                         {
                             case "help":
@@ -87,6 +87,7 @@ public static class Program
                             default:
                                 break;
                         }
+
                         break;
                     case "/join":
                         if (args.Length < 2)
@@ -94,11 +95,13 @@ public static class Program
                             Console.WriteLine("[Error]: /join <群号/好友号>");
                             continue;
                         }
+
                         if (!uint.TryParse(args[1], out uid))
                         {
                             uid = 0;
                             Console.WriteLine("[Error]: /join <群号/好友号>");
                         }
+
                         goto case "/current";
                     case "/switch":
                         isGroup = !isGroup;
@@ -112,10 +115,8 @@ public static class Program
                             Console.WriteLine("[Error]: 需要先加入一个群或好友");
                             continue;
                         }
-                        if (isGroup)
-                            _ = s_bot.SendGroupMessage(uid, message);
-                        else
-                            _ = s_bot.SendFriendMessage(uid, message);
+
+                        _ = isGroup ? s_bot.SendGroupMessage(uid, message) : s_bot.SendFriendMessage(uid, message);
                         break;
                 }
             }
@@ -154,7 +155,7 @@ public static class Program
         // Create new one
         var device = BotDevice.Default();
         {
-            string? deviceJson = JsonSerializer.Serialize(device,
+            var deviceJson = JsonSerializer.Serialize(device,
                 new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText("device.json", deviceJson);
         }
@@ -176,10 +177,10 @@ public static class Program
         Console.WriteLine("For first running, please type your account and password.");
 
         Console.Write("Account: ");
-        string? account = Console.ReadLine();
+        var account = Console.ReadLine();
 
         Console.Write("Password: ");
-        string? password = Console.ReadLine();
+        var password = Console.ReadLine();
 
         // Create new one
         Console.WriteLine("Bot created.");
@@ -193,7 +194,7 @@ public static class Program
     /// <returns></returns>
     private static BotKeyStore UpdateKeystore(BotKeyStore keystore)
     {
-        string? deviceJson = JsonSerializer.Serialize(keystore,
+        var deviceJson = JsonSerializer.Serialize(keystore,
             new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText("keystore.json", deviceJson);
         return keystore;

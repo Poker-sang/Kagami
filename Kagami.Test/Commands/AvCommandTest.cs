@@ -10,7 +10,7 @@ public class AvCommandTest
 
     private static async Task TestCommandAsync(string cmd)
     {
-        Konata.Core.Message.MessageBuilder? result = await Entry.ParseCommand(cmd, null!, null!);
+        Konata.Core.Message.MessageBuilder? result = await CommandParser.ParseRawCommand(cmd, null!, null!);
         Assert.IsNotNull(result);
         Console.WriteLine(result.Build().ToString());
     }
@@ -32,7 +32,7 @@ public class AvCommandTest
     {
         try
         {
-            Konata.Core.Message.MessageBuilder? result = await Entry.ParseCommand("av553BB0774", null!, null!);
+            Konata.Core.Message.MessageBuilder? result = await CommandParser.ParseRawCommand("av553BB0774", null!, null!);
         }
         catch (Exception ex)
         {
