@@ -60,16 +60,16 @@ jobs:
           add: '*.cs'
 
       - name: Build
-        run: dotnet build --no-restore -c:Release
+        run: dotnet build --no-restore
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
 
-      - name: Publish
+      - name: Build Release
+        run: dotnet build --no-restore -c:Release
+
+      - name: Publish Release
         uses: actions/upload-artifact@v3
         with:
           name: artifact
           path: Kagami/bin/Release/net6.0/
-
-      - name: Push
-        run: git push
