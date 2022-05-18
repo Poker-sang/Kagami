@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Konata.Core.Message;
+using System.Diagnostics;
 
 namespace Kagami.Services;
 

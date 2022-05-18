@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Konata.Core;
@@ -6,6 +5,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
+using System.ComponentModel;
 
 namespace Kagami.Commands;
 

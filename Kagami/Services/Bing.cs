@@ -1,6 +1,5 @@
-using System.Text.Json;
-
 using Konata.Core.Message;
+using System.Text.Json;
 
 namespace Kagami.Services;
 

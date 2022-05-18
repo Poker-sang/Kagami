@@ -1,9 +1,7 @@
+using Kagami.Extensions;
+using Konata.Core.Message;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-
-using Kagami.Extensions;
-
-using Konata.Core.Message;
 
 namespace Kagami.Services;
 

@@ -1,10 +1,10 @@
-using System.Reflection;
 using Kagami.Attributes;
 using Kagami.Enums;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
+using System.Reflection;
 
 namespace Kagami.Services;
 internal static class Recall

@@ -1,13 +1,10 @@
-using System.ComponentModel;
-
 using Kagami.ArgTypes;
 using Kagami.Attributes;
-
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-
+using System.ComponentModel;
 using static Kagami.Services.Meme;
 
 namespace Kagami.Commands;
@@ -26,11 +23,11 @@ public static class Meme
                 return SendMemeList();
             // 更新图片
             case MemeOption.Update:
-                {
-                    return intIssue?.ToString() is { } issue
-                        ? await UpdateMemeAsync(issue, (int)intIssue)
-                        : await UpdateMemeAsync();
-                }
+            {
+                return intIssue?.ToString() is { } issue
+                    ? await UpdateMemeAsync(issue, (int)intIssue)
+                    : await UpdateMemeAsync();
+            }
             default:
                 throw new NotSupportedException($"不支持的命令 {commands}");
         }

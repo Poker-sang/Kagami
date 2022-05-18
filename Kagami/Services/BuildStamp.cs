@@ -1,5 +1,5 @@
-using System.Reflection;
 using Konata.Core;
+using System.Reflection;
 
 namespace Kagami.Services;
 
