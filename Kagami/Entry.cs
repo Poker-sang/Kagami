@@ -82,7 +82,7 @@ public static class Entry
                 KagamiCmdlet cmdlet = new(
                     attribute.Name,
                     attribute.Permission,
-                    attribute.CommandType,
+                    attribute.CmdletType,
                     attribute.IgnoreCase,
                     parameters,
                     method.GetCustomAttribute<DescriptionAttribute>()?.Description ?? string.Empty,

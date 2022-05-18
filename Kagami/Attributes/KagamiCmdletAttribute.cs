@@ -17,7 +17,7 @@ internal class KagamiCmdletAttribute : Attribute
     /// <summary>
     /// Default <see cref="CmdletType.Normal"/>
     /// </summary>
-    public CmdletType CommandType { get; init; } = CmdletType.Normal;
+    public CmdletType CmdletType { get; init; } = CmdletType.Normal;
 
     /// <summary>
     /// Default <see langword="true"/>
