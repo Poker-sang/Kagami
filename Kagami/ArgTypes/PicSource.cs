@@ -1,6 +1,6 @@
 namespace Kagami.ArgTypes;
 
-public enum PicCommands
+public enum PicSource
 {
     Bing
 }

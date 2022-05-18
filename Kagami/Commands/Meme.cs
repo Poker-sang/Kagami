@@ -16,16 +16,16 @@ public static class Meme
 {
     [KagamiCmdlet(nameof(Meme)), Description("弔图相关指令")]
     public static async Task<MessageBuilder> GetMeme(
-        [Description("弔图指令")] MemeCommand commands,
+        [Description("弔图指令")] MemeOption commands,
         [Description("期数")] uint? intIssue = null)
     {
         switch (commands)
         {
             // 列出已有期数
-            case MemeCommand.List:
+            case MemeOption.List:
                 return SendMemeList();
             // 更新图片
-            case MemeCommand.Update:
+            case MemeOption.Update:
                 {
                     return intIssue?.ToString() is { } issue
                         ? await UpdateMemeAsync(issue, (int)intIssue)
