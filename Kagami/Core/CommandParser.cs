@@ -85,9 +85,6 @@ public static class CommandParser
 
             if (result is null && BotResponse.Cmdlets.TryGetValue(CmdletType.Prefix, out set))
                 result = await ParseCommand(cmd, args, set, bot, group, (i, o, s) => i?.StartsWith(o, s) ?? false, true);
-
-            if (result is null)
-                throw new NotSupportedException("不支持的Cmdlet类型");
         }
         catch (Exception e)
         {

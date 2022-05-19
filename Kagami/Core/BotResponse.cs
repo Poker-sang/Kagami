@@ -21,7 +21,6 @@ internal static class BotResponse
     /// </summary>
     internal static Dictionary<CmdletType, HashSet<KagamiCmdlet>> Cmdlets { get; }
 
-
     private static volatile nuint s_messageCounter = 0;
     public static nuint MessageCounter => s_messageCounter;
 
@@ -40,8 +39,10 @@ internal static class BotResponse
             foreach (var method in type.GetMethods())
                 // 没有标注是命令的
                 if (method.GetCustomAttribute<KagamiCmdletAttribute>() is { } cmdletAttribute)
+                {
                     if (CommandParser.GetCommand(type, method, cmdletAttribute) is { } cmdlet)
                         tempCmdlets.Add(cmdlet);
+                }
                 else if (method.GetCustomAttribute<KagamiTriggerAttribute>() is { } triggerAttribute)
                     if (TriggerParser.GetTrigger(type, method, triggerAttribute) is { } trigger)
                         tempTriggers.Add(trigger);
@@ -56,6 +57,7 @@ internal static class BotResponse
                 for (var i = 0; i < tempTriggers.Count; ++i)
                     tempTriggers[i] = tempTriggers[i] with { Target = target };
             }
+
             cmdlets.AddRange(tempCmdlets);
             Triggers.AddRange(tempTriggers);
         }
