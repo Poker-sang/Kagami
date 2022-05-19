@@ -6,7 +6,7 @@ using Konata.Core.Interfaces.Api;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace Kagami;
+namespace Kagami.Core;
 
 public static class Program
 {

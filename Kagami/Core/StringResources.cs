@@ -1,4 +1,4 @@
-namespace Kagami;
+namespace Kagami.Core;
 
 internal static class StringResources
 {

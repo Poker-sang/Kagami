@@ -7,7 +7,7 @@ using Konata.Core.Events.Model;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace Kagami;
+namespace Kagami.Core;
 
 internal record KagamiTrigger(
     TriggerPriority TriggerType,
@@ -30,6 +30,7 @@ internal static class TriggerParser
             Console.Error.WriteLine($"警告: 触发方法\"[{type.FullName}]::{method.Name}()\"的返回类型不正确, 将忽略这个命令!");
             return null;
         }
+
         var parameters = method
                 .GetParameters()
                 .Select(parameter => new KagamiParameter(

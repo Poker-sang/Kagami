@@ -6,7 +6,7 @@ using Konata.Core.Interfaces.Api;
 using System.Diagnostics;
 using System.Text;
 
-namespace Kagami;
+namespace Kagami.Core;
 internal static class ParserUtilities
 {
     internal static async Task<T> InvokeAsync<T>(this IKagamiReflectable reflectable, Bot bot, GroupMessageEvent group, params object?[]? parameters)

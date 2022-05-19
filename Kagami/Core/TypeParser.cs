@@ -3,7 +3,7 @@ using Konata.Core;
 using Konata.Core.Events.Model;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Kagami;
+namespace Kagami.Core;
 
 /// <summary>
 /// 类型解析器委托

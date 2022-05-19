@@ -8,11 +8,9 @@ using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 
-namespace Kagami;
+namespace Kagami.Core;
 
 internal record KagamiParameter(Type Type, string Name, bool HasDefault, object? Default, string Description);
 internal record KagamiCmdlet(

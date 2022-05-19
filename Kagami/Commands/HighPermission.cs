@@ -6,6 +6,7 @@ using Konata.Core.Exceptions.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using System.ComponentModel;
+using Kagami.Core;
 
 namespace Kagami.Commands;
 

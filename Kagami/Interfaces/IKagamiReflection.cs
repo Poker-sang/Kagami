@@ -1,4 +1,5 @@
-﻿using Konata.Core.Common;
+﻿using Kagami.Core;
+using Konata.Core.Common;
 
 namespace Kagami.Interfaces;
 internal interface IKagamiReflectable

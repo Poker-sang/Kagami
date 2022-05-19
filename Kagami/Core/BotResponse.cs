@@ -7,7 +7,8 @@ using System.Reflection;
 using System.Text;
 using static Konata.Core.Message.BaseChain;
 
-namespace Kagami;
+namespace Kagami.Core;
+
 internal static class BotResponse
 {
     /// <summary>
@@ -37,19 +38,13 @@ internal static class BotResponse
             var tempCmdlets = new List<KagamiCmdlet>();
             var tempTriggers = new List<KagamiTrigger>();
             foreach (var method in type.GetMethods())
-            {
                 // 没有标注是命令的
                 if (method.GetCustomAttribute<KagamiCmdletAttribute>() is { } cmdletAttribute)
-                {
                     if (CommandParser.GetCommand(type, method, cmdletAttribute) is { } cmdlet)
                         tempCmdlets.Add(cmdlet);
-                }
                 else if (method.GetCustomAttribute<KagamiTriggerAttribute>() is { } triggerAttribute)
-                {
                     if (TriggerParser.GetTrigger(type, method, triggerAttribute) is { } trigger)
                         tempTriggers.Add(trigger);
-                }
-            }
 
             // 静态类的修饰符是abstract sealed
             // 它不是抽象类
