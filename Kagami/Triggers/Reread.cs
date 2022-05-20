@@ -1,11 +1,11 @@
 ﻿using Kagami.ArgTypes;
 using Kagami.Attributes;
+using Kagami.Core;
 using Kagami.Enums;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-using Kagami.Core;
 
 namespace Kagami.Triggers;
 
