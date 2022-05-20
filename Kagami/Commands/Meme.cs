@@ -1,8 +1,5 @@
 using Kagami.ArgTypes;
 using Kagami.Attributes;
-using Konata.Core;
-using Konata.Core.Events.Model;
-using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using System.ComponentModel;
 using static Kagami.Services.Meme;
@@ -11,8 +8,8 @@ namespace Kagami.Commands;
 
 public static class Meme
 {
-    [KagamiCmdlet(nameof(Meme)), Description("弔图相关指令")]
-    public static async Task<MessageBuilder> GetMeme(
+    [KagamiCmdlet(nameof(Meme)), Description("弔图其他指令")]
+    public static async Task<MessageBuilder> MemeCommand(
         [Description("弔图指令")] MemeOption commands,
         [Description("期数")] uint? intIssue = null)
     {
@@ -33,7 +30,7 @@ public static class Meme
         }
     }
 
-    [KagamiCmdlet(nameof(Meme)), Description("弔图相关指令")]
+    [KagamiCmdlet(nameof(Meme)), Description("发送弔图")]
     public static async ValueTask<MessageBuilder> GetMeme(
         [Description("期数")] uint? intIssue = null)
     {

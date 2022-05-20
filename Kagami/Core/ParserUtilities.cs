@@ -42,20 +42,20 @@ internal static class ParserUtilities
     /// <param name="parameters">解析后的对象参数</param>
     /// <returns>是否成功</returns>
     /// <exception cref="NotSupportedException">类型解析器不支持的类型</exception>
-    internal static bool ParseArguments(in IKagamiReflectable reflectable, in Bot bot, in GroupMessageEvent group, in string raw, in string[] args, out object?[]? parameters)
+    internal static bool ParseArguments(in IKagamiReflectable reflectable, in Bot bot, in GroupMessageEvent group, in Raw raw, in string[] args, out object?[]? parameters)
     {
         parameters = null;
 
         // 这个变量表示不计入参数数量的参数个数
         byte appendArgCount = 0;
         if (reflectable.Parameters.Any(i => i.Type == typeof(Bot)))
-            appendArgCount++;
+            ++appendArgCount;
 
         if (reflectable.Parameters.Any(i => i.Type == typeof(GroupMessageEvent)))
-            appendArgCount++;
+            ++appendArgCount;
 
         if (reflectable.Parameters.Any(i => i.Type == typeof(Raw)))
-            appendArgCount++;
+            ++appendArgCount;
 
         var minArgCount = reflectable.Parameters.Length - appendArgCount - reflectable.Parameters
             .Where(i => i.HasDefault).Count();
@@ -85,7 +85,7 @@ internal static class ParserUtilities
             if ((parameter.Type == typeof(Bot)
                 || parameter.Type == typeof(GroupMessageEvent)
                 || parameter.Type == typeof(Raw))
-                && TypeParser.Map[parameter.Type](bot, group, raw, out var obj))
+                && TypeParser.Map[parameter.Type](bot, group, raw.RawString, out var obj))
                 arguments.Add(obj);
             else if (!TypeParser.Map.TryGetValue(type, out var parser)) // 获取解析器
                 throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
@@ -112,7 +112,7 @@ internal static class ParserUtilities
         }
 
         if (arguments.Count < reflectable.Parameters.Length)
-            for (var i = arguments.Count; i < reflectable.Parameters.Length; i++)
+            for (var i = arguments.Count; i < reflectable.Parameters.Length; ++i)
             {
                 var parameter = reflectable.Parameters[i];
                 if ((parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent)) && TypeParser.Map[parameter.Type](bot, group, "", out var obj))

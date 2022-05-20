@@ -7,6 +7,10 @@ using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 
 namespace Kagami.Triggers;
+
+/// <summary>
+/// 复读
+/// </summary>
 public static class Reread
 {
     private static readonly Dictionary<uint, (uint Count, string LastText)> RereadDictionary = new();

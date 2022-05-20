@@ -1,3 +1,4 @@
+using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Kagami.Enums;
 using Konata.Core;
@@ -40,11 +41,11 @@ internal static class BotResponse
                 // 没有标注是命令的
                 if (method.GetCustomAttribute<KagamiCmdletAttribute>() is { } cmdletAttribute)
                 {
-                    if (CommandParser.GetCommand(type, method, cmdletAttribute) is { } cmdlet)
+                    if (CommandParser.Get(method, cmdletAttribute) is { } cmdlet)
                         tempCmdlets.Add(cmdlet);
                 }
                 else if (method.GetCustomAttribute<KagamiTriggerAttribute>() is { } triggerAttribute)
-                    if (TriggerParser.GetTrigger(type, method, triggerAttribute) is { } trigger)
+                    if (TriggerParser.Get(method, triggerAttribute) is { } trigger)
                         tempTriggers.Add(trigger);
 
             // 静态类的修饰符是abstract sealed
@@ -81,10 +82,8 @@ internal static class BotResponse
 
         if (group.MemberUin == bot.Uin)
             return;
-        if (group.GroupUin == 815791942)
-            return;
 
-        s_messageCounter++;
+        ++s_messageCounter;
 
         if (group.Message.Chain is { Count: 0 })
             return;
@@ -97,10 +96,15 @@ internal static class BotResponse
                 _ => @$" '<placeholder type=""{chain.Type}""/>' "
             });
 
-        await ParseRaw(sb.ToString().Trim(), bot, group);
+        await ProcessRaw(bot, group, sb.ToString().Trim());
     }
 
-    public static async Task ParseRaw(string raw, Bot bot, GroupMessageEvent group)
+    /// <summary>
+    /// 开始处理命令
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static async Task ProcessRaw(Bot bot, GroupMessageEvent group, string raw)
     {
         try
         {
@@ -108,7 +112,7 @@ internal static class BotResponse
                 throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
 
             // 弃元：是否处理了消息
-            _ = await TriggerParser.ProcessTrigger(raw, raw.SplitRawString(), Triggers, bot, group);
+            _ = await TriggerParser.Process(bot, group, new Raw(raw));
         }
         catch (Exception e)
         {

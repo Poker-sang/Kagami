@@ -1,4 +1,5 @@
-﻿using Kagami.Attributes;
+﻿using Kagami.ArgTypes;
+using Kagami.Attributes;
 using Kagami.Enums;
 using Kagami.Interfaces;
 using Konata.Core;
@@ -20,14 +21,13 @@ internal record KagamiTrigger(
 
 internal static class TriggerParser
 {
-    internal static KagamiTrigger? GetTrigger(Type type, MethodInfo method, KagamiTriggerAttribute attribute)
+    internal static KagamiTrigger? Get(MethodInfo method, KagamiTriggerAttribute attribute)
     {
-
         if (!(method.ReturnType.IsAssignableFrom(typeof(bool))
             || method.ReturnType.IsAssignableFrom(typeof(Task<bool>))
             || method.ReturnType.IsAssignableFrom(typeof(ValueTask<bool>))))
         {
-            Console.Error.WriteLine($"警告: 触发方法\"[{type.FullName}]::{method.Name}()\"的返回类型不正确, 将忽略这个命令!");
+            Console.Error.WriteLine($"警告: 触发方法\"[{method.ReflectedType?.FullName}]::{method.Name}()\"的返回类型不正确, 将忽略这个触发！");
             return null;
         }
 
@@ -51,17 +51,11 @@ internal static class TriggerParser
             method.Invoke);
     }
 
-    internal static async Task<bool> ProcessTrigger(
-        string raw,
-        string[] args,
-        List<KagamiTrigger> set,
-        Bot bot,
-        GroupMessageEvent group)
+    internal static async Task<bool> Process(Bot bot, GroupMessageEvent group, Raw raw)
     {
-        if (string.IsNullOrEmpty(raw))
-            throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空。", nameof(raw));
+        var args = raw.RawString.SplitRawString();
 
-        foreach (var trigger in set)
+        foreach (var trigger in BotResponse.Triggers)
         {
             if (ParserUtilities.ParseArguments(trigger, bot, group, raw, args, out var parameters))
                 if (await trigger.InvokeAsync<bool>(bot, group, parameters))

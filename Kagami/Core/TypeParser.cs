@@ -103,11 +103,12 @@ public static class TypeParser
                 .Where(i => i is TChain)
                 .Select(i => i.As<TChain>()!)
                 .ToArray();
-            if (chains?.Length is 0 or null)
-            {
-                obj = null;
-                return false;
-            }
+        }
+
+        if (chains is { Length: 0 })
+        {
+            obj = null;
+            return false;
         }
 
         obj = chains[index];

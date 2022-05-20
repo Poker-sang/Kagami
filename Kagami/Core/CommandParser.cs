@@ -29,14 +29,21 @@ internal record KagamiCmdlet(
 /// </summary>
 public static class CommandParser
 {
-    internal static KagamiCmdlet? GetCommand(Type type, MethodInfo method, KagamiCmdletAttribute attribute)
+    /// <summary>
+    /// 尝试反射获取命令
+    /// </summary>
+    /// <param name="type">类型</param>
+    /// <param name="method">方法</param>
+    /// <param name="attribute"></param>
+    /// <returns></returns>
+    internal static KagamiCmdlet? Get(MethodInfo method, KagamiCmdletAttribute attribute)
     {
         // 方法类型不对的
         if (!(method.ReturnType.IsAssignableFrom(typeof(MessageBuilder))
             || method.ReturnType.IsAssignableFrom(typeof(Task<MessageBuilder>))
             || method.ReturnType.IsAssignableFrom(typeof(ValueTask<MessageBuilder>))))
         {
-            Console.Error.WriteLine($"警告: 命令方法\"[{type.FullName}]::{method.Name}()\"的返回类型不正确, 将忽略这个命令!");
+            Console.Error.WriteLine($"警告: 命令方法\"[{method.ReflectedType?.FullName}]::{method.Name}()\"的返回类型不正确, 将忽略这个命令！");
             return null;
         }
 
@@ -70,7 +77,7 @@ public static class CommandParser
     /// <param name="raw">原始字符串</param>
     /// <returns></returns>
     [KagamiTrigger(TriggerPriority.Cmdlet)]
-    public static async Task<bool> ParseRawCommand(Bot bot, GroupMessageEvent group, Raw raw)
+    public static async Task<bool> Process(Bot bot, GroupMessageEvent group, Raw raw)
     {
         MessageBuilder? result = null;
         try
@@ -78,7 +85,7 @@ public static class CommandParser
             var args = raw.RawString.SplitRawString();
             var cmd = args[0].Trim(); // 获取第一个元素用作命令
             if (cmd.Contains(' '))
-                throw new InvalidOperationException("命令名中不能包括空格");
+                return false;
 
             if (BotResponse.Cmdlets.TryGetValue(CmdletType.Normal, out var set))
                 result = await ParseCommand(cmd, args[1..], set, bot, group, string.Equals);
@@ -137,7 +144,7 @@ public static class CommandParser
             if (skipPrefix)
                 args[0] = args[0][cmdlet.Name.Length..];
 
-            if (ParserUtilities.ParseArguments(cmdlet, bot, group, "", args, out var parameters))
+            if (ParserUtilities.ParseArguments(cmdlet, bot, group, new Raw(""), args, out var parameters))
                 return await cmdlet.InvokeAsync<MessageBuilder>(bot, group, parameters);
         }
 
