@@ -5,6 +5,7 @@ using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
+using Kagami.Core;
 
 namespace Kagami.Triggers;
 
@@ -13,7 +14,29 @@ namespace Kagami.Triggers;
 /// </summary>
 public static class Reread
 {
-    private static readonly Dictionary<uint, (uint Count, string LastText)> RereadDictionary = new();
+    /// <summary>
+    /// 键是群号Uin<br/>
+    /// 值1是上次处理的消息的序号（防止漏过消息）<br/>
+    /// 值2是消息连续出现次数<br/>
+    /// 值3是消息内容<br/>
+    /// </summary>
+    /// <remarks>
+    /// 例如：<br/>
+    /// 1. aaa<br/>
+    /// 2. bbb<br/>
+    /// 3. bbb<br/>
+    /// 此时值为（3, 2, "bbb"）<br/><br/>
+    /// - 若新消息为 4. bbb<br/>
+    /// 新消息相同且没有漏消息，之前已出现2次，复读<br/>
+    /// 值设为(0, 0, "bbb")，0表示该消息不再自增（不再复读）<br/><br/>
+    /// - 若新消息为 4. ccc<br/>
+    /// 新消息不同，新值设为(4, 1, "ccc")<br/><br/>
+    /// - 若新消息为 5. bbb<br/>
+    /// 新消息相同，但不连续（漏消息），新值设为(5, 1, "bbb")<br/>
+    /// </remarks>
+    private static readonly Dictionary<uint, (int LastCount, int MessageCount, string LastText)> RereadDictionary = new();
+
+    private static Dictionary<uint, int> MessageCounter => BotResponse.MessageCounter;
 
     /// <summary>
     /// 超过三条连续相同消息复读
@@ -24,32 +47,34 @@ public static class Reread
     [Trigger(TriggerPriority.AfterCmdlet)]
     public static async ValueTask<bool> RereadMessageAsync(Bot bot, GroupMessageEvent group, Raw raw)
     {
-        if (!RereadDictionary.ContainsKey(group.GroupUin))
-            RereadDictionary[group.GroupUin] = (1, "");
-        var (count, lastText) = RereadDictionary[group.GroupUin];
+        var messageCount = 1;
         try
         {
-            // 如果不是复读
-            if (lastText != raw.RawString)
-            {
-                lastText = raw.RawString;
-                count = 1;
-            }
-            // 如果是复读
+            if (!RereadDictionary.ContainsKey(group.GroupUin))
+                return false;
+            (var lastCount, messageCount, var lastText) = RereadDictionary[group.GroupUin];
+            // 如果有漏消息
+            if (lastCount + 1 != MessageCounter[group.GroupUin])
+                messageCount = 1;
+            // 如果没有漏消息
+            // 如果不是重复的
+            else if (lastText != raw.RawString)
+                messageCount = 1;
+            // 如果是重复的
             // 如果已经出现3次
-            else if (count is 2)
+            else if (messageCount is 2)
             {
-                count = 0;
+                messageCount = 0;
                 _ = await bot.SendGroupMessage(group.GroupUin, new MessageBuilder(lastText));
                 return true;
             }
             // 如果没有3次且没有复读过
-            else if (lastText == raw.RawString && count is not 0)
-                ++count;
+            else if (messageCount is not 0)
+                ++messageCount;
         }
         finally
         {
-            RereadDictionary[group.GroupUin] = (count, lastText);
+            RereadDictionary[group.GroupUin] = (MessageCounter[group.GroupUin], messageCount, raw.RawString);
         }
 
         return false;

@@ -98,21 +98,6 @@ internal static class ParserUtilities
         if (minArgCount > arguments.Count)
             return false;
 
-        //if (arguments.Count < reflectable.Parameters.Length)
-        //    for (var i = arguments.Count; i < reflectable.Parameters.Length; ++i)
-        //    {
-        //        var parameter = reflectable.Parameters[i];
-        //        if ((parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent)) && TypeParser.Map[parameter.Type](bot, group, "", out var obj))
-        //        {
-        //            arguments.Add(obj);
-        //            continue;
-        //        }
-
-        //        if (!parameter.HasDefault)
-        //            return false;
-        //        arguments.Add(parameter.Default);
-        //    }
-
         parameters = arguments.ToArray();
         return true;
     }

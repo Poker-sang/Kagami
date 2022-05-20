@@ -80,12 +80,10 @@ internal static class BotResponse
         if (group.MemberUin == bot.Uin)
             return;
 
-        if (group.GroupUin is 815791942) return;
+        if (!MessageCounter.ContainsKey(group.GroupUin))
+            MessageCounter[group.GroupUin] = 0;
 
-        if (!MessageCounter.ContainsKey(group.MemberUin))
-            MessageCounter[group.MemberUin] = 0;
-
-        ++MessageCounter[group.MemberUin];
+        ++MessageCounter[group.GroupUin];
 
         if (group.Message.Chain is { Count: 0 })
             return;
