@@ -120,8 +120,8 @@ public static class CommandParser
             i.Attribute.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal))
-            // 按参数数量从小到大排序
-            .OrderBy(i => i.Parameters.Length)
+            // 按参数数量从大到小排序
+            .OrderBy(i => -i.Parameters.Length)
             .ToArray();
 
         string[] args;
