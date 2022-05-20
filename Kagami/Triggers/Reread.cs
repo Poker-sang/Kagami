@@ -21,7 +21,7 @@ public static class Reread
     /// </summary>
     /// <param name="group"></param>
     /// <returns></returns>
-    [KagamiTrigger(TriggerPriority.AfterCmdlet)]
+    [Trigger(TriggerPriority.AfterCmdlet)]
     public static async ValueTask<bool> RereadMessageAsync(Bot bot, GroupMessageEvent group, Raw raw)
     {
         if (!RereadDictionary.ContainsKey(group.GroupUin))
@@ -29,24 +29,23 @@ public static class Reread
         var (count, lastText) = RereadDictionary[group.GroupUin];
         try
         {
-            if (!string.IsNullOrEmpty(raw.RawString))
-                // 如果不是复读
-                if (lastText != raw.RawString)
-                {
-                    lastText = raw.RawString;
-                    count = 1;
-                }
-                // 如果是复读
-                // 如果已经出现3次
-                else if (count is 2)
-                {
-                    count = 0;
-                    _ = await bot.SendGroupMessage(group.GroupUin, new MessageBuilder(lastText));
-                    return true;
-                }
-                // 如果没有3次且没有复读过
-                else if (lastText == raw.RawString && count is not 0)
-                    ++count;
+            // 如果不是复读
+            if (lastText != raw.RawString)
+            {
+                lastText = raw.RawString;
+                count = 1;
+            }
+            // 如果是复读
+            // 如果已经出现3次
+            else if (count is 2)
+            {
+                count = 0;
+                _ = await bot.SendGroupMessage(group.GroupUin, new MessageBuilder(lastText));
+                return true;
+            }
+            // 如果没有3次且没有复读过
+            else if (lastText == raw.RawString && count is not 0)
+                ++count;
         }
         finally
         {

@@ -1,5 +1,7 @@
 ﻿using Kagami.ArgTypes;
+using Kagami.Attributes;
 using Kagami.Interfaces;
+using Kagami.Records;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
@@ -9,21 +11,22 @@ using System.Text;
 namespace Kagami.Core;
 internal static class ParserUtilities
 {
-    internal static async Task<T> InvokeAsync<T>(this IKagamiReflectable reflectable, Bot bot, GroupMessageEvent group, params object?[]? parameters)
+    internal static async Task<T> InvokeAsync<T, TAttribute>(this Record<TAttribute> reflectable, Bot bot, GroupMessageEvent group, params object?[]? parameters)
+        where TAttribute : Attribute, IKagamiPermission
     {
         T? result = default;
         Task<T>? asyncResult = null;
-        if (reflectable.ReturnType == typeof(T))
-            result = (T)reflectable.Method(reflectable.Target, parameters)!;
-        else if (reflectable.ReturnType == typeof(Task<T>))
-            asyncResult = (Task<T>)reflectable.Method(reflectable.Target, parameters)!;
-        else if (reflectable.ReturnType == typeof(ValueTask<T>))
-            result = await (ValueTask<T>)reflectable.Method(reflectable.Target, parameters)!;
+        if (reflectable.Method.ReturnType == typeof(T))
+            result = (T)reflectable.Method.Invoke(null, parameters)!;
+        else if (reflectable.Method.ReturnType == typeof(Task<T>))
+            asyncResult = (Task<T>)reflectable.Method.Invoke(null, parameters)!;
+        else if (reflectable.Method.ReturnType == typeof(ValueTask<T>))
+            result = await (ValueTask<T>)reflectable.Method.Invoke(null, parameters)!;
 
         if (asyncResult is not null)
         {
             // TODO 重构好看点
-            if (reflectable is KagamiCmdlet)
+            if (typeof(CmdletAttribute) is TAttribute)
                 _ = bot.SendGroupMessage(group.GroupUin, StringResources.ProcessingMessage.RandomGet()).ConfigureAwait(false);
             result = await asyncResult;
         }
@@ -42,89 +45,73 @@ internal static class ParserUtilities
     /// <param name="parameters">解析后的对象参数</param>
     /// <returns>是否成功</returns>
     /// <exception cref="NotSupportedException">类型解析器不支持的类型</exception>
-    internal static bool ParseArguments(in IKagamiReflectable reflectable, in Bot bot, in GroupMessageEvent group, in Raw raw, in string[] args, out object?[]? parameters)
+    internal static bool ParseArguments<T>(
+        this Record<T> reflectable,
+        in Bot bot, in GroupMessageEvent group, in Raw raw,
+        in string[] args, out object?[]? parameters) where T : Attribute, IKagamiPermission
     {
         parameters = null;
-
-        // 这个变量表示不计入参数数量的参数个数
-        byte appendArgCount = 0;
-        if (reflectable.Parameters.Any(i => i.Type == typeof(Bot)))
-            ++appendArgCount;
-
-        if (reflectable.Parameters.Any(i => i.Type == typeof(GroupMessageEvent)))
-            ++appendArgCount;
-
-        if (reflectable.Parameters.Any(i => i.Type == typeof(Raw)))
-            ++appendArgCount;
-
-        var minArgCount = reflectable.Parameters.Length - appendArgCount - reflectable.Parameters
-            .Where(i => i.HasDefault).Count();
-
-        // 断言Cmdlet最少参数数量比传入参数数量多
-        if (args.Length < minArgCount)
-            return false;
-
-        // 断言Cmdlet最多参数数量比传入参数数量少
-        //if (args.Length > reflectable.Parameters.Length - appendArgCount)
-        //    return false;
 
         var arguments = new List<object?>(reflectable.Parameters.Length);
         TypeParser.Clear();
         var argsList = args.ToList();
-        for (ushort i = 0;
-            i < reflectable.Parameters.Length && i < args.Length + appendArgCount;
-            ++i)
-        {
-            var parameter = reflectable.Parameters[i];
 
+        var minArgCount = 0;
+        foreach (var parameter in reflectable.Parameters)
+        {
             var type = parameter.Type;
+            var isNullable = false;
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
                 type = type.GenericTypeArguments[0];
-
-            if ((parameter.Type == typeof(Bot)
-                || parameter.Type == typeof(GroupMessageEvent)
-                || parameter.Type == typeof(Raw))
-                && TypeParser.Map[parameter.Type](bot, group, raw.RawString, out var obj))
-                arguments.Add(obj);
-            else if (!TypeParser.Map.TryGetValue(type, out var parser)) // 获取解析器
-                throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
+                isNullable = true;
+            }
             else
+                ++minArgCount;
+
+            if (parameter.Type == typeof(Bot))
+                arguments.Add(bot);
+            else if (parameter.Type == typeof(GroupMessageEvent))
+                arguments.Add(group);
+            else if (parameter.Type == typeof(Raw))
+                arguments.Add(raw);
+            else if (TypeParser.Map.TryGetValue(type, out var parser))
             {
                 var flag = false;
                 foreach (var arg in argsList)
-                {
-                    if (parser(bot, group, arg, out obj)) // 解析字符串
+                    // 解析字符串
+                    if (parser(bot, group, arg, out var obj))
                     {
                         arguments.Add(obj);
                         _ = argsList.Remove(arg);
                         flag = true;
                         break;
                     }
-                }
-
-                if (!flag)
-                    return false;
+                if (!flag && isNullable)
+                    arguments.Add(Type.Missing);
             }
-            //else if (parameter.HasDefault) // failback使用默认值
-            //    arguments.Add(parameter.Default);
-            // 失败
+            else
+                throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
         }
 
-        if (arguments.Count < reflectable.Parameters.Length)
-            for (var i = arguments.Count; i < reflectable.Parameters.Length; ++i)
-            {
-                var parameter = reflectable.Parameters[i];
-                if ((parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent)) && TypeParser.Map[parameter.Type](bot, group, "", out var obj))
-                {
-                    arguments.Add(obj);
-                    continue;
-                }
+        if (minArgCount > arguments.Count)
+            return false;
 
-                if (!parameter.HasDefault)
-                    return false;
-                arguments.Add(parameter.Default);
-            }
+        //if (arguments.Count < reflectable.Parameters.Length)
+        //    for (var i = arguments.Count; i < reflectable.Parameters.Length; ++i)
+        //    {
+        //        var parameter = reflectable.Parameters[i];
+        //        if ((parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent)) && TypeParser.Map[parameter.Type](bot, group, "", out var obj))
+        //        {
+        //            arguments.Add(obj);
+        //            continue;
+        //        }
+
+        //        if (!parameter.HasDefault)
+        //            return false;
+        //        arguments.Add(parameter.Default);
+        //    }
 
         parameters = arguments.ToArray();
         return true;
@@ -140,35 +127,40 @@ internal static class ParserUtilities
     {
         Debug.WriteLine(raw);
 
-        if (string.IsNullOrWhiteSpace(raw))
+        if (raw is "")
             throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
 
+        // 参数结果
         var result = new List<string>();
+        // 临时记录当前arg
         var sb = new StringBuilder();
+        // 括号栈
         var quotes = new Stack<char>();
         foreach (var ch in raw)
             switch (ch)
             {
                 case '"':
                 case '\'':
+                    // 如果连续两个相同，则弹出
                     if (quotes.TryPeek(out var tmp) && tmp == ch)
                         _ = quotes.Pop();
+                    //不同则入栈
                     else
                         quotes.Push(ch);
                     break;
 
                 case ' ':
+                    // 如果括号栈为空
                     if (quotes.Count is 0)
                     {
+                        // 如果已经记录了参数，则加入结果
                         if (sb.Length > 0)
                             result.Add(sb.ToString());
                         _ = sb.Clear();
                     }
                     else
                         _ = sb.Append(ch);
-
                     break;
-
                 default:
                     _ = sb.Append(ch);
                     break;

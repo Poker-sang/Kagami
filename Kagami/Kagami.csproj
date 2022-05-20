@@ -19,8 +19,6 @@
     </None>
     <Compile Remove="OldFunction\*.cs" />
     <None Include="OldFunction\*.cs" />
-    <Compile Remove="Attributes\TriggerAttribute.cs" />
-    <None Include="Attributes\TriggerAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

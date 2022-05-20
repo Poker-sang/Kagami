@@ -11,7 +11,7 @@ namespace Kagami.Commands;
 /// </summary>
 public static class Picture
 {
-    [KagamiCmdlet(nameof(Pic)), Description("获取图片")]
+    [Cmdlet(nameof(Pic)), Description("获取图片")]
     public static async ValueTask<MessageBuilder> Pic(PicSource command)
         => command switch
         {

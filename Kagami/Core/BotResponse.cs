@@ -1,6 +1,7 @@
 using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Kagami.Enums;
+using Kagami.Records;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Message.Model;
@@ -15,59 +16,55 @@ internal static class BotResponse
     /// <summary>
     /// 通过反射获取所有可用触发
     /// </summary>
-    internal static List<KagamiTrigger> Triggers = new();
+    internal static List<Record<TriggerAttribute>> Triggers = new();
 
     /// <summary>
     /// 通过反射获取所有可用命令
     /// </summary>
-    internal static Dictionary<CmdletType, HashSet<KagamiCmdlet>> Cmdlets { get; }
+    internal static Dictionary<CmdletType, HashSet<Record<CmdletAttribute>>> Cmdlets { get; }
 
-    private static volatile nuint s_messageCounter = 0;
-    public static nuint MessageCounter => s_messageCounter;
+    /// <summary>
+    /// 第一项为好友处理消息数<br/>
+    /// 之后为 &lt;群号, 处理消息数&gt;
+    /// </summary>
+    public static Dictionary<uint, int> MessageCounter { get; }
+        = new() { { 0, 0 } };
 
     static BotResponse()
     {
         var types = AppDomain
             .CurrentDomain
             .GetAssemblies()
-            .SelectMany(asm => asm.GetTypes());
+            .SelectMany(asm => asm.GetTypes())
+            // 静态类的修饰符是 abstract sealed
+            .Where(t => t.Namespace is { } ns && (ns.Contains("Kagami.Commands") || ns.Contains("Kagami.Triggers") || ns.Contains("Kagami.Core")))
+            .Where(t => t.IsAbstract && t.IsSealed);
 
-        var cmdlets = new List<KagamiCmdlet>();
+        var cmdlets = new List<Record<CmdletAttribute>>();
         foreach (var type in types)
         {
-            var tempCmdlets = new List<KagamiCmdlet>();
-            var tempTriggers = new List<KagamiTrigger>();
+            var tempCmdlets = new List<Record<CmdletAttribute>>();
+            var tempTriggers = new List<Record<TriggerAttribute>>();
             foreach (var method in type.GetMethods())
                 // 没有标注是命令的
-                if (method.GetCustomAttribute<KagamiCmdletAttribute>() is { } cmdletAttribute)
+                if (method.GetCustomAttribute<CmdletAttribute>() is { } cmdletAttribute)
                 {
                     if (CommandParser.Get(method, cmdletAttribute) is { } cmdlet)
                         tempCmdlets.Add(cmdlet);
                 }
-                else if (method.GetCustomAttribute<KagamiTriggerAttribute>() is { } triggerAttribute)
+                else if (method.GetCustomAttribute<TriggerAttribute>() is { } triggerAttribute)
                     if (TriggerParser.Get(method, triggerAttribute) is { } trigger)
                         tempTriggers.Add(trigger);
-
-            // 静态类的修饰符是abstract sealed
-            // 它不是抽象类
-            if ((tempCmdlets.Count is not 0 || tempTriggers.Count is not 0) && !type.IsAbstract)
-            {
-                var target = Activator.CreateInstance(type);
-                for (var i = 0; i < tempCmdlets.Count; ++i)
-                    tempCmdlets[i] = tempCmdlets[i] with { Target = target };
-                for (var i = 0; i < tempTriggers.Count; ++i)
-                    tempTriggers[i] = tempTriggers[i] with { Target = target };
-            }
 
             cmdlets.AddRange(tempCmdlets);
             Triggers.AddRange(tempTriggers);
         }
 
-        Cmdlets = cmdlets.GroupBy(i => i.CommandType)
+        Cmdlets = cmdlets.GroupBy(i => i.Attribute.CmdletType)
             .ToDictionary(
             i => i.Key,
-            i => new HashSet<KagamiCmdlet>(i));
-        Triggers.Sort((a, b) => a.TriggerType.CompareTo(b.TriggerType));
+            i => new HashSet<Record<CmdletAttribute>>(i));
+        Triggers.Sort((a, b) => a.Attribute.TriggerPriority.CompareTo(b.Attribute.TriggerPriority));
     }
 
     /// <summary>
@@ -76,14 +73,19 @@ internal static class BotResponse
     /// <param name="bot"></param>
     /// <param name="group"></param>
     /// <returns></returns>
-    public static async void Entry(Bot bot, GroupMessageEvent group)
+    public static async void Entry(Bot bot!!, GroupMessageEvent group!!)
     {
-        Console.WriteLine($"[\x1b[38;2;0;255;255m{DateTime.Now:T}\u001b[0m]  [\x1b[38;2;0;0;255m{group.GroupName}/\x1b[38;2;0;255;0m{group.MemberCard.Replace("\x7", "")}\u001b[0m] : {group.Chain}\u001b[0m");
+        Console.WriteLine($"[\x1b[38;2;0;255;255m{DateTime.Now:T}\u001b[0m] [\x1b[38;2;0;0;255m{group.GroupName}/\x1b[38;2;0;255;0m{group.MemberCard.Replace("\x7", "")}\u001b[0m]: {group.Chain}\u001b[0m");
 
         if (group.MemberUin == bot.Uin)
             return;
 
-        ++s_messageCounter;
+        if (group.GroupUin is 815791942) return;
+
+        if (!MessageCounter.ContainsKey(group.MemberUin))
+            MessageCounter[group.MemberUin] = 0;
+
+        ++MessageCounter[group.MemberUin];
 
         if (group.Message.Chain is { Count: 0 })
             return;
@@ -96,27 +98,20 @@ internal static class BotResponse
                 _ => @$" '<placeholder type=""{chain.Type}""/>' "
             });
 
-        await ProcessRaw(bot, group, sb.ToString().Trim());
-    }
+        var raw = new Raw(sb.ToString().Trim());
 
-    /// <summary>
-    /// 开始处理命令
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static async Task ProcessRaw(Bot bot, GroupMessageEvent group, string raw)
-    {
+        // 忽略空消息
+        if (raw.RawString is "")
+            return;
+
         try
         {
-            if (string.IsNullOrWhiteSpace(raw))
-                throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
-
             // 弃元：是否处理了消息
-            _ = await TriggerParser.Process(bot, group, new Raw(raw));
+            _ = await TriggerParser.Process(bot, group, raw);
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine(e.ToString());
+            Console.Error.WriteLine(e.Message);
         }
     }
 }

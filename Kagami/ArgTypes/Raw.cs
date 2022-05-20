@@ -1,7 +1,19 @@
-﻿namespace Kagami.ArgTypes;
+﻿using Kagami.Core;
+
+namespace Kagami.ArgTypes;
 
 /// <summary>
 /// 生字符串
 /// </summary>
-/// <param name="RawString"></param>
-public sealed record Raw(string RawString);
+public struct Raw
+{
+    public Raw(string raw)
+    {
+        RawString = raw;
+        SplitedArgs = raw.SplitRawString();
+    }
+
+    public string RawString { get; }
+
+    public string[] SplitedArgs { get; }
+}

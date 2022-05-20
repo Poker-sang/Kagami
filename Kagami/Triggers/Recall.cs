@@ -20,7 +20,7 @@ public static class Recall
     /// <param name="reply"></param>
     /// <param name="content"></param>
     /// <returns></returns>
-    [KagamiTrigger(TriggerPriority.BeforeCmdlet)]
+    [Trigger(TriggerPriority.BeforeCmdlet)]
     public static async ValueTask<bool> RecallBotMessageAsync(Bot bot, GroupMessageEvent group, Reply reply, string content)
     {
         if (!content.Contains("recall"))

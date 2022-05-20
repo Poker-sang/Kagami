@@ -1,4 +1,5 @@
 using Kagami.Core;
+using Kagami.Records;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
@@ -33,9 +34,9 @@ public static class Help
         foreach (var cmdlet in BotResponse.Cmdlets.SelectMany(i => i.Value))
         {
             _ = sb.AppendLine(HTML_BLOCK_START);
-            if (cmdlet.Permission is not Konata.Core.Common.RoleType.Member)
+            if (cmdlet.Attribute.Permission is not Konata.Core.Common.RoleType.Member)
             {
-                _ = sb.AppendLine(string.Format(HTML_BLOCK_ATTRIBUTE, "需要" + cmdlet.Permission switch
+                _ = sb.AppendLine(string.Format(HTML_BLOCK_ATTRIBUTE, "需要" + cmdlet.Attribute.Permission switch
                 {
                     Konata.Core.Common.RoleType.Admin => "管理员",
                     Konata.Core.Common.RoleType.Owner => "群主",
@@ -43,12 +44,12 @@ public static class Help
                 } + "特权"));
             }
 
-            if (!cmdlet.IgnoreCase)
+            if (!cmdlet.Attribute.IgnoreCase)
             {
                 _ = sb.AppendLine(string.Format(HTML_BLOCK_ATTRIBUTE, "此命令区分大小写"));
             }
 
-            _ = sb.AppendLine(string.Format(HTML_BLOCK_NAME, cmdlet.Name, GenerateArgumentList(cmdlet.Parameters)));
+            _ = sb.AppendLine(string.Format(HTML_BLOCK_NAME, cmdlet.Attribute.Name, GenerateArgumentList(cmdlet.Parameters)));
             _ = sb.AppendLine(string.Format(HTML_BLOCK_DESCRIPTION, cmdlet.Description));
             _ = sb.AppendLine(HTML_BLOCK_ARGUMENTS_START);
             foreach (var parameter in cmdlet.Parameters)

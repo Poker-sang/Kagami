@@ -10,7 +10,7 @@ namespace Kagami.Commands;
 /// </summary>
 public static class AcFun
 {
-    [KagamiCmdlet(nameof(Ac), CmdletType = CmdletType.Prefix), Description("从AcFun通过ac号获取视频信息")]
+    [Cmdlet(nameof(Ac), CmdletType = CmdletType.Prefix), Description("从AcFun通过ac号获取视频信息")]
     public static async ValueTask<MessageBuilder> Ac(uint ac)
         => await Services.AcFun.GetVideoInfoFrom($"ac{ac}");
 }

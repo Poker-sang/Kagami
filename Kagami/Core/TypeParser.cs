@@ -22,8 +22,8 @@ namespace Kagami.Core;
 /// 失败则返回<see langword="false"/><br/>
 /// </returns>
 public delegate bool TypeParserDelegate(
-    in Bot? bot,
-    in GroupMessageEvent? group,
+    in Bot bot,
+    in GroupMessageEvent group,
     [NotNullWhen(true)] in string raw,
     [NotNullWhen(true)] out object? obj);
 
@@ -32,50 +32,53 @@ public delegate bool TypeParserDelegate(
 /// </summary>
 public static class TypeParser
 {
-    private static readonly Dictionary<string, object?> s_cache = new();
-    public static void Clear() => s_cache.Clear();
+    private static readonly Dictionary<string, object?> Cache = new();
+    public static void Clear() => Cache.Clear();
 
     public static Dictionary<Type, TypeParserDelegate> Map { get; } = new()
     {
-        { typeof(Bot), Bot },
         { typeof(string), String },
+        { typeof(string[]), StringArray },
         { typeof(int),  Int32 },
         { typeof(uint), UInt32 },
         { typeof(PicSource), Enum<PicSource> },
         { typeof(MemeOption), Enum<MemeOption> },
         { typeof(At), At },
         { typeof(Reply), Reply },
-        { typeof(GroupMessageEvent), GroupMessageEvent },
-        { typeof(string[]), StringArray },
-        { typeof(Raw), Raw }
     };
 
-    private static bool Bot(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        => (bot is not null).Set(bot!, out obj);
-    private static bool String(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+    private static bool String(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
         // 过滤<.../>
-        => (!string.IsNullOrWhiteSpace(raw) && (!raw.StartsWith('<') || !raw.EndsWith("/>"))).Set(raw, out obj);
+        => (!(string.IsNullOrWhiteSpace(raw) || raw.StartsWith('<') && raw.EndsWith("/>"))).Set(raw, out obj);
 
-    private static bool Int32(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+    private static bool Int32(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
         => int.TryParse(raw, out var tmp).Set(tmp, out obj);
-    private static bool UInt32(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+
+    private static bool UInt32(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
         => uint.TryParse(raw, out var tmp).Set(tmp, out obj);
-    private static bool Enum<TEnum>(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        where TEnum : struct
+
+    private static bool Enum<TEnum>(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj) where TEnum : struct, Enum
         => System.Enum.TryParse(raw, true, out TEnum tmp).Set(tmp, out obj);
-    private static bool At(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+
+    private static bool At(in Bot? bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
     {
         var result = Chain<Konata.Core.Message.Model.AtChain>(group, out var tmp);
         obj = ((Konata.Core.Message.Model.AtChain?)tmp)?.AsAt();
         return result;
     }
-    private static bool Reply(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
+    private static bool Reply(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
     {
         var result = Chain<Konata.Core.Message.Model.ReplyChain>(group, out var tmp);
         obj = ((Konata.Core.Message.Model.ReplyChain?)tmp)?.AsReply();
         return result;
     }
-    private static bool Chain<TChain>(in GroupMessageEvent? group, [NotNullWhen(true)] out object? obj)
+    private static bool StringArray(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
+    {
+        obj = group?.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).SelectMany(x => ParserUtilities.SplitRawString(x.As<Konata.Core.Message.Model.TextChain>()!.Content)).ToArray();
+        return obj is string[];
+    }
+
+    private static bool Chain<TChain>(in GroupMessageEvent group, [NotNullWhen(true)] out object? obj)
         where TChain : Konata.Core.Message.BaseChain
     {
         if (group is null)
@@ -89,16 +92,16 @@ public static class TypeParser
 
         TChain[] chains;
         int index;
-        if (s_cache.TryGetValue(cacheName, out var oAts))
+        if (Cache.TryGetValue(cacheName, out var oAts))
         {
-            _ = s_cache.TryGetValue(cacheIndexName, out var oIndex);
+            _ = Cache.TryGetValue(cacheIndexName, out var oIndex);
             index = (int)(oIndex ?? 0);
             chains = (TChain[])(oAts ?? throw new InvalidProgramException("程序内部逻辑错误!"));
         }
         else
         {
-            s_cache[cacheIndexName] = index = 0;
-            s_cache[cacheName] = chains = group
+            Cache[cacheIndexName] = index = 0;
+            Cache[cacheName] = chains = group
                 .Chain
                 .Where(i => i is TChain)
                 .Select(i => i.As<TChain>()!)
@@ -112,7 +115,7 @@ public static class TypeParser
         }
 
         obj = chains[index];
-        s_cache[cacheIndexName] = index + 1;
+        Cache[cacheIndexName] = index + 1;
         return true;
     }
     //private static bool MessageChain(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
@@ -120,22 +123,10 @@ public static class TypeParser
     //    obj = group?.Chain;
     //    return obj is Konata.Core.Message.MessageChain;
     //}
-    private static bool StringArray(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-    {
-        obj = group?.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).SelectMany(x => ParserUtilities.SplitRawString(x.As<Konata.Core.Message.Model.TextChain>()!.Content)).ToArray();
-        return obj is string[];
-    }
-    private static bool GroupMessageEvent(in Bot? bot, in GroupMessageEvent? group, in string raw, [NotNullWhen(true)] out object? obj)
-        => (group is not null).Set(group!, out obj);
 
     private static bool Set(this bool b, in object i, out object o)
     {
         o = i;
         return b;
-    }
-    private static bool Raw(in Bot? bot, in GroupMessageEvent? group, in string raw, out object obj)
-    {
-        obj = new Raw(raw);
-        return true;
     }
 }

@@ -8,7 +8,7 @@ namespace Kagami.Commands;
 
 public static class Meme
 {
-    [KagamiCmdlet(nameof(Meme)), Description("弔图其他指令")]
+    [Cmdlet(nameof(Meme)), Description("弔图其他指令")]
     public static async Task<MessageBuilder> MemeCommand(
         [Description("弔图指令")] MemeOption commands,
         [Description("期数")] uint? intIssue = null)
@@ -30,7 +30,7 @@ public static class Meme
         }
     }
 
-    [KagamiCmdlet(nameof(Meme)), Description("发送弔图")]
+    [Cmdlet(nameof(Meme)), Description("发送弔图")]
     public static async ValueTask<MessageBuilder> GetMeme(
         [Description("期数")] uint? intIssue = null)
     {

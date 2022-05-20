@@ -1,12 +1,13 @@
 using Kagami.Enums;
+using Kagami.Interfaces;
 using Konata.Core.Common;
 
 namespace Kagami.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-internal class KagamiCmdletAttribute : Attribute
+internal class CmdletAttribute : Attribute, IKagamiPermission
 {
-    public KagamiCmdletAttribute(string name) => Name = name;
+    public CmdletAttribute(string name) => Name = name;
 
     public string Name { get; init; }
 

@@ -1,9 +1,8 @@
 using Kagami.ArgTypes;
 using Kagami.Attributes;
 using Kagami.Enums;
-using Kagami.Interfaces;
+using Kagami.Records;
 using Konata.Core;
-using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
@@ -11,18 +10,6 @@ using System.ComponentModel;
 using System.Reflection;
 
 namespace Kagami.Core;
-
-internal record KagamiParameter(Type Type, string Name, bool HasDefault, object? Default, string Description);
-internal record KagamiCmdlet(
-    string Name,
-    RoleType Permission,
-    CmdletType CommandType,
-    bool IgnoreCase,
-    KagamiParameter[] Parameters,
-    string Description,
-    object? Target,
-    Type ReturnType,
-    Func<object?, object?[]?, object?> Method) : IKagamiReflectable;
 
 /// <summary>
 /// 处理命令
@@ -36,7 +23,7 @@ public static class CommandParser
     /// <param name="method">方法</param>
     /// <param name="attribute"></param>
     /// <returns></returns>
-    internal static KagamiCmdlet? Get(MethodInfo method, KagamiCmdletAttribute attribute)
+    internal static Record<CmdletAttribute>? Get(MethodInfo method, CmdletAttribute attribute)
     {
         // 方法类型不对的
         if (!(method.ReturnType.IsAssignableFrom(typeof(MessageBuilder))
@@ -58,15 +45,10 @@ public static class CommandParser
                 .ToArray();
 
         return new(
-            attribute.Name,
-            attribute.Permission,
-            attribute.CmdletType,
-            attribute.IgnoreCase,
+            attribute,
             parameters,
             method.GetCustomAttribute<DescriptionAttribute>()?.Description ?? "",
-            null!,
-            method.ReturnType,
-            method.Invoke);
+            method);
 
         // Console.WriteLine($"发现Cmdlet: {cmdlet.Permission} {cmdlet.CommandType} {cmdlet.ReturnType} {(cmdlet.IgnoreCase ? "" : "*")}{cmdlet.Name}({string.Join(", ", cmdlet.Parameters.Select(i => $"{i.Type} {i.Name}{(i.HasDefault ? $" = {i.Default}" : "")}"))})");
     }
@@ -76,32 +58,32 @@ public static class CommandParser
     /// </summary>
     /// <param name="raw">原始字符串</param>
     /// <returns></returns>
-    [KagamiTrigger(TriggerPriority.Cmdlet)]
+    [Trigger(TriggerPriority.Cmdlet)]
     public static async Task<bool> Process(Bot bot, GroupMessageEvent group, Raw raw)
     {
-        MessageBuilder? result = null;
         try
         {
-            var args = raw.RawString.SplitRawString();
-            var cmd = args[0].Trim(); // 获取第一个元素用作命令
-            if (cmd.Contains(' '))
+            if (raw.SplitedArgs[0].Trim().Contains(' '))
                 return false;
 
-            if (BotResponse.Cmdlets.TryGetValue(CmdletType.Normal, out var set))
-                result = await ParseCommand(cmd, args[1..], set, bot, group, string.Equals);
+            MessageBuilder? result = null;
 
-            if (result is null && BotResponse.Cmdlets.TryGetValue(CmdletType.Prefix, out set))
-                result = await ParseCommand(cmd, args, set, bot, group, (i, o, s) => i?.StartsWith(o, s) ?? false, true);
+            if (BotResponse.Cmdlets.TryGetValue(CmdletType.Normal, out var set))
+                result = await ParseCommand(bot, group, raw, CmdletType.Normal, set);
+
+            if (result is null &&
+                BotResponse.Cmdlets.TryGetValue(CmdletType.Prefix, out set))
+                result = await ParseCommand(bot, group, raw, CmdletType.Prefix, set);
+
+            if (result is not null)
+            {
+                _ = await bot.SendGroupMessage(group.GroupUin, result);
+                return true;
+            }
         }
         catch (Exception e)
         {
             Console.Error.WriteLine(e.ToString());
-        }
-
-        if (result is not null)
-        {
-            _ = await bot.SendGroupMessage(group.GroupUin, result);
-            return true;
         }
 
         return false;
@@ -110,44 +92,60 @@ public static class CommandParser
     /// <summary>
     /// 解析命令
     /// </summary>
-    /// <param name="cmd">命令名</param>
-    /// <param name="args">参数</param>
-    /// <param name="set">Cmdlet集</param>
     /// <param name="bot">机器人实例</param>
     /// <param name="group">群消息事件实例</param>
-    /// <param name="matcher">命令匹配器</param>
-    /// <param name="skipPrefix">解析参数时, 首个参数是否需要跳过命令前缀长度个字符</param>
+    /// <param name="raw">生字符串</param>
+    /// <param name="type">命令类型</param>
+    /// <param name="set">Cmdlet集</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException">命令名不能为空</exception>
     /// <exception cref="InvalidOperationException">找不到合适的命令</exception>
     /// <exception cref="NotSupportedException">类型解析器不支持的类型</exception>
     private static async Task<MessageBuilder?> ParseCommand(
-        string cmd,
-        string[] args,
-        HashSet<KagamiCmdlet> set,
         Bot bot,
         GroupMessageEvent group,
-        Func<string?, string, StringComparison, bool> matcher,
-        bool skipPrefix = false)
+        Raw raw,
+        CmdletType type,
+        HashSet<Record<CmdletAttribute>> set)
     {
-        var cmdset = set.Where(i => matcher(cmd, i.Name, i.IgnoreCase
+        Func<string?, string, StringComparison, bool> matcher = type switch
+        {
+            CmdletType.Normal => string.Equals,
+            CmdletType.Prefix => (i, o, s) => i?.StartsWith(o, s) ?? false,
+            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+        };
+
+        var cmd = raw.SplitedArgs[0].Trim();
+        var cmdset = set.Where(i => matcher(cmd, i.Attribute.Name,
+            i.Attribute.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal))
-            .OrderBy(i => i.Parameters.Length) // 按参数数量从小到大排序
+            // 按参数数量从小到大排序
+            .OrderBy(i => i.Parameters.Length)
             .ToArray();
 
-        if (cmdset.Length is 0)
-            return null; // 找不到匹配的命令
+        string[] args;
 
         foreach (var cmdlet in cmdset)
         {
-            if (skipPrefix)
-                args[0] = args[0][cmdlet.Name.Length..];
+            switch (type)
+            {
+                case CmdletType.Normal:
+                    args = raw.SplitedArgs[1..];
+                    break;
+                case CmdletType.Prefix:
+                    args = raw.SplitedArgs;
+                    args[0] = args[0][cmdlet.Attribute.Name.Length..];
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type));
+            }
 
-            if (ParserUtilities.ParseArguments(cmdlet, bot, group, new Raw(""), args, out var parameters))
-                return await cmdlet.InvokeAsync<MessageBuilder>(bot, group, parameters);
+            if (cmdlet.ParseArguments(bot, group, raw, args, out var parameters))
+                return await cmdlet.InvokeAsync<MessageBuilder, CmdletAttribute>(bot, group, parameters);
         }
 
-        throw new InvalidOperationException("找不到合适的cmdlet重载");
+        // 找不到合适的Cmdlet重载
+        return null;
     }
 }

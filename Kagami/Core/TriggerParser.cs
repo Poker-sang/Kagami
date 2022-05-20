@@ -1,27 +1,16 @@
 ﻿using Kagami.ArgTypes;
 using Kagami.Attributes;
-using Kagami.Enums;
-using Kagami.Interfaces;
+using Kagami.Records;
 using Konata.Core;
-using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using System.ComponentModel;
 using System.Reflection;
 
 namespace Kagami.Core;
 
-internal record KagamiTrigger(
-    TriggerPriority TriggerType,
-    RoleType Permission,
-    KagamiParameter[] Parameters,
-    string Description,
-    object? Target,
-    Type ReturnType,
-    Func<object?, object?[]?, object?> Method) : IKagamiReflectable;
-
 internal static class TriggerParser
 {
-    internal static KagamiTrigger? Get(MethodInfo method, KagamiTriggerAttribute attribute)
+    internal static Record<TriggerAttribute>? Get(MethodInfo method, TriggerAttribute attribute)
     {
         if (!(method.ReturnType.IsAssignableFrom(typeof(bool))
             || method.ReturnType.IsAssignableFrom(typeof(Task<bool>))
@@ -42,24 +31,19 @@ internal static class TriggerParser
                 .ToArray();
 
         return new(
-            attribute.TriggerPriority,
-            attribute.Permission,
+            attribute,
             parameters,
             method.GetCustomAttribute<DescriptionAttribute>()?.Description ?? "",
-            null!,
-            method.ReturnType,
-            method.Invoke);
+            method);
     }
 
     internal static async Task<bool> Process(Bot bot, GroupMessageEvent group, Raw raw)
     {
-        var args = raw.RawString.SplitRawString();
-
         foreach (var trigger in BotResponse.Triggers)
         {
-            if (ParserUtilities.ParseArguments(trigger, bot, group, raw, args, out var parameters))
-                if (await trigger.InvokeAsync<bool>(bot, group, parameters))
-                    return true;
+            if (trigger.ParseArguments(bot, group, raw, raw.SplitedArgs, out var parameters) 
+                && await trigger.InvokeAsync<bool, TriggerAttribute>(bot, group, parameters))
+                return true;
         }
 
         return false;
