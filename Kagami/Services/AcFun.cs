@@ -15,26 +15,26 @@ public static class AcFun
     /// <returns></returns>
     public static async Task<MessageBuilder> GetVideoInfoFrom(string code)
     {
-        string? uri = $"https://www.acfun.cn/v/{code}";
+        var uri = $"https://www.acfun.cn/v/{code}";
         Debug.WriteLine($"[{nameof(AcFun)}]::({nameof(GetVideoInfoFrom)}): Get From: \"{uri}\"");
 
         // UrlDownload the page
-        string? html = await uri.DownloadStringAsync();
+        var html = await uri.DownloadStringAsync();
         // Get meta data
-        string? titleMeta = "";
-        string? imageMeta = "";
-        string? descriptionMeta = "";
+        var titleMeta = "";
+        var imageMeta = "";
+        var descriptionMeta = "";
 
         const string flag = "window.pageInfo = window.videoInfo = ";
         var sr = new StringReader(html);
         while (sr.Peek() >= 0)
         {
-            string? line = await sr.ReadLineAsync();
+            var line = await sr.ReadLineAsync();
             if (line?.Contains(flag) ?? false)
             {
-                string? raw_json = line.Replace(flag, "").Trim().TrimEnd(';');
-                System.Text.Json.JsonElement json = System.Text.Json.JsonDocument.Parse(raw_json).RootElement;
-                if (json.TryGetProperty("title", out System.Text.Json.JsonElement element))
+                var raw_json = line.Replace(flag, "").Trim().TrimEnd(';');
+                var json = System.Text.Json.JsonDocument.Parse(raw_json).RootElement;
+                if (json.TryGetProperty("title", out var element))
                     titleMeta = element.GetString() ?? "";
                 if (json.TryGetProperty("description", out element))
                     descriptionMeta = element.GetString() ?? "";
@@ -45,7 +45,7 @@ public static class AcFun
         }
 
         // UrlDownload the image
-        byte[]? image = await imageMeta.DownloadBytesAsync();
+        var image = await imageMeta.DownloadBytesAsync();
 
         // Build message
         return new MessageBuilder($"{titleMeta}")

@@ -109,7 +109,10 @@ internal static class ParserUtilities
         Debug.WriteLine(raw);
 
         if (raw is "")
-            throw new ArgumentException($"\"{nameof(raw)}\" 不能为 null 或空白。", nameof(raw));
+        {
+            Console.Error.WriteLine($"\"{nameof(raw)}\" 不能为 null 或空白。");
+            return Array.Empty<string>();
+        }
 
         // 参数结果
         var result = new List<string>();
@@ -148,7 +151,10 @@ internal static class ParserUtilities
             }
 
         if (quotes.Count is not 0)
-            throw new FormatException("输入的格式不正确");
+        {
+            Console.Error.WriteLine("输入的格式不正确");
+            return Array.Empty<string>();
+        }
 
         result.Add(sb.ToString());
         _ = sb.Clear();

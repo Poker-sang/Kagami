@@ -74,7 +74,7 @@ public static class TypeParser
     }
     private static bool StringArray(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
     {
-        obj = group?.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).SelectMany(x => ParserUtilities.SplitRawString(x.As<Konata.Core.Message.Model.TextChain>()!.Content)).ToArray();
+        obj = group.Chain.Where(x => x.Type is Konata.Core.Message.BaseChain.ChainType.Text).SelectMany(x => ParserUtilities.SplitRawString(x.As<Konata.Core.Message.Model.TextChain>()!.Content)).ToArray();
         return obj is string[];
     }
 
