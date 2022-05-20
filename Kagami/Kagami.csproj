@@ -17,8 +17,6 @@
     <None Update="Assets\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Compile Remove="OldFunction\*.cs" />
-    <None Include="OldFunction\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

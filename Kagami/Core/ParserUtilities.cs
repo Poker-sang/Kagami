@@ -56,7 +56,6 @@ internal static class ParserUtilities
         TypeParser.Clear();
         var argsList = args.ToList();
 
-        var minArgCount = 0;
         foreach (var parameter in reflectable.Parameters)
         {
             var type = parameter.Type;
@@ -67,8 +66,6 @@ internal static class ParserUtilities
                 type = type.GenericTypeArguments[0];
                 isNullable = true;
             }
-            else
-                ++minArgCount;
 
             if (parameter.Type == typeof(Bot))
                 arguments.Add(bot);
@@ -88,15 +85,14 @@ internal static class ParserUtilities
                         flag = true;
                         break;
                     }
-                if (!flag && isNullable)
-                    arguments.Add(Type.Missing);
+                if (!flag)
+                    if (isNullable)
+                        arguments.Add(Type.Missing);
+                    else return false;
             }
             else
                 throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
         }
-
-        if (minArgCount > arguments.Count)
-            return false;
 
         parameters = arguments.ToArray();
         return true;
