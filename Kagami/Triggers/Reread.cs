@@ -6,6 +6,7 @@ using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
+using Konata.Core.Message.Model;
 
 namespace Kagami.Triggers;
 
@@ -45,8 +46,11 @@ public static class Reread
     /// <param name="group"></param>
     /// <returns></returns>
     [Trigger(TriggerPriority.AfterCmdlet)]
-    public static async ValueTask<bool> RereadMessageAsync(Bot bot, GroupMessageEvent group, Raw raw)
+    public static async ValueTask<bool> RereadMessageAsync(Bot bot, GroupMessageEvent group)
     {
+        var text = "";
+        if (group.Chain is { Count: 1 } && group.Chain[0] is TextChain textChain)
+            text = textChain.Content;
         var messageCount = 1;
         try
         {
@@ -58,7 +62,7 @@ public static class Reread
                 messageCount = 1;
             // 如果没有漏消息
             // 如果不是重复的
-            else if (lastText != raw.RawString)
+            else if (text is not "" && lastText != text)
                 messageCount = 1;
             // 如果是重复的
             // 如果已经出现3次
@@ -74,7 +78,7 @@ public static class Reread
         }
         finally
         {
-            RereadDictionary[group.GroupUin] = (MessageCounter[group.GroupUin], messageCount, raw.RawString);
+            RereadDictionary[group.GroupUin] = (MessageCounter[group.GroupUin], messageCount, text);
         }
 
         return false;
