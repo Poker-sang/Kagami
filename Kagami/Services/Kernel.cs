@@ -28,11 +28,7 @@ public static class Kernel
     /// </summary>
     /// <param name="message">消息</param>
     /// <returns></returns>
-    public static MessageBuilder Repeat(MessageChain message)
-        => new MessageBuilder(
-            message[0].As<Konata.Core.Message.Model.TextChain>()
-                !.Content[(nameof(Repeat).Length + 1)..])
-        .Add(message[1..]);
+    public static MessageBuilder Repeat(MessageChain message) => new(message[1..]);
 
     /// <summary>
     /// 获取成员信息
@@ -45,7 +41,8 @@ public static class Kernel
     public static MessageBuilder Member(BotMember memberInfo)
         => new MessageBuilder($"[{memberInfo.NickName}]")
             .TextLine($"群名片：{memberInfo.Name}")
-            .TextLine($"加入时间：{memberInfo.JoinTime}")
+            .TextLine($"加入时间：{(memberInfo.JoinTime is 0
+                ? "未知" : DateTimeOffset.FromUnixTimeSeconds(memberInfo.JoinTime).LocalDateTime)}")
             .TextLine($"类别：{memberInfo.Role switch
             {
                 RoleType.Member => "成员",
@@ -61,7 +58,7 @@ public static class Kernel
     /// </summary>
     /// <returns></returns>
     public static MessageBuilder Status()
-    => new MessageBuilder("[Konata] 内核信息")
+    => new MessageBuilder("[Konata.Core] 内核信息")
         // Core descriptions
         .TextLine($"[分支:{KonataBuildStamp.Branch}]")
         .TextLine($"[提交:{KonataBuildStamp.CommitHash[..12]}]")

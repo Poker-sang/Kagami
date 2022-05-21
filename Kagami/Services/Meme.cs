@@ -13,19 +13,19 @@ public static class Meme
     /// <summary>
     /// 图片存放总路径
     /// </summary>
-    public static string MemePath { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memes");
+    private static string MemePath { get; } = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memes");
     /// <summary>
     /// 记录目前文件夹中最新一期期数的指针
     /// </summary>
-    public static string NewPath { get; } = Path.Combine(MemePath, "new.ptr");
+    private static string NewPath { get; } = Path.Combine(MemePath, "new.ptr");
     /// <summary>
     /// 记录现在已经发到第几张图片的指针
     /// </summary>
-    public const string Pointer = "0.ptr";
+    private const string Pointer = "0.ptr";
     /// <summary>
     /// 记录某期所有图片链接的索引
     /// </summary>
-    public const string Indexer = "1.idx";
+    private const string Indexer = "1.idx";
 
     public static bool IsRepoEmpty => !File.Exists(NewPath);
 

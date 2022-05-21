@@ -31,5 +31,5 @@ public static class Kernel
         [Description("成员")] At at)
         => await bot.GetGroupMemberInfo(group.GroupUin, at.Uin, true) is { } memberInfo
             ? Services.Kernel.Member(memberInfo)
-            : (new("没有找到这个人x"));
+            : new("没有找到这个人x");
 }

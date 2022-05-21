@@ -62,7 +62,7 @@ public static class Reread
                 messageCount = 1;
             // 如果没有漏消息
             // 如果不是重复的
-            else if (text is not "" && lastText != text)
+            else if (text is "" || lastText != text)
                 messageCount = 1;
             // 如果是重复的
             // 如果已经出现3次
