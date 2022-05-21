@@ -28,7 +28,10 @@ public static class Kernel
     /// </summary>
     /// <param name="message">消息</param>
     /// <returns></returns>
-    public static MessageBuilder Repeat(MessageChain message) => new(message[1..]);
+    public static MessageBuilder Repeat(MessageChain message) => new MessageBuilder(
+            message[0].As<Konata.Core.Message.Model.TextChain>()
+                !.Content[(nameof(Repeat).Length + 1)..])
+        .Add(message[1..]);
 
     /// <summary>
     /// 获取成员信息

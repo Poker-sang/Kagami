@@ -59,13 +59,14 @@ internal static class ParserUtilities
         foreach (var parameter in reflectable.Parameters)
         {
             var type = parameter.Type;
-            var isNullable = false;
+            var hasDefault = false;
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
                 type = type.GenericTypeArguments[0];
-                isNullable = true;
-            }
+
+            if (parameter.HasDefault)
+                hasDefault = true;
+
 
             if (parameter.Type == typeof(Bot))
                 arguments.Add(bot);
@@ -86,9 +87,10 @@ internal static class ParserUtilities
                         break;
                     }
                 if (!flag)
-                    if (isNullable)
+                    if (hasDefault)
                         arguments.Add(Type.Missing);
-                    else return false;
+                    else
+                        return false;
             }
             else
                 throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
