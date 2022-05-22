@@ -1,6 +1,7 @@
 using Kagami.Core;
 using Konata.Core.Common;
 using Konata.Core.Message;
+using Konata.Core.Message.Model;
 using System.Diagnostics;
 
 namespace Kagami.Services;
@@ -28,10 +29,8 @@ public static class Kernel
     /// </summary>
     /// <param name="message">消息</param>
     /// <returns></returns>
-    public static MessageBuilder Repeat(MessageChain message) => new MessageBuilder(
-            message[0].As<Konata.Core.Message.Model.TextChain>()
-                !.Content[(nameof(Repeat).Length + 1)..])
-        .Add(message[1..]);
+    public static MessageBuilder Repeat(MessageChain chain)
+        => new MessageBuilder(((TextChain)chain[0]).Content[nameof(Repeat).Length..].Trim()).Add(chain[1..]);
 
     /// <summary>
     /// 获取成员信息
