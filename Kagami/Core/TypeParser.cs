@@ -38,13 +38,13 @@ public static class TypeParser
     public static Dictionary<Type, TypeParserDelegate> Map { get; } = new()
     {
         { typeof(string), String },
-        { typeof(string[]), StringArray },
         { typeof(int),  Int32 },
         { typeof(uint), UInt32 },
         { typeof(PicSource), Enum<PicSource> },
         { typeof(MemeOption), Enum<MemeOption> },
         { typeof(At), At },
         { typeof(Reply), Reply },
+        { typeof(string[]), StringArray }
     };
 
     private static bool String(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)

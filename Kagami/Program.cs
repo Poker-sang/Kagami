@@ -14,7 +14,6 @@ public static class Program
 
     public static async Task Main()
     {
-        Console.WriteLine("Running...");
         s_bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 
         // Print the log
@@ -55,6 +54,8 @@ public static class Program
         if (result)
             _ = UpdateKeystore(s_bot.KeyStore);
 
+        Console.WriteLine("Running...");
+
         // cli
         var isGroup = false;
         uint uid = 0;
@@ -72,6 +73,9 @@ public static class Program
                         _ = await s_bot.Logout();
                         s_bot.Dispose();
                         return;
+                    case "/echo":
+                        BotResponse.AllowEcho = true;
+                        break;
                     case "/refresh":
                         if (args.Length < 2)
                         {

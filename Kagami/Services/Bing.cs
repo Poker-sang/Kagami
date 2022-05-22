@@ -1,5 +1,4 @@
 using Konata.Core.Message;
-using System.Text.Json;
 
 namespace Kagami.Services;
 
@@ -10,10 +9,10 @@ public static class Bing
 
     public static async Task<MessageBuilder> PictureAsync()
     {
-        JsonDocument json = await (BaseUri + Image).DownloadJsonAsync();
-        JsonElement obj = json.RootElement.GetProperty("images")[0];
-        string uri = obj.GetProperty("url").GetString()!.TrimStart('/');
-        byte[]? data = await (BaseUri + uri).DownloadBytesAsync();
+        var json = await (BaseUri + Image).DownloadJsonAsync();
+        var obj = json.RootElement.GetProperty("images")[0];
+        var uri = obj.GetProperty("url").GetString()!.TrimStart('/');
+        var data = await (BaseUri + uri).DownloadBytesAsync();
         return new MessageBuilder()
             .Image(data)
             .TextLine()

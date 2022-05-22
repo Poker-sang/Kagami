@@ -24,7 +24,7 @@ public static class Kernel
 
     [Cmdlet(nameof(Roll)), Description("帮我选一个")]
     public static MessageBuilder Roll([Description("一些选项")] string[] items)
-        => Services.Kernel.Roll(items);
+        => Services.Kernel.Roll(items[1..]);
 
     [Cmdlet(nameof(Member)), Description("获取成员信息")]
     public static async ValueTask<MessageBuilder> Member(Bot bot, GroupMessageEvent group,

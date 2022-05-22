@@ -9,7 +9,7 @@ internal static class HttpClientExtensions
 {
     private static HttpClient? s_client;
 
-    private static Queue<Task> task = new();
+    private static readonly Queue<Task> task = new();
 
     public static HttpClient Client => s_client ??= new(new HttpClientHandler
     {
@@ -32,14 +32,16 @@ internal static class HttpClientExtensions
         if (header is not null)
         {
             s_shouldRefreshHeader = true;
-            foreach ((string k, string v) in header)
+            foreach ((var k, var v) in header)
                 client.DefaultRequestHeaders.Add(k, v);
         }
+
         Debug.WriteLine($"[{nameof(HttpClientExtensions)}]::{nameof(InitializeHeader)}(): Header: [");
-        foreach (KeyValuePair<string, IEnumerable<string>> i in client.DefaultRequestHeaders)
+        foreach (var i in client.DefaultRequestHeaders)
         {
             Debug.WriteLine($"  {i.Key}:{string.Join(';', i.Value)},");
         }
+
         Debug.WriteLine($"]");
         return client;
     }

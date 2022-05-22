@@ -30,6 +30,8 @@ internal static class BotResponse
     public static Dictionary<uint, int> MessageCounter { get; }
         = new() { { 0, 0 } };
 
+    internal static bool AllowEcho = false;
+
     static BotResponse()
     {
         var types = AppDomain
@@ -77,8 +79,11 @@ internal static class BotResponse
     {
         Console.WriteLine($"[\x1b[38;2;0;255;255m{DateTime.Now:T}\u001b[0m] [\x1b[38;2;0;0;255m{group.GroupName}/\x1b[38;2;0;255;0m{group.MemberCard.Replace("\x7", "")}\u001b[0m]: {group.Chain}\u001b[0m");
 
-        if (group.MemberUin == bot.Uin)
+        if (!AllowEcho && group.MemberUin == bot.Uin)
             return;
+
+        if (group.MemberUin == bot.Uin)
+            AllowEcho = false;
 
         if (!MessageCounter.ContainsKey(group.GroupUin))
             MessageCounter[group.GroupUin] = 0;
