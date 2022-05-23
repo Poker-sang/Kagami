@@ -27,7 +27,7 @@ public static class Kernel
     /// <summary>
     /// 复读机
     /// </summary>
-    /// <param name="message">消息</param>
+    /// <param name="chain">消息</param>
     /// <returns></returns>
     public static MessageBuilder Repeat(MessageChain chain)
         => new MessageBuilder(((TextChain)chain[0]).Content[nameof(Repeat).Length..].Trim()).Add(chain[1..]);
@@ -35,9 +35,6 @@ public static class Kernel
     /// <summary>
     /// 获取成员信息
     /// </summary>
-    /// <param name="at"></param>
-    /// <param name="bot"></param>
-    /// <param name="group"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public static MessageBuilder Member(BotMember memberInfo)

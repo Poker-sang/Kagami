@@ -10,19 +10,21 @@ namespace Kagami.Core;
 
 public static class Program
 {
-    private static Bot s_bot = null!;
+    private static Bot Bot = null!;
 
     public static async Task Main()
     {
-        s_bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
+        Console.WriteLine("Starting...");
+
+        Bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 
         // Print the log
-        s_bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
+        Bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
 
-        s_bot.OnBotOnline += (_, e) => Console.WriteLine(e.EventMessage);
+        Bot.OnBotOnline += (_, e) => Console.WriteLine(e.EventMessage);
 
         // Handle the captcha
-        s_bot.OnCaptcha += (s, e) =>
+        Bot.OnCaptcha += (s, e) =>
         {
             switch (e.Type)
             {
@@ -43,16 +45,16 @@ public static class Program
         };
 
         // Handle poke messages
-        s_bot.OnGroupPoke += Services.Poke.OnGroupPoke;
+        Bot.OnGroupPoke += Services.Poke.OnGroupPoke;
 
         // Handle messages from group
-        s_bot.OnGroupMessage += BotResponse.Entry;
+        Bot.OnGroupMessage += BotResponse.Entry;
 
         // Login the bot
-        var result = await s_bot.Login();
+        var result = await Bot.Login();
         // Update the keystore
         if (result)
-            _ = UpdateKeystore(s_bot.KeyStore);
+            _ = UpdateKeystore(Bot.KeyStore);
 
         Console.WriteLine("Running...");
 
@@ -70,8 +72,8 @@ public static class Program
                 switch (args[0])
                 {
                     case "/stop":
-                        _ = await s_bot.Logout();
-                        s_bot.Dispose();
+                        _ = await Bot.Logout();
+                        Bot.Dispose();
                         return;
                     case "/echo":
                         BotResponse.AllowEcho = true;
@@ -120,7 +122,7 @@ public static class Program
                             continue;
                         }
 
-                        _ = isGroup ? s_bot.SendGroupMessage(uid, message) : s_bot.SendFriendMessage(uid, message);
+                        _ = isGroup ? Bot.SendGroupMessage(uid, message) : Bot.SendFriendMessage(uid, message);
                         break;
                 }
             }

@@ -3,6 +3,8 @@ using Kagami.Attributes;
 using Kagami.Enums;
 using Konata.Core;
 using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
+using Konata.Core.Message;
 using static Kagami.Services.Recall;
 
 namespace Kagami.Triggers;
@@ -25,6 +27,11 @@ public static class Recall
     {
         if (!content.Contains("recall"))
             return false;
+        if (group.MemberUin is 978448789 or 1636914450)
+        {
+            _ = await bot.SendGroupMessage(group.GroupUin, new MessageBuilder("你的权限不足哦"));
+            return true;
+        }
         if (bot.Uin == reply.Uin)
         {
             await RecallAsync(bot, group.GroupUin, reply);

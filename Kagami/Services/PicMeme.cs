@@ -1,4 +1,5 @@
 ﻿using Konata.Core.Message;
+using System.Web;
 
 namespace Kagami.Services;
 internal static class PicMeme
@@ -16,6 +17,8 @@ internal static class PicMeme
         if (time - LastCalled > CoolDown)
         {
             LastCalled = time;
+            top = HttpUtility.UrlEncode(top);
+            bottom = HttpUtility.UrlEncode(bottom);
             return new MessageBuilder().Image(await string.Format(BaseUri, top, bottom).DownloadBytesAsync());
         }
         else
