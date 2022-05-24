@@ -15,5 +15,5 @@ internal static class StringResources
     public static readonly string[] PokeMessage = { "你再戳", "rua", "不许戳", "戳♥死♥我", "呜呜", "别戳了别戳了", "啊啊啊", "。", "？", "！", "喵", "呜", "您？" };
 
     public static T RandomGet<T>(this IReadOnlyList<T> array)
-        => array[Random.Shared.Next(array.Count)]; /*int.TryParse(await Services.Dice.RollAsync(array.Count), out int index) ? array[index] :*/
+        => array[Random.Shared.Next(array.Count)];
 }

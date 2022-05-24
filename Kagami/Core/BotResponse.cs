@@ -95,9 +95,9 @@ internal static class BotResponse
 
         var sb = new StringBuilder();
         foreach (var chain in group.Message.Chain)
-            _ = sb.Append(chain.Type switch
+            _ = sb.Append(chain switch
             {
-                ChainType.Text => chain.As<TextChain>()?.Content,
+                TextChain => ((TextChain)chain).Content,
                 _ => @$" '<placeholder type=""{chain.Type}""/>' "
             });
 

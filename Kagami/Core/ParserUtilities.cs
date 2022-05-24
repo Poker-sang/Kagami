@@ -79,7 +79,7 @@ internal static class ParserUtilities
                 var flag = false;
                 foreach (var arg in argsList)
                     // 解析字符串
-                    if (parser(bot, group, arg, out var obj))
+                    if (parser(bot, group, arg) is { } obj)
                     {
                         arguments.Add(obj);
                         _ = argsList.Remove(arg);

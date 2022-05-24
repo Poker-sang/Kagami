@@ -1,16 +1,18 @@
+using Kagami.ArgTypes;
+using Konata.Core.Message;
+using Konata.Core.Message.Model;
+
 namespace Kagami.Extensions;
 
 public static class BaseChainExtensions
 {
-    public static ArgTypes.At AsAt(this Konata.Core.Message.Model.AtChain at) => new(at.AtUin);
+    public static TChain? FetchChain<TChain>(this MessageChain chain) where TChain : BaseChain => (TChain?)chain.FirstOrDefault(i => i is TChain);
+    public static IEnumerable<TChain> FetchChains<TChain>(this MessageChain chain) where TChain : BaseChain => chain.Where(i => i is TChain).Cast<TChain>();
+    public static At AsAt(this AtChain at) => new(at.AtUin);
 
-    public static TChain? As<TChain>(this Konata.Core.Message.BaseChain chain)
-        where TChain : Konata.Core.Message.BaseChain => chain as TChain;
-
-    public static ArgTypes.Reply AsReply(this Konata.Core.Message.Model.ReplyChain reply)
+    public static Reply AsReply(this ReplyChain reply)
     {
-        var tmp = reply.ToString();
-        var map = tmp[10..^1]
+        var map = reply.ToString()[10..^1]
             .Split(',')
             .Select(i => i.Split('='))
             .ToDictionary(i => i[0], i => i[1]);
