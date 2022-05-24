@@ -24,7 +24,7 @@ namespace Kagami.Core;
 public delegate bool TypeParserDelegate(
     in Bot bot,
     in GroupMessageEvent group,
-    [NotNullWhen(true)] in string raw,
+    in string raw,
     [NotNullWhen(true)] out object? obj);
 
 /// <summary>
@@ -58,7 +58,15 @@ public static class TypeParser
         => uint.TryParse(raw, out var tmp).Set(tmp, out obj);
 
     private static bool Enum<TEnum>(in Bot bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj) where TEnum : struct, Enum
-        => System.Enum.TryParse(raw, true, out TEnum tmp).Set(tmp, out obj);
+    {
+        if (System.Enum.TryParse(raw, true, out TEnum tmp) && System.Enum.IsDefined(tmp))
+        {
+            obj = tmp;
+            return true;
+        }
+        obj = null;
+        return false;
+    }
 
     private static bool At(in Bot? bot, in GroupMessageEvent group, in string raw, [NotNullWhen(true)] out object? obj)
     {
