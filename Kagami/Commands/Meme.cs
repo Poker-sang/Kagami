@@ -21,12 +21,12 @@ public static class Meme
             // 更新图片
             case MemeOption.Update:
             {
-                return intIssue?.ToString() is { } issue
-                    ? await UpdateMemeAsync(issue, (int)intIssue)
-                    : await UpdateMemeAsync();
+                return await (intIssue?.ToString() is { } issue
+                    ? UpdateMemeAsync(issue, (int)intIssue)
+                    : UpdateMemeAsync());
             }
             default:
-                throw new NotSupportedException($"不支持的命令 {commands}");
+                throw new NotSupportedException("不支持的命令：" + commands);
         }
     }
 

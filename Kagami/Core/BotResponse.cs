@@ -7,7 +7,6 @@ using Konata.Core.Events.Model;
 using Konata.Core.Message.Model;
 using System.Reflection;
 using System.Text;
-using static Konata.Core.Message.BaseChain;
 
 namespace Kagami.Core;
 

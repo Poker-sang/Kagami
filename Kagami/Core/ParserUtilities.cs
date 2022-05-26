@@ -25,9 +25,10 @@ internal static class ParserUtilities
 
         if (asyncResult is not null)
         {
-            // TODO 重构好看点
-            if (typeof(CmdletAttribute) == typeof(TAttribute))
-                _ = bot.SendGroupMessage(group.GroupUin, StringResources.ProcessingMessage.RandomGet()).ConfigureAwait(false);
+            if (!asyncResult.IsCompleted)
+                // TODO 重构好看点
+                if (typeof(CmdletAttribute) == typeof(TAttribute))
+                    _ = bot.SendGroupMessage(group.GroupUin, StringResources.ProcessingMessage.RandomGet()).ConfigureAwait(false);
             result = await asyncResult;
         }
 

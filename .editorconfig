@@ -257,6 +257,9 @@ dotnet_diagnostic.IDE0055.severity = suggestion
 # IDE0036: 对修饰符排序
 dotnet_diagnostic.IDE0036.severity = suggestion
 
+# CS8604: 引用类型参数可能为 null。
+dotnet_diagnostic.CS8604.severity = error
+
 [*.{cs,vb}]
 end_of_line = crlf
 dotnet_style_qualification_for_field = false:silent
