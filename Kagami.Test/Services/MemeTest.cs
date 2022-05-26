@@ -11,7 +11,8 @@ public class MemeTest
     [TestMethod()]
     public async Task TestGetMemeImageSourcesAsync()
     {
-        string[]? list = await Meme.GetMemeImageSourcesAsync("二百四十四");
+        return;
+        var list = await Meme.GetMemeImageSourcesAsync("二百四十四");
         Console.WriteLine("Images: [\n  ");
         Console.WriteLine(string.Join(",\n  ", list));
         Console.WriteLine("]");
