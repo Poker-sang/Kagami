@@ -10,10 +10,10 @@ public struct Raw
     public Raw(string raw)
     {
         RawString = raw;
-        SplitedArgs = raw.SplitRawString();
+        SplitArgs = raw.SplitRawString();
     }
 
     public string RawString { get; }
 
-    public string[] SplitedArgs { get; }
+    public string[] SplitArgs { get; }
 }

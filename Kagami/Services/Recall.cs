@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Kagami.Services;
 internal static class Recall
 {
-    private static readonly Dictionary<string, PropertyInfo> s_props = typeof(MessageStruct)
+    private static readonly Dictionary<string, PropertyInfo> sProps = typeof(MessageStruct)
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 ?.ToDictionary(i => i.Name)
                 ?? throw new InvalidOperationException($"不能成功反射类型{typeof(MessageStruct).FullName}的属性");
@@ -14,9 +14,9 @@ internal static class Recall
     internal static async Task RecallAsync(Bot bot, uint groupid, ArgTypes.Reply reply)
     {
         MessageStruct messageStruct = new(0, "", DateTime.Now);
-        s_props[nameof(MessageStruct.Receiver)]
+        sProps[nameof(MessageStruct.Receiver)]
             .SetValue(messageStruct, (groupid, ""));
-        s_props[nameof(MessageStruct.Sequence)]
+        sProps[nameof(MessageStruct.Sequence)]
             .SetValue(messageStruct, reply.Sequence);
 
         try

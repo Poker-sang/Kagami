@@ -10,13 +10,16 @@
     --command-attribute: rgb(78, 201, 176);
     --command-description: rgb(87, 166, 74);
     --command-name: rgb(220, 220, 170);
-    --default: rgb(220, 220, 220);
     --enum-description: rgb(87, 166, 74);
     --enum-item: rgb(220, 220, 220);
 }
 
 body {
     background-color: var(--background);
+}
+
+h1 {
+    color: white;
 }
 
 p {
@@ -42,33 +45,42 @@ li {
     margin-bottom: 4px;
 }
 
-.cmd.box::before {
-    content: '';
-    z-index: -1;
-    position: fixed;
-    width: 100vw;
+.all {
+    padding-left: 5vw;
+    padding-right: 5vw;
+    width: 90vw;
     height: 100vh;
+}
+
+.background {
+    position: absolute;
+    z-index: -1;
+    opacity: 0.5;
     background-image: var(--background-image);
     background-repeat: no-repeat;
     background-size: contain;
     background-position: right;
-    opacity: 10%;
+    width: 90vw;
+    height: 95vh;
 }
 
 .cmd.box {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    color: var(--default);
-    row-gap: 16px;
-    column-gap: 8px;
-    margin: 8px;
+    content: '';
+    position: absolute;
+    width: 90vw;
+    height: 90vh;
+    columns: 3;
 }
 
 .cmd.block {
-    width: calc((100% - 8px * 3) / 2);
+    margin-bottom: 20px;
+    border-radius: 5px;
+    /* 防止多列布局，分页媒体和多区域上下文中的意外中断 */
+    break-inside: avoid;
+    background: rgba(0,0,0,0.5); /*0.5*/
+    padding: 16px;
 }
+
 
 .cmd.attribute {
     color: var(--command-attribute);
@@ -106,3 +118,7 @@ code.type {
     .cmd.arguments > ul > li > code {
         color: var(--enum-item);
     }
+
+.cmd.arguments > ul > code {
+    color: var(--enum-item);
+}

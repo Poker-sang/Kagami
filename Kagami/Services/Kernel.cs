@@ -11,18 +11,18 @@ namespace Kagami.Services;
 /// </summary>
 public static class Kernel
 {
-    private static readonly WeakReference<MessageBuilder?> s_ping = new(null);
-    private static readonly WeakReference<MessageBuilder?> s_greeting = new(null);
+    private static readonly WeakReference<MessageBuilder?> sPing = new(null);
+    private static readonly WeakReference<MessageBuilder?> sGreeting = new(null);
 
     /// <summary>
     /// Ping
     /// </summary>
-    public static MessageBuilder Ping => s_ping.Get(() => new("Pong!"));
+    public static MessageBuilder Ping => sPing.Get(() => new("Pong!"));
 
     /// <summary>
     /// 自我介绍
     /// </summary>
-    public static MessageBuilder Greeting => s_greeting.Get(() => new("你好!!! 我是Poker Kagami!"));
+    public static MessageBuilder Greeting => sGreeting.Get(() => new("你好!!! 我是Poker Kagami!"));
 
     /// <summary>
     /// 复读机

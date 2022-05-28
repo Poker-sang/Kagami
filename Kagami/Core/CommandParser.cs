@@ -63,7 +63,7 @@ public static class CommandParser
     {
         try
         {
-            if (raw.SplitedArgs[0].Trim().Contains(' '))
+            if (raw.SplitArgs.Length is 0 || raw.SplitArgs[0].Trim().Contains(' '))
                 return false;
 
             MessageBuilder? result = null;
@@ -83,7 +83,7 @@ public static class CommandParser
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine(e.ToString());
+            await Console.Error.WriteLineAsync(e.ToString());
         }
 
         return false;
@@ -115,8 +115,8 @@ public static class CommandParser
             _ => throw new ArgumentOutOfRangeException(nameof(type)),
         };
 
-        var cmd = raw.SplitedArgs[0].Trim();
-        var cmdset = set.Where(i => matcher(cmd, i.Attribute.Name,
+        var cmd = raw.SplitArgs[0].Trim();
+        var cmdSet = set.Where(i => matcher(cmd, i.Attribute.Name,
             i.Attribute.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal))
@@ -124,17 +124,16 @@ public static class CommandParser
             .OrderBy(i => -i.Parameters.Length)
             .ToArray();
 
-        string[] args;
-
-        foreach (var cmdlet in cmdset)
+        foreach (var cmdlet in cmdSet)
         {
+            string[] args;
             switch (type)
             {
                 case CmdletType.Default:
-                    args = raw.SplitedArgs[1..];
+                    args = raw.SplitArgs[1..];
                     break;
                 case CmdletType.Prefix:
-                    args = raw.SplitedArgs;
+                    args = raw.SplitArgs;
                     args[0] = args[0][cmdlet.Attribute.Name.Length..];
                     break;
                 default:

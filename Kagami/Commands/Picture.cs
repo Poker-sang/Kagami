@@ -12,10 +12,11 @@ namespace Kagami.Commands;
 public static class Picture
 {
     [Cmdlet(nameof(Pic)), Description("获取图片")]
-    public static async ValueTask<MessageBuilder> Pic(PicSource command, string[]? args = null)
+    public static async ValueTask<MessageBuilder> Pic(
+        [Description("图片源")] PicSource command,
+        [Description("参数")] string[]? args = null)
     {
-        if (args is not null)
-            args = args[2..];
+        args = args?[2..];
         return command switch
         {
             PicSource.Bing => await Services.Bing.PictureAsync(),

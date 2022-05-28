@@ -41,7 +41,7 @@ internal static class TriggerParser
     {
         foreach (var trigger in BotResponse.Triggers)
         {
-            if (trigger.ParseArguments(bot, group, raw, raw.SplitedArgs, out var parameters)
+            if (trigger.ParseArguments(bot, group, raw, raw.SplitArgs, out var parameters)
                 && await trigger.InvokeAsync<bool, TriggerAttribute>(bot, group, parameters))
                 return true;
         }

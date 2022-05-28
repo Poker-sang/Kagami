@@ -32,8 +32,8 @@ public static class AcFun
             var line = await sr.ReadLineAsync();
             if (line?.Contains(flag) ?? false)
             {
-                var raw_json = line.Replace(flag, "").Trim().TrimEnd(';');
-                var json = System.Text.Json.JsonDocument.Parse(raw_json).RootElement;
+                var rawJson = line.Replace(flag, "").Trim().TrimEnd(';');
+                var json = System.Text.Json.JsonDocument.Parse(rawJson).RootElement;
                 if (json.TryGetProperty("title", out var element))
                     titleMeta = element.GetString() ?? "";
                 if (json.TryGetProperty("description", out element))

@@ -7,8 +7,8 @@ namespace Kagami.Services;
 
 public static class Meme
 {
-    private const string UriTemplate = "https://cangku.icu/api/v1/post/search?search=沙雕图集锦 ";
-    private const string Pattern = @"<img src=""([\w:/.]+)"" class=""[\w\- ]+"" alt=""[\w.]+"">";
+    private const string uriTemplate = "https://cangku.icu/api/v1/post/search?search=沙雕图集锦 ";
+    private const string pattern = @"<img src=""([\w:/.]+)"" class=""[\w\- ]+"" alt=""[\w.]+"">";
 
     /// <summary>
     /// 图片存放总路径
@@ -21,11 +21,11 @@ public static class Meme
     /// <summary>
     /// 记录现在已经发到第几张图片的指针
     /// </summary>
-    private const string Pointer = "0.ptr";
+    private const string pointer = "0.ptr";
     /// <summary>
     /// 记录某期所有图片链接的索引
     /// </summary>
-    private const string Indexer = "1.idx";
+    private const string indexer = "1.idx";
 
     public static bool IsRepoEmpty => !File.Exists(NewPath);
 
@@ -33,7 +33,7 @@ public static class Meme
     {
         await Task.Yield();
 
-        var uri = UriTemplate + $"第{issue}期";
+        var uri = uriTemplate + $"第{issue}期";
         var json = await uri.DownloadJsonAsync();
         var content = json.RootElement.GetProperty("data")[0].GetProperty("content").GetString()!;
         // TODO: 404 NotFound
@@ -72,7 +72,7 @@ public static class Meme
 
     private static IEnumerable<string> GetImageTags(string content)
     {
-        var matches = Regex.Matches(content, Pattern);
+        var matches = Regex.Matches(content, pattern);
         var images = matches.Select(i => i.Groups[1].Value);
         return content.Contains("语录") ? images.SkipLast(2) : images;
     }
@@ -95,7 +95,7 @@ public static class Meme
             if (!directory.Exists)
                 return new($"第{issue}期不存在");
 
-            var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
+            var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Meme.pointer)));
             var files = directory.GetFiles();
             if (pointer >= files.Length - 2)
                 pointer = 0;
@@ -104,7 +104,7 @@ public static class Meme
                 (pointer + 2).ToString()));
 
             ++pointer;
-            await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), pointer.ToString());
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, Meme.pointer), pointer.ToString());
 
             var message = new MessageBuilder();
             _ = message.Text($"{issue} {pointer}/{files.Length - 2}");
@@ -206,7 +206,7 @@ public static class Meme
         if (Directory.Exists(issuePath))
         {
             if (!(Directory.GetFiles(issuePath) is { Length: 2 } files) ||
-                files[1] != Path.Combine(issuePath, Indexer))
+                files[1] != Path.Combine(issuePath, indexer))
                 throw new OperationCanceledException();
         }
         // 没有文件夹
@@ -214,8 +214,8 @@ public static class Meme
         {
             // 记录索引和指针
             _ = Directory.CreateDirectory(issuePath);
-            await File.WriteAllTextAsync(Path.Combine(issuePath, Pointer), "0");
-            await File.WriteAllLinesAsync(Path.Combine(issuePath, Indexer), imgUrls);
+            await File.WriteAllTextAsync(Path.Combine(issuePath, pointer), "0");
+            await File.WriteAllLinesAsync(Path.Combine(issuePath, indexer), imgUrls);
         }
     }
 
@@ -230,7 +230,7 @@ public static class Meme
         if (Directory.Exists(issuePath))
         {
             imgUrls = Directory.GetFiles(issuePath) is { Length: 2 } files &&
-                files[1] == Path.Combine(issuePath, Indexer)
+                files[1] == Path.Combine(issuePath, indexer)
                 // 只有索引
                 ? await File.ReadAllLinesAsync(files[1])
                 // 索引和图片都有
@@ -244,8 +244,8 @@ public static class Meme
             imgUrls = await GetMemeImageSourcesAsync(intIssue.IntToCn());
             // 记录索引和指针
             _ = Directory.CreateDirectory(issuePath);
-            await File.WriteAllTextAsync(Path.Combine(issuePath, Pointer), "0");
-            await File.WriteAllLinesAsync(Path.Combine(issuePath, Indexer), imgUrls);
+            await File.WriteAllTextAsync(Path.Combine(issuePath, pointer), "0");
+            await File.WriteAllLinesAsync(Path.Combine(issuePath, indexer), imgUrls);
         }
 
         return imgUrls;
