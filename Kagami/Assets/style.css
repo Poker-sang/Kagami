@@ -42,7 +42,7 @@ li {
     margin-bottom: 4px;
 }
 
-.cmd.box::before {
+.cmd.box {
     content: '';
     z-index: -1;
     position: fixed;
@@ -52,22 +52,18 @@ li {
     background-repeat: no-repeat;
     background-size: contain;
     background-position: right;
-    opacity: 10%;
-}
-
-.cmd.box {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    columns: 2;
     color: var(--default);
     row-gap: 16px;
-    column-gap: 8px;
-    margin: 8px;
+    margin: 20px;
 }
 
 .cmd.block {
-    width: calc((100% - 8px * 3) / 2);
+    margin-bottom: 20px;
+    border-radius: 5px;
+    /* 防止多列布局，分页媒体和多区域上下文中的意外中断 */
+    break-inside: avoid;
+    background: rgba(0,0,0,0.5);
 }
 
 .cmd.attribute {

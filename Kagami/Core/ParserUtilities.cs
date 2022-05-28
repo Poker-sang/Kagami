@@ -129,7 +129,7 @@ internal static class ParserUtilities
             switch (ch)
             {
                 case '"':
-                case '\'':
+                case '`':
                     // 如果连续两个相同，则弹出
                     if (quotes.TryPeek(out var tmp) && tmp == ch)
                         _ = quotes.Pop();

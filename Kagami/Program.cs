@@ -1,3 +1,4 @@
+using Kagami.Core;
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
@@ -6,7 +7,7 @@ using Konata.Core.Interfaces.Api;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace Kagami.Core;
+namespace Kagami;
 
 public static class Program
 {
