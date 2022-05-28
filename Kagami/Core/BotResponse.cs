@@ -41,27 +41,27 @@ internal static class BotResponse
             .Where(t => t.Namespace is { } ns && (ns.Contains("Kagami.Commands") || ns.Contains("Kagami.Triggers") || ns.Contains("Kagami.Core")))
             .Where(t => t.IsAbstract && t.IsSealed);
 
-        var cmdlets = new List<Record<CmdletAttribute>>();
+        var cmdlet = new List<Record<CmdletAttribute>>();
         foreach (var type in types)
         {
-            var tempCmdlets = new List<Record<CmdletAttribute>>();
+            var tempCmdlet = new List<Record<CmdletAttribute>>();
             var tempTriggers = new List<Record<TriggerAttribute>>();
             foreach (var method in type.GetMethods())
                 // 没有标注是命令的
                 if (method.GetCustomAttribute<CmdletAttribute>() is { } cmdletAttribute)
                 {
-                    if (CommandParser.Get(method, cmdletAttribute) is { } cmdlet)
-                        tempCmdlets.Add(cmdlet);
+                    if (CommandParser.Get(method, cmdletAttribute) is { } c)
+                        tempCmdlet.Add(c);
                 }
                 else if (method.GetCustomAttribute<TriggerAttribute>() is { } triggerAttribute)
                     if (TriggerParser.Get(method, triggerAttribute) is { } trigger)
                         tempTriggers.Add(trigger);
 
-            cmdlets.AddRange(tempCmdlets);
+            cmdlet.AddRange(tempCmdlet);
             Triggers.AddRange(tempTriggers);
         }
 
-        Cmdlets = cmdlets.GroupBy(i => i.Attribute.CmdletType)
+        Cmdlets = cmdlet.GroupBy(i => i.Attribute.CmdletType)
             .ToDictionary(
             i => i.Key,
             i => new HashSet<Record<CmdletAttribute>>(i));
@@ -96,7 +96,7 @@ internal static class BotResponse
         foreach (var chain in group.Message.Chain)
             _ = sb.Append(chain switch
             {
-                TextChain => ((TextChain)chain).Content,
+                TextChain textChain => textChain.Content,
                 _ => @$" '<placeholder type=""{chain.Type}""/>' "
             });
 
@@ -113,7 +113,7 @@ internal static class BotResponse
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine(e.Message);
+            await Console.Error.WriteLineAsync(e.Message);
         }
     }
 }

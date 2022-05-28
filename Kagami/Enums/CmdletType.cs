@@ -8,7 +8,7 @@ public enum CmdletType : byte
     /// <summary>
     /// 普通命令
     /// </summary>
-    Normal = 0,
+    Default = 0,
     /// <summary>
     /// 前缀命令
     /// </summary>

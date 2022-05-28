@@ -1,5 +1,6 @@
 ﻿using Kagami.ArgTypes;
 using Kagami.Attributes;
+using Kagami.Enums;
 using Kagami.Interfaces;
 using Kagami.Records;
 using Konata.Core;
@@ -11,17 +12,17 @@ using System.Text;
 namespace Kagami.Core;
 internal static class ParserUtilities
 {
-    internal static async Task<T> InvokeAsync<T, TAttribute>(this Record<TAttribute> reflectable, Bot bot, GroupMessageEvent group, params object?[]? parameters)
-        where TAttribute : Attribute, IKagamiPermission
+    internal static async Task<T> InvokeAsync<T, TAttribute>(this Record<TAttribute> attributeRecord, Bot bot, GroupMessageEvent group, params object?[]? parameters)
+        where TAttribute : Attribute, IKagamiAttribute
     {
         T? result = default;
         Task<T>? asyncResult = null;
-        if (reflectable.Method.ReturnType == typeof(T))
-            result = (T)reflectable.Method.Invoke(null, parameters)!;
-        else if (reflectable.Method.ReturnType == typeof(Task<T>))
-            asyncResult = (Task<T>)reflectable.Method.Invoke(null, parameters)!;
-        else if (reflectable.Method.ReturnType == typeof(ValueTask<T>))
-            result = await (ValueTask<T>)reflectable.Method.Invoke(null, parameters)!;
+        if (attributeRecord.Method.ReturnType == typeof(T))
+            result = (T)attributeRecord.Method.Invoke(null, parameters)!;
+        else if (attributeRecord.Method.ReturnType == typeof(Task<T>))
+            asyncResult = (Task<T>)attributeRecord.Method.Invoke(null, parameters)!;
+        else if (attributeRecord.Method.ReturnType == typeof(ValueTask<T>))
+            result = await (ValueTask<T>)attributeRecord.Method.Invoke(null, parameters)!;
 
         if (asyncResult is not null)
         {
@@ -38,7 +39,7 @@ internal static class ParserUtilities
     /// <summary>
     /// 参数解析器
     /// </summary>
-    /// <param name="reflectable">命令</param>
+    /// <param name="attributeRecord">命令或触发</param>
     /// <param name="bot">机器人实例</param>
     /// <param name="group">群消息事件实例</param>
     /// <param name="raw">传入的原字符串，目前只用于<see cref="Raw"/>参数</param>
@@ -46,18 +47,19 @@ internal static class ParserUtilities
     /// <param name="parameters">解析后的对象参数</param>
     /// <returns>是否成功</returns>
     /// <exception cref="NotSupportedException">类型解析器不支持的类型</exception>
-    internal static bool ParseArguments<T>(
-        this Record<T> reflectable,
+    internal static bool ParseArguments<TAttribute>(
+        this Record<TAttribute> attributeRecord,
         in Bot bot, in GroupMessageEvent group, in Raw raw,
-        in string[] args, out object?[]? parameters) where T : Attribute, IKagamiPermission
+        in string[] args, out object?[]? parameters) where TAttribute : Attribute, IKagamiAttribute
     {
         parameters = null;
 
-        var arguments = new List<object?>(reflectable.Parameters.Length);
+        var arguments = new List<object?>(attributeRecord.Parameters.Length);
         TypeParser.Clear();
-        var argsList = args.ToList();
+        var argsList = (attributeRecord.Attribute.ParameterType is ParameterType.Default ?
+            args : args.Reverse()).ToList();
 
-        foreach (var parameter in reflectable.Parameters)
+        foreach (var parameter in attributeRecord.Parameters)
         {
             var type = parameter.Type;
             var hasDefault = false;

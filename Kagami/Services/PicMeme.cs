@@ -17,8 +17,8 @@ internal static class PicMeme
         if (time - LastCalled > CoolDown)
         {
             LastCalled = time;
-            top = HttpUtility.UrlEncode(top);
-            bottom = HttpUtility.UrlEncode(bottom);
+            top = Uri.EscapeDataString(top);
+            bottom = Uri.EscapeDataString(bottom);
             return new MessageBuilder().Image(await string.Format(BaseUri, top, bottom).DownloadBytesAsync());
         }
         else

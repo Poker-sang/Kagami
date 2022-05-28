@@ -16,6 +16,8 @@ public static class Program
     {
         Console.WriteLine("Starting...");
 
+        _ = Task.Run(HttpClientExtensions.Initalize);
+
         Bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 
         // Print the log
@@ -57,6 +59,7 @@ public static class Program
             _ = UpdateKeystore(Bot.KeyStore);
 
         Console.WriteLine("Running...");
+
 
         // cli
         var isGroup = false;

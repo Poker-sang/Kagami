@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GoogleTranslateFreeApi" Version="1.1.1" />
     <PackageReference Include="Konata.Core" Version="1.*-*" />
   </ItemGroup>
 

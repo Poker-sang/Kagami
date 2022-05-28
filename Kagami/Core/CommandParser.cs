@@ -68,8 +68,8 @@ public static class CommandParser
 
             MessageBuilder? result = null;
 
-            if (BotResponse.Cmdlets.TryGetValue(CmdletType.Normal, out var set))
-                result = await ParseCommand(bot, group, raw, CmdletType.Normal, set);
+            if (BotResponse.Cmdlets.TryGetValue(CmdletType.Default, out var set))
+                result = await ParseCommand(bot, group, raw, CmdletType.Default, set);
 
             if (result is null &&
                 BotResponse.Cmdlets.TryGetValue(CmdletType.Prefix, out set))
@@ -110,7 +110,7 @@ public static class CommandParser
     {
         Func<string?, string, StringComparison, bool> matcher = type switch
         {
-            CmdletType.Normal => string.Equals,
+            CmdletType.Default => string.Equals,
             CmdletType.Prefix => (i, o, s) => i?.StartsWith(o, s) ?? false,
             _ => throw new ArgumentOutOfRangeException(nameof(type)),
         };
@@ -130,7 +130,7 @@ public static class CommandParser
         {
             switch (type)
             {
-                case CmdletType.Normal:
+                case CmdletType.Default:
                     args = raw.SplitedArgs[1..];
                     break;
                 case CmdletType.Prefix:

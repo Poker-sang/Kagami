@@ -5,7 +5,7 @@ using Konata.Core.Common;
 namespace Kagami.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-internal class CmdletAttribute : Attribute, IKagamiPermission
+internal class CmdletAttribute : Attribute, IKagamiAttribute
 {
     public CmdletAttribute(string name) => Name = name;
 
@@ -17,9 +17,14 @@ internal class CmdletAttribute : Attribute, IKagamiPermission
     public RoleType Permission { get; init; } = RoleType.Member;
 
     /// <summary>
-    /// Default <see cref="CmdletType.Normal"/>
+    /// Default <see cref="Kagami.Enums.CmdletType.Default"/>
     /// </summary>
-    public CmdletType CmdletType { get; init; } = CmdletType.Normal;
+    public CmdletType CmdletType { get; init; } = CmdletType.Default;
+
+    /// <summary>
+    /// Default <see cref="Kagami.Enums.ParameterType.Default"/>
+    /// </summary>
+    public ParameterType ParameterType { get; init; } = ParameterType.Default;
 
     /// <summary>
     /// Default <see langword="true"/>

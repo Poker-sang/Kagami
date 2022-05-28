@@ -7,4 +7,4 @@ internal record Record<TAttribute>(
     TAttribute Attribute,
     KagamiParameter[] Parameters,
     string Description,
-    MethodInfo Method) where TAttribute : Attribute, IKagamiPermission;
+    MethodInfo Method) where TAttribute : Attribute, IKagamiAttribute;
