@@ -36,7 +36,7 @@ public static class Help
     private const string htmlBackGround = spacing1 + @"<div class=""background""></div>";
     private const string htmlBoxHeader = spacing1 + @"<div class=""cmd box"">";
     private const string htmlBoxFooter = spacing1 + @"</div>";
-    private const string htmlHeader1 = @"<h1>PokerKagami 帮助</h1>";
+    private const string htmlHeader1 = spacing1 + @"<h1>PokerKagami 帮助</h1>";
     private const string htmlHeader = @"<div class=""all"">";
     private const string htmlFooter = @"</div>";
 
