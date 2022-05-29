@@ -73,6 +73,7 @@ li {
 }
 
 .cmd.block {
+    color: white;
     margin-bottom: 20px;
     border-radius: 5px;
     /* 防止多列布局，分页媒体和多区域上下文中的意外中断 */

@@ -12,66 +12,51 @@ using Konata.Core;
 using System.Text.Json.Serialization;
 
 namespace Kagami.Services;
+
 public static class Help
 {
-    private const string spacing1 = "  ";
-    private const string spacing2 = "    ";
-    private const string spacing3 = "      ";
-    private const string spacing4 = "        ";
-    private const string spacing5 = "          ";
+    private static string Spacing(int n)
+    {
+        var r = "";
+        for (var i = 0; i < n; i++)
+            r += "  ";
+        return r;
+    }
 
     private const string cacheHelpImagePath = ".help.png";
-    private const string htmlBlockArgumentsEnumItem = spacing5 + @"<li><code>{0}</code>{1}</li>";
-    private const string htmlBlockArgumentsEnumItemFlat = spacing5 + @"<code>{0}</code>";
-    private const string htmlBlockAttribute = spacing3 + @"[<span class=""cmd attribute"">{0}</span>]<br>";
-    private const string htmlBlockDescription = spacing3 + @"<p class=""cmd description"">{0}</p>";
-    private const string htmlBlockName = spacing3 + @"<span class=""cmd format""><code>{0}</code>{1}</span>";
-    private const string htmlBlockArgumentsEnumStart = spacing4 + @"<ul>";
-    private const string htmlBlockArgumentsEnumEnd = spacing4 + @"</ul>";
-    private const string htmlBlockArgumentsName = spacing4 + @"<li><code class=""type"">{0}</code><span class=""name"">{1}</span></li>";
-    private const string htmlBlockArgumentsStart = spacing3 + @"<div class=""cmd arguments"">";
-    private const string htmlBlockArgumentsEnd = spacing3 + htmlFooter;
-    private const string htmlBlockStart = spacing2 + @"<div class=""cmd block"">";
-    private const string htmlBlockEnd = spacing2 + htmlFooter;
-    private const string htmlBackGround = spacing1 + @"<div class=""background""></div>";
-    private const string htmlBoxHeader = spacing1 + @"<div class=""cmd box"">";
-    private const string htmlBoxFooter = spacing1 + @"</div>";
-    private const string htmlHeader1 = spacing1 + @"<h1>PokerKagami 帮助</h1>";
-    private const string htmlHeader = @"<div class=""all"">";
-    private const string htmlFooter = @"</div>";
 
     // 改用 "https://hcti.io/v1/image" 以获得最佳体验
     private const string uri = "https://htmlcsstoimage.com/demo_run";
 
     public static string GenerateHtml()
     {
-        var sb = new StringBuilder()
-            .AppendLine(htmlHeader)
-            .AppendLine()
-            .AppendLine(htmlHeader1)
-            .AppendLine()
-            .AppendLine(htmlBackGround)
-            .AppendLine()
-            .AppendLine(htmlBoxHeader)
-            .AppendLine();
+        var sb = new StringBuilder($@"<div class=""all"">
+
+{Spacing(1)}<h1>PokerKagami 帮助</h1>
+
+{Spacing(1)}<div class=""background""></div>
+
+{Spacing(1)}<div class=""cmd box"">
+
+");
 
         foreach (var cmdlet in BotResponse.Cmdlets.SelectMany(i => i.Value))
         {
-            _ = sb.AppendLine(htmlBlockStart);
+            _ = sb.AppendLine(@$"{Spacing(2)}<div class=""cmd block"">");
             if (cmdlet.Attribute.Permission is not Konata.Core.Common.RoleType.Member)
-                _ = sb.AppendLine(string.Format(htmlBlockAttribute, $"需要{cmdlet.Attribute.Permission switch
-                {
-                    Konata.Core.Common.RoleType.Admin => "管理员",
-                    Konata.Core.Common.RoleType.Owner => "群主",
-                    _ => "Unknown"
-                }}权限"));
+                _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">需要{cmdlet.Attribute.Permission switch
+                    {
+                        Konata.Core.Common.RoleType.Admin => "管理员", 
+                        Konata.Core.Common.RoleType.Owner => "群主", 
+                        _ => "Unknown"
+                    }}权限</span>]<br>");
 
             if (!cmdlet.Attribute.IgnoreCase)
-                _ = sb.AppendLine(string.Format(htmlBlockAttribute, "此命令区分大小写"));
+                _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">此命令区分大小写</span>]<br>");
 
-            _ = sb.AppendLine(string.Format(htmlBlockName, cmdlet.Attribute.Name, GenerateArgumentList(cmdlet.Parameters)));
-            _ = sb.AppendLine(string.Format(htmlBlockDescription, cmdlet.Description));
-            _ = sb.AppendLine(htmlBlockArgumentsStart);
+            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(cmdlet.Parameters)}</span>
+{Spacing(3)}<p class=""cmd description"">{cmdlet.Description}</p>
+{Spacing(3)}<div class=""cmd arguments"">");
 
             foreach (var parameter in cmdlet.Parameters)
             {
@@ -83,11 +68,11 @@ public static class Help
                 if (parameter.Type.IsGenericType && parameter.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
                     typeName = parameter.Type.GenericTypeArguments[0].Name + "?";
 
-                _ = sb.AppendLine(string.Format(htmlBlockArgumentsName, typeName, parameter.Description));
+                _ = sb.AppendLine($@"{Spacing(4)}<li><code class=""type"">{typeName}</code><span class=""name"">{parameter.Description}</span></li>");
 
                 if (parameter.Type.IsEnum)
                 {
-                    _ = sb.AppendLine(htmlBlockArgumentsEnumStart);
+                    _ = sb.AppendLine($@"{Spacing(4)}<ul>");
 
                     var flat = parameter.Type.CustomAttributes.Any(a => a.AttributeType == typeof(EnumFlatAttribute));
                     foreach (var item in parameter.Type.GetFields())
@@ -95,25 +80,24 @@ public static class Help
                         if (string.Equals(item.Name, "value__"))
                             continue;
 
-                        _ = sb.AppendLine(string.Format(flat
-                            ? htmlBlockArgumentsEnumItemFlat
-                            : htmlBlockArgumentsEnumItem,
-                            item.Name,
-                            item.GetCustomAttribute<DescriptionAttribute>()?.Description));
+                        _ = sb.AppendLine(flat
+                            ? @$"{Spacing(5)}<code>{item.Name}</code>"
+                            : @$"{Spacing(5)}<li><code>{item.Name}</code>{item.GetCustomAttribute<DescriptionAttribute>()?.Description}</li>");
                     }
 
-                    _ = sb.AppendLine(htmlBlockArgumentsEnumEnd);
+                    _ = sb.AppendLine($@"{Spacing(4)}</ul>");
                 }
             }
 
-            _ = sb.AppendLine(htmlBlockArgumentsEnd)
-                .AppendLine(htmlBlockEnd)
+            _ = sb.AppendLine($"{Spacing(3)}</div>")
+                .AppendLine($"{Spacing(2)}</div>")
                 .AppendLine();
         }
 
-        _ = sb.AppendLine(htmlBoxFooter)
-            .AppendLine()
-            .AppendLine(htmlFooter);
+        _ = sb.AppendLine($@"{Spacing(1)}</div>
+
+</div>
+");
         Debug.WriteLine(sb);
         return sb.ToString();
     }
