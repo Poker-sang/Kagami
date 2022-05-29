@@ -45,11 +45,11 @@ public static class Help
             _ = sb.AppendLine(@$"{Spacing(2)}<div class=""cmd block"">");
             if (cmdlet.Attribute.Permission is not Konata.Core.Common.RoleType.Member)
                 _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">需要{cmdlet.Attribute.Permission switch
-                    {
-                        Konata.Core.Common.RoleType.Admin => "管理员", 
-                        Konata.Core.Common.RoleType.Owner => "群主", 
-                        _ => "Unknown"
-                    }}权限</span>]<br>");
+                {
+                    Konata.Core.Common.RoleType.Admin => "管理员",
+                    Konata.Core.Common.RoleType.Owner => "群主",
+                    _ => "Unknown"
+                }}权限</span>]<br>");
 
             if (!cmdlet.Attribute.IgnoreCase)
                 _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">此命令区分大小写</span>]<br>");
