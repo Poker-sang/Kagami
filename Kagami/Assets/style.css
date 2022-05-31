@@ -1,4 +1,5 @@
 @import url('http://fonts.cdnfonts.com/css/cascadia-code');
+@import url('http://fonts.cdnfonts.com/css/microsoft-yahei');
 
 :root {
     --argument-description: rgb(87, 166, 74);
@@ -16,6 +17,7 @@
 
 body {
     background-color: var(--background);
+    font-family: 'Microsoft YaHei';
 }
 
 h1 {
