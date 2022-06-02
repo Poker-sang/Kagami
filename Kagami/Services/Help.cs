@@ -1,5 +1,6 @@
 using Kagami.Attributes;
 using Kagami.Core;
+using Kagami.Enums;
 using Kagami.Records;
 using Konata.Core;
 using Konata.Core.Events.Model;
@@ -54,11 +55,15 @@ public static class Help
             if (!cmdlet.Attribute.IgnoreCase)
                 _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">此命令区分大小写</span>]<br>");
 
-            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(cmdlet.Parameters)}</span>
+            IEnumerable<KagamiParameter> parameters = cmdlet.Parameters;
+            if (cmdlet.Attribute.ParameterType is ParameterType.Reverse)
+                parameters = parameters.Reverse();
+
+            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(parameters)}</span>
 {Spacing(3)}<p class=""cmd description"">{cmdlet.Description}</p>
 {Spacing(3)}<div class=""cmd arguments"">");
 
-            foreach (var parameter in cmdlet.Parameters)
+            foreach (var parameter in parameters)
             {
                 if (parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent))
                     continue;
@@ -103,9 +108,9 @@ public static class Help
     }
     private record RequestArgs(
         [property: JsonPropertyName("html")] string Html,
-        [property: JsonPropertyName(name: "css")] string Css,
-        [property: JsonPropertyName(name: "viewport_width")] uint ViewportWidth = 900,
-        [property: JsonPropertyName(name: "viewport_height")] uint ViewportHeight = 1500
+        [property: JsonPropertyName("css")] string Css,
+        [property: JsonPropertyName("viewport_width")] uint ViewportWidth = 900,
+        [property: JsonPropertyName("viewport_height")] uint ViewportHeight = 1500
     );
     public static async Task<byte[]?> GenerateImageAsync(bool force = false)
     {
@@ -137,7 +142,7 @@ public static class Help
         return imgUri is null ? throw new InvalidOperationException("请求失败") : await imgUri.DownloadBytesAsync();
     }
 
-    private static string GenerateArgumentList(KagamiParameter[] parameters)
+    private static string GenerateArgumentList(IEnumerable<KagamiParameter> parameters)
     {
         var sb = new StringBuilder();
         foreach (var parameter in parameters)

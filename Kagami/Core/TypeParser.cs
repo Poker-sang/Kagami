@@ -31,8 +31,8 @@ public delegate object? TypeParserDelegate(
 /// </summary>
 public static class TypeParser
 {
-    private static readonly Dictionary<Type, int> Cache = new();
-    public static void Clear() => Cache.Clear();
+    private static readonly Dictionary<Type, int> cache = new();
+    public static void Clear() => cache.Clear();
 
     public static Dictionary<Type, TypeParserDelegate> Map { get; } = new()
     {
@@ -42,6 +42,7 @@ public static class TypeParser
         { typeof(PicSource), Enum<PicSource> },
         { typeof(MemeOption), Enum<MemeOption> },
         { typeof(Languages), Enum<Languages> },
+        { typeof(NovelDream), Enum<NovelDream> },
         { typeof(At), At },
         { typeof(Reply), Reply },
         { typeof(string[]), StringArray }
@@ -49,7 +50,7 @@ public static class TypeParser
 
     private static object? String(in Bot bot, in GroupMessageEvent group, in string raw)
         // 过滤<.../>
-        => (!(string.IsNullOrWhiteSpace(raw) || raw.StartsWith('<') && raw.EndsWith("/>"))) ? raw : null;
+        => !(string.IsNullOrWhiteSpace(raw) || raw.StartsWith('<') && raw.EndsWith("/>")) ? raw : null;
 
     private static object? Int32(in Bot bot, in GroupMessageEvent group, in string raw)
         => int.TryParse(raw, out var tmp) ? tmp : null;
@@ -65,18 +66,18 @@ public static class TypeParser
     private static object? Reply(in Bot bot, in GroupMessageEvent group, in string raw) => NextChain<ReplyChain>(group)?.AsReply();
 
     private static object? StringArray(in Bot bot, in GroupMessageEvent group, in string raw)
-        => group.Chain.FetchChains<TextChain>().SelectMany(x => ParserUtilities.SplitRawString(x.Content)).ToArray();
+        => group.Chain.FetchChains<TextChain>().SelectMany(x => x.Content.SplitRawString()).ToArray();
 
     private static TChain? NextChain<TChain>(in GroupMessageEvent group) where TChain : BaseChain
     {
         var chains = group.Chain.FetchChains<TChain>().ToArray();
-        if (!Cache.TryGetValue(typeof(TChain), out var index))
-            Cache[typeof(TChain)] = 0;
+        if (!cache.TryGetValue(typeof(TChain), out var index))
+            cache[typeof(TChain)] = 0;
 
         if (index >= chains.Length)
             return null;
 
-        Cache[typeof(TChain)] = index + 1;
+        cache[typeof(TChain)] = index + 1;
         return chains[index];
     }
 }
