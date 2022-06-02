@@ -103,9 +103,9 @@ public static class Help
     }
     private record RequestArgs(
         [property: JsonPropertyName("html")] string Html,
-        [property: JsonPropertyName(name: "css")] string Css,
-        [property: JsonPropertyName(name: "viewport_width")] uint ViewportWidth = 900,
-        [property: JsonPropertyName(name: "viewport_height")] uint ViewportHeight = 1500
+        [property: JsonPropertyName("css")] string Css,
+        [property: JsonPropertyName("viewport_width")] uint ViewportWidth = 900,
+        [property: JsonPropertyName("viewport_height")] uint ViewportHeight = 1500
     );
     public static async Task<byte[]?> GenerateImageAsync(bool force = false)
     {

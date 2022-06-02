@@ -70,7 +70,7 @@ public static class Program
             try
             {
                 var message = Console.ReadLine() ?? "";
-                var args = ParserUtilities.SplitRawString(message);
+                var args = message.SplitRawString();
                 if (args.Length is 0)
                     continue;
                 switch (args[0])

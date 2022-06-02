@@ -1,5 +1,4 @@
 ﻿using Konata.Core.Message;
-using System.Web;
 
 namespace Kagami.Services;
 internal static class PicMeme
