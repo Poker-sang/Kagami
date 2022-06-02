@@ -15,19 +15,19 @@ public static class Bilibili
     /// <returns></returns>
     public static async Task<MessageBuilder> GetVideoInfoFrom(string code)
     {
-        string? uri = $"https://www.bilibili.com/video/{code}";
+        var uri = $"https://www.bilibili.com/video/{code}";
         Debug.WriteLine($"[{nameof(Bilibili)}]::({nameof(GetVideoInfoFrom)}): Get From: \"{uri}\"");
 
         // UrlDownload the page
-        string? html = await uri.DownloadStringAsync();
+        var html = await uri.DownloadStringAsync();
         // Get meta data
-        Dictionary<string, string>? metaData = html.GetMetaData("itemprop");
-        string? titleMeta = metaData["description"];
-        string? imageMeta = metaData["image"];
+        var metaData = html.GetMetaData("itemprop");
+        var titleMeta = metaData["description"];
+        var imageMeta = metaData["image"];
         // var keywordMeta = metaData["keywords"];
 
         // UrlDownload the image
-        byte[]? image = await imageMeta.DownloadBytesAsync();
+        var image = await imageMeta.DownloadBytesAsync();
 
         // Build message
         return new MessageBuilder($"{titleMeta}")
@@ -50,16 +50,16 @@ public static class Bilibili
                              "zBqiveYah8bt4xsWpHn" +
                              "JE7jL5VG3guMTKNPAwcF";
 
-        byte[]? sed = new byte[] { 9, 8, 1, 6, 2, 4, 0, 7, 3, 5 };
+        var sed = new byte[] { 9, 8, 1, 6, 2, 4, 0, 7, 3, 5 };
         var chars = new Dictionary<char, int>();
-        for (int i = 0; i < table.Length; ++i)
+        for (var i = 0; i < table.Length; ++i)
             chars.Add(table[i], i);
 
         try
         {
-            long r = sed.Select((t, i) => chars[bvCode[t]] * (long)Math.Pow(table.Length, i)).Sum();
+            var r = sed.Select((t, i) => chars[bvCode[t]] * (long)Math.Pow(table.Length, i)).Sum();
 
-            long result = (r - add) ^ xor;
+            var result = (r - add) ^ xor;
             return result is > 10000000000 or < 0 ? "" : result.ToString();
         }
         catch
