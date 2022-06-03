@@ -33,7 +33,7 @@ public static class Help
     {
         var sb = new StringBuilder($@"<div class=""all"">
 
-{Spacing(1)}<h1>PokerKagami 帮助</h1>
+{Spacing(1)}<h1>Poker Kagami 帮助</h1>
 
 {Spacing(1)}<div class=""background""></div>
 
