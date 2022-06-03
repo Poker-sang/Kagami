@@ -48,16 +48,16 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Format
-        run: dotnet format --no-restore
+      #- name: Format
+      #  run: dotnet format --no-restore
 
-      - name: Add & Commit
-        uses: EndBug/add-and-commit@v9.0.0
-        with:
-          message: .Net Format
-          author_name: GitHub Actions
-          author_email: actions@github.com
-          add: '*.cs'
+      #- name: Add & Commit
+      #  uses: EndBug/add-and-commit@v9.0.0
+      #  with:
+      #    message: .Net Format
+      #    author_name: GitHub Actions
+      #    author_email: actions@github.com
+      #    add: '*.cs'
 
       - name: Build
         run: dotnet build --no-restore
