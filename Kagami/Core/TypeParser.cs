@@ -45,6 +45,7 @@ public static class TypeParser
         { typeof(NovelDream), Enum<NovelDream> },
         { typeof(At), At },
         { typeof(Reply), Reply },
+        { typeof(Image), Image },
         { typeof(string[]), StringArray }
     };
 
@@ -64,6 +65,8 @@ public static class TypeParser
     private static object? At(in Bot? bot, in GroupMessageEvent group, in string raw) => NextChain<AtChain>(group)?.AsAt();
 
     private static object? Reply(in Bot bot, in GroupMessageEvent group, in string raw) => NextChain<ReplyChain>(group)?.AsReply();
+
+    private static object? Image(in Bot bot, in GroupMessageEvent group, in string raw) => NextChain<ImageChain>(group)?.AsImage();
 
     private static object? StringArray(in Bot bot, in GroupMessageEvent group, in string raw)
         => group.Chain.FetchChains<TextChain>().SelectMany(x => x.Content.SplitRawString()).ToArray();

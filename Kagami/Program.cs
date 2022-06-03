@@ -11,7 +11,7 @@ namespace Kagami;
 
 public static class Program
 {
-    private static Bot Bot = null!;
+    private static Bot bot = null!;
 
     public static async Task Main()
     {
@@ -19,15 +19,15 @@ public static class Program
 
         _ = Task.Run(HttpClientExtensions.Initalize);
 
-        Bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
+        bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 
         // Print the log
-        Bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
+        bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
 
-        Bot.OnBotOnline += (_, e) => Console.WriteLine(e.EventMessage);
+        bot.OnBotOnline += (_, e) => Console.WriteLine(e.EventMessage);
 
         // Handle the captcha
-        Bot.OnCaptcha += (s, e) =>
+        bot.OnCaptcha += (s, e) =>
         {
             switch (e.Type)
             {
@@ -48,26 +48,25 @@ public static class Program
         };
 
         // Handle poke messages
-        Bot.OnGroupPoke += Services.Poke.OnGroupPoke;
+        bot.OnGroupPoke += Services.Poke.OnGroupPoke;
 
         // Handle messages from group
-        Bot.OnGroupMessage += BotResponse.Entry;
+        bot.OnGroupMessage += BotResponse.Entry;
 
         // Login the bot
-        var result = await Bot.Login();
+        var result = await bot.Login();
         // Update the keystore
         if (result)
-            _ = UpdateKeystore(Bot.KeyStore);
+            _ = UpdateKeystore(bot.KeyStore);
 
         Console.WriteLine("Running...");
-
 
         // cli
         var isGroup = false;
         uint uid = 0;
-        while (true)
+        try
         {
-            try
+            while (true)
             {
                 var message = Console.ReadLine() ?? "";
                 var args = message.SplitRawString();
@@ -76,28 +75,12 @@ public static class Program
                 switch (args[0])
                 {
                     case "/stop":
-                        _ = await Bot.Logout();
-                        Bot.Dispose();
                         return;
                     case "/echo":
                         BotResponse.AllowEcho = true;
                         break;
-                    case "/refresh":
-                        if (args.Length < 2)
-                        {
-                            Console.WriteLine("[Error]: /refresh <command>");
-                            continue;
-                        }
-
-                        switch (args[1])
-                        {
-                            case "help":
-                                _ = Services.Help.GenerateImageAsync(true);
-                                break;
-                            default:
-                                break;
-                        }
-
+                    case "/help":
+                        _ = Services.Help.GenerateImageAsync(true);
                         break;
                     case "/join":
                         if (args.Length < 2)
@@ -126,15 +109,19 @@ public static class Program
                             continue;
                         }
 
-                        _ = isGroup ? Bot.SendGroupMessage(uid, message) : Bot.SendFriendMessage(uid, message);
+                        _ = isGroup ? bot.SendGroupMessage(uid, message) : bot.SendFriendMessage(uid, message);
                         break;
                 }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return;
-            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        finally
+        {
+            _ = await bot.Logout();
+            bot.Dispose();
         }
     }
 
@@ -146,7 +133,7 @@ public static class Program
     {
         EnableAudio = true,
         TryReconnect = true,
-        HighwayChunkSize = 8192,
+        HighwayChunkSize = 2 << 12,
     };
 
     /// <summary>

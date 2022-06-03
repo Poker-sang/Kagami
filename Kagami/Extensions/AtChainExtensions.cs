@@ -24,4 +24,6 @@ public static class BaseChainExtensions
             uint.Parse(map["time"]),
             map["content"]);
     }
+
+    public static Image AsImage(this ImageChain img) => new("http://gchat.qpic.cn" + img.ImageUrl);
 }
