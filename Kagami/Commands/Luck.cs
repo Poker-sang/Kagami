@@ -8,7 +8,7 @@ namespace Kagami.Commands;
 public static class Luck
 {
 
-    [Cmdlet(nameof(Luck)), Description("从AcFun通过ac号获取视频信息")]
+    [Cmdlet(nameof(Luck)), Description("今日运势")]
     public static MessageBuilder GetLuck(GroupMessageEvent group)
     {
         var value = Services.Luck.GetValue(group.MemberUin);
