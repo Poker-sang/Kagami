@@ -20,12 +20,12 @@ public static class Recall
     /// <param name="bot"></param>
     /// <param name="group"></param>
     /// <param name="reply"></param>
-    /// <param name="content"></param>
+    /// <param name="raw"></param>
     /// <returns></returns>
     [Trigger(TriggerPriority.BeforeCmdlet)]
-    public static async ValueTask<bool> RecallBotMessageAsync(Bot bot, GroupMessageEvent group, Reply reply, string content)
+    public static async ValueTask<bool> RecallBotMessageAsync(Bot bot, GroupMessageEvent group, Reply reply, Raw raw)
     {
-        if (!content.Contains("recall"))
+        if (!raw.RawString.Contains("recall"))
             return false;
         if (group.MemberUin is 978448789 or 1636914450)
         {

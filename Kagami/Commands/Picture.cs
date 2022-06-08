@@ -19,7 +19,7 @@ public static class Picture
         args = args?[2..];
         return command switch
         {
-            //PicSource.Bing => await Services.Bing.PictureAsync(),
+            PicSource.Bing => await Services.Bing.PictureAsync(),
             PicSource.Meme => args is { Length: 2 }
                 ? await Services.PicMeme.PictureAsync(args[0], args[1])
                 : new(StringResources.ArgumentErrorMessage.RandomGet()),

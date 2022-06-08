@@ -1,4 +1,5 @@
 using Kagami.Core;
+using Kagami.Services;
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
@@ -48,7 +49,7 @@ public static class Program
         };
 
         // Handle poke messages
-        bot.OnGroupPoke += Services.Poke.OnGroupPoke;
+        bot.OnGroupPoke += Poke.OnGroupPoke;
 
         // Handle messages from group
         bot.OnGroupMessage += BotResponse.Entry;

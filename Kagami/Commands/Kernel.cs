@@ -11,10 +11,10 @@ namespace Kagami.Commands;
 
 public static class Kernel
 {
-    // private static readonly WeakReference<MessageBuilder?> sPing = new(null); // sPing.Get(() => new("Pong!"))
+    private static readonly WeakReference<MessageBuilder?> sPing = new(null);
 
     [Cmdlet(nameof(Ping)), Description("看看我是否还在线")]
-    public static MessageBuilder Ping() => new("Pong!");
+    public static MessageBuilder Ping() => new("Pong!");// sPing.Get(() => new MessageBuilder().Record(@"C:\WorkSpace\Kagami\ping.amr"));
 
     [Cmdlet(nameof(Greeting)), Description("自我介绍")]
     public static MessageBuilder Greeting() => new("你好!!! 我是Poker Kagami!");
