@@ -4,8 +4,8 @@ namespace Kagami.ArgTypes;
 
 public enum PicSource
 {
-    [Description("BingÃ¿ÈÕÒ»Í¼")]
+    [Description("Bingæ¯æ—¥ä¸€å›¾")]
     Bing,
-    [Description("Á½ĞĞmeme")]
+    [Description("ä¸¤è¡Œmeme")]
     Meme
 }

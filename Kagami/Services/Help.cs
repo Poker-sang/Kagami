@@ -24,7 +24,7 @@ public static class Help
         return r;
     }
 
-    private const string cacheHelpImagePath = ".help.png";
+    private const string cacheHelpImagePath = "help.png";
 
     // 改用 "https://hcti.io/v1/image" 以获得最佳体验
     private const string uri = "https://htmlcsstoimage.com/demo_run";
