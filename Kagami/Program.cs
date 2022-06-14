@@ -18,7 +18,7 @@ public static class Program
     {
         Console.WriteLine("Starting...");
 
-        _ = Task.Run(HttpClientExtensions.Initalize);
+        _ = Task.Run(HttpClientExtensions.Initialize);
 
         bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 

@@ -7,13 +7,13 @@ namespace Kagami.Extensions;
 
 internal static class HttpClientExtensions
 {
-    public static void Initalize() { }
+    public static void Initialize() { }
 
     private static readonly Queue<Task> task = new();
 
     public static HttpClient Client { get; } = new(new HttpClientHandler
     {
-        AutomaticDecompression = DecompressionMethods.All
+        AutomaticDecompression = DecompressionMethods.All,
     })
     {
         Timeout = new TimeSpan(0, 0, 0, 8000),

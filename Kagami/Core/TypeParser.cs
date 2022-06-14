@@ -43,6 +43,7 @@ public static class TypeParser
         { typeof(MemeOption), Enum<MemeOption> },
         { typeof(Languages), Enum<Languages> },
         { typeof(NovelDream), Enum<NovelDream> },
+        { typeof(ArgTypes.Ai), Enum<ArgTypes.Ai> },
         { typeof(At), At },
         { typeof(Reply), Reply },
         { typeof(Image), Image },
