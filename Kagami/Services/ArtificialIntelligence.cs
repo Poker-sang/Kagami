@@ -38,8 +38,9 @@ public static class ArtificialIntelligence
                 prediction.Label.Color,
                 new PointF(x, y)
             ));
-
         }
+        
+        image.Mutate(a => a.Resize(w, h));
 
         var ms = new MemoryStream();
         await image.SaveAsync(ms, new PngEncoder());
