@@ -11,16 +11,15 @@ namespace Kagami.Services;
 
 public static class ArtificialIntelligence
 {
-
     public static async Task<Stream> Yolo(Stream stream)
     {
         using var image = await Image.LoadAsync<Rgba32>(stream);
 
+        var (w, h) = (image.Width, image.Height);
+
         using var scorer = new YoloScorer<YoloCocoP5Model>("Assets/yolov5n.onnx");
 
-        var img = image.Clone();
-
-        var predictions = scorer.Predict(img);
+        var predictions = scorer.Predict(image);
 
         var font = new Font(new FontCollection().Add("Assets/consola.ttf"), 16);
         foreach (var prediction in predictions) // iterate predictions to draw results
@@ -29,7 +28,7 @@ public static class ArtificialIntelligence
 
             var (x, y) = (prediction.Rectangle.Left - 3, prediction.Rectangle.Top - 23);
 
-            img.Mutate(a => a.DrawPolygon(new Pen(prediction.Label.Color, 1),
+            image.Mutate(a => a.DrawPolygon(new Pen(prediction.Label.Color, 1),
                 new PointF(prediction.Rectangle.Left, prediction.Rectangle.Top),
                 new PointF(prediction.Rectangle.Right, prediction.Rectangle.Top),
                 new PointF(prediction.Rectangle.Right, prediction.Rectangle.Bottom),
@@ -37,11 +36,15 @@ public static class ArtificialIntelligence
             ).DrawText($"{prediction.Label.Name} ({score})",
                 font,
                 prediction.Label.Color,
-                new PointF(x, y)));
+                new PointF(x, y)
+            ));
+
         }
 
         var ms = new MemoryStream();
-        await img.SaveAsync(ms, new PngEncoder());
+        await image.SaveAsync(ms, new PngEncoder());
+        var b = new byte[ms.Length];
+        ms.Position = 0;
         return ms;
     }
 }

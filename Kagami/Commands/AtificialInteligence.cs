@@ -7,9 +7,10 @@ namespace Kagami.Commands;
 
 public static class ArtificialIntelligence
 {
-
     [Cmdlet(nameof(Ai)), Description("深度学习模型")]
-    public static async Task<MessageBuilder> Ai(ArgTypes.Ai mode, Image image)
+    public static async Task<MessageBuilder> Ai(
+        [Description("模型")] ArgTypes.Ai mode,
+        [Description("图片")] Image image)
     {
         switch (mode)
         {
