@@ -38,6 +38,16 @@ code {
     margin-right: 4px;
 }
 
+code.del {
+    text-line-through: single;
+    display: inline-block;
+    background-color: #cccccc30;
+    border-radius: 5px;
+    padding: 3px;
+    font-family: 'Cascadia Code';
+    margin-right: 4px;
+}
+
 ul {
     margin: 0;
 }

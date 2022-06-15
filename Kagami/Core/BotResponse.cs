@@ -15,7 +15,7 @@ internal static class BotResponse
     /// <summary>
     /// 通过反射获取所有可用触发
     /// </summary>
-    internal static List<Record<TriggerAttribute>> Triggers = new();
+    internal static List<Record<TriggerAttribute>> Triggers { get; } = new();
 
     /// <summary>
     /// 通过反射获取所有可用命令
@@ -54,8 +54,10 @@ internal static class BotResponse
                         tempCmdlet.Add(c);
                 }
                 else if (method.GetCustomAttribute<TriggerAttribute>() is { } triggerAttribute)
-                    if (TriggerParser.Get(method, triggerAttribute) is { } trigger)
-                        tempTriggers.Add(trigger);
+                {
+                    if (TriggerParser.Get(method, triggerAttribute) is { } t)
+                        tempTriggers.Add(t);
+                }
 
             cmdlet.AddRange(tempCmdlet);
             Triggers.AddRange(tempTriggers);

@@ -55,11 +55,11 @@ public static class Help
             if (!cmdlet.Attribute.IgnoreCase)
                 _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">此命令区分大小写</span>]<br>");
 
-            IEnumerable<KagamiParameter> parameters = cmdlet.Parameters;
+            var parameters = cmdlet.Parameters;
             if (cmdlet.Attribute.ParameterType is ParameterType.Reverse)
-                parameters = parameters.Reverse();
+                parameters = parameters.Reverse().ToArray();
 
-            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(parameters)}</span>
+            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code{(cmdlet.IsObsoleted ? "class=\"del\"" : "")}>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(parameters)}</span>
 {Spacing(3)}<p class=""cmd description"">{cmdlet.Description}</p>
 {Spacing(3)}<div class=""cmd arguments"">");
 

@@ -19,7 +19,6 @@ public static class CommandParser
     /// <summary>
     /// 尝试反射获取命令
     /// </summary>
-    /// <param name="type">类型</param>
     /// <param name="method">方法</param>
     /// <param name="attribute"></param>
     /// <returns></returns>
@@ -46,6 +45,7 @@ public static class CommandParser
 
         return new(
             attribute,
+            method.GetCustomAttribute<ObsoleteAttribute>() is not null,
             parameters,
             method.GetCustomAttribute<DescriptionAttribute>()?.Description ?? "",
             method);
@@ -56,6 +56,8 @@ public static class CommandParser
     /// <summary>
     /// 解析命令
     /// </summary>
+    /// <param name="bot"></param>
+    /// <param name="group"></param>
     /// <param name="raw">原始字符串</param>
     /// <returns></returns>
     [Trigger(TriggerPriority.Cmdlet)]
@@ -116,7 +118,8 @@ public static class CommandParser
         };
 
         var cmd = raw.SplitArgs[0].Trim();
-        var cmdSet = set.Where(i => matcher(cmd, i.Attribute.Name,
+        var cmdSet = set.Where(c => !c.IsObsoleted)
+            .Where(i => matcher(cmd, i.Attribute.Name,
             i.Attribute.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal))

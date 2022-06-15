@@ -20,4 +20,9 @@ internal class TriggerAttribute : Attribute, IKagamiAttribute
     /// Default <see cref="RoleType.Member"/>
     /// </summary>
     public RoleType Permission { get; init; } = RoleType.Member;
+    
+    /// <summary>
+    /// Default <see langword="false"/>
+    /// </summary>
+    public bool IsObsoleted { get; } = false;
 }

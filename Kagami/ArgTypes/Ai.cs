@@ -3,7 +3,7 @@
 namespace Kagami.ArgTypes;
 
 [EnumFlat]
-public enum Ai
+public enum AiModel
 {
     Yolo
 }

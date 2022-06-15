@@ -32,6 +32,7 @@ internal static class TriggerParser
 
         return new(
             attribute,
+            method.GetCustomAttribute<ObsoleteAttribute>() is not null,
             parameters,
             method.GetCustomAttribute<DescriptionAttribute>()?.Description ?? "",
             method);
@@ -39,7 +40,7 @@ internal static class TriggerParser
 
     internal static async Task<bool> Process(Bot bot, GroupMessageEvent group, Raw raw)
     {
-        foreach (var trigger in BotResponse.Triggers)
+        foreach (var trigger in BotResponse.Triggers.Where(t => !t.IsObsoleted))
         {
             if (trigger.ParseArguments(bot, group, raw, raw.SplitArgs, out var parameters)
                 && await trigger.InvokeAsync<bool, TriggerAttribute>(bot, group, parameters))

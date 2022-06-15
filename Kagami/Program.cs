@@ -54,6 +54,9 @@ public static class Program
         // Handle messages from group
         bot.OnGroupMessage += BotResponse.Entry;
 
+
+        //bot.OnGroupMessageRecall += BotResponse.Entry;
+
         // Login the bot
         var result = await bot.Login();
         // Update the keystore
