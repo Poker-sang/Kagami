@@ -59,7 +59,7 @@ public static class Help
             if (cmdlet.Attribute.ParameterType is ParameterType.Reverse)
                 parameters = parameters.Reverse().ToArray();
 
-            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code{(cmdlet.IsObsoleted ? "class=\"del\"" : "")}>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(parameters)}</span>
+            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code{(cmdlet.IsObsoleted ? " class=\"del\"" : "")}>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(parameters)}</span>
 {Spacing(3)}<p class=""cmd description"">{cmdlet.Description}</p>
 {Spacing(3)}<div class=""cmd arguments"">");
 
@@ -80,14 +80,18 @@ public static class Help
                     _ = sb.AppendLine($@"{Spacing(4)}<ul>");
 
                     var flat = parameter.Type.CustomAttributes.Any(a => a.AttributeType == typeof(EnumFlatAttribute));
-                    foreach (var item in parameter.Type.GetFields())
+                    foreach (var field in parameter.Type.GetFields())
                     {
-                        if (string.Equals(item.Name, "value__"))
+                        if (string.Equals(field.Name, "value__"))
                             continue;
 
+                        var name = $@"<code{(field.GetCustomAttribute(typeof(ObsoleteAttribute)) is not null
+                            ? " class=\"del\""
+                            : "")}>{field.Name}</code>";
+
                         _ = sb.AppendLine(flat
-                            ? @$"{Spacing(5)}<code>{item.Name}</code>"
-                            : @$"{Spacing(5)}<li><code>{item.Name}</code>{item.GetCustomAttribute<DescriptionAttribute>()?.Description}</li>");
+                            ? @$"{Spacing(5)}{name}"
+                            : @$"{Spacing(5)}<li>{name}{field.GetCustomAttribute<DescriptionAttribute>()?.Description}</li>");
                     }
 
                     _ = sb.AppendLine($@"{Spacing(4)}</ul>");
@@ -119,15 +123,13 @@ public static class Help
 
         var bytes = await GenerateImageWithoutCacheAsync();
 
-        await using var fs = File.Create(cacheHelpImagePath);
-        await fs.WriteAsync(bytes);
-        await fs.FlushAsync();
+        await File.WriteAllBytesAsync(cacheHelpImagePath, bytes);
 
         Console.WriteLine("help更新完成");
         return bytes;
     }
 
-    public static async Task<byte[]?> GenerateImageWithoutCacheAsync()
+    public static async Task<byte[]> GenerateImageWithoutCacheAsync()
     {
         var html = GenerateHtml();
         var css = await File.ReadAllTextAsync("Assets/style.css");
