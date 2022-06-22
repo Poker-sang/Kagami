@@ -3,7 +3,7 @@ using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 
-namespace Kagami.Services;
+namespace Kagami.Utilities;
 
 public static class Poke
 {
