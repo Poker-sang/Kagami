@@ -13,11 +13,11 @@ public static class Picture
 {
     [Cmdlet(nameof(Pic)), Description("获取图片")]
     public static async ValueTask<MessageBuilder> Pic(
-        [Description("图片源")] PicSource command,
+        [Description("图片源")] PicSource source,
         [Description("参数")] string[]? args = null)
     {
         args = args?[2..];
-        return command switch
+        return source switch
         {
             PicSource.Bing => await Services.Bing.PictureAsync(),
             PicSource.Meme => args is { Length: 2 }

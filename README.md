@@ -14,21 +14,27 @@
 | 命令 | 功能 |
 | - | - |
 | help | 输出帮助信息 |
-| |
-| mute -at [-minute] | 禁言某成员（默认10分钟） |
+| 高权限 |
+| mute -at [-minute] | 禁言某成员 |
 | title -at -title | 为某成员设置头衔 |
-| |
+| 普通 |
 | ping | 看看我是否还在线 |
 | greeting | 打招呼 |
 | status | 输出状态如内核状态、内存使用等 |
-| repeat -message | 复读一条消息 |
 | member -at | 查看成员信息 |
-| |
+| luck | 今日运势 |
 | av -code | 通过 av 获取B站视频信息 |
 | bv -code | 通过 BV 获取B站视频信息 |
 | ac -code | 通过 ac 获取A站视频信息 |
 | github -org -repo | 获取 GitHub 图片 |
+| pic -source [-args] | 获取图片 |
 | meme [-command] [-issue] | 获取梗图（默认最新期） |
+| trans [-from] [-to] -content | 翻译 |
+| ai -mode -image | 深度学习模型 |
+| 已删除 |
+| repeat -message | 复读一条消息 |
+| novel [-mode] [-title] -content | 续写小说 |
+| sauce -image | SauceNao查询图片 |
 
 ## 触发器
 
@@ -42,6 +48,12 @@
 * [ ] 识别色图并撤回
 
 * [ ] 人工智能回复
+
+* [ ] 更好的自触发方案
+
+* [x] 消息转发
+
+* [ ] 更方便的命令行方式
 
 ## 参与构建者
 
