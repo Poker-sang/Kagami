@@ -14,11 +14,13 @@ internal static class HttpClientExtensions
     public static HttpClient Client { get; } = new(new HttpClientHandler
     {
         AutomaticDecompression = DecompressionMethods.All,
+        // ServerCertificateCustomValidationCallback = (_, _, _, _) => true
     })
     {
         Timeout = new TimeSpan(0, 0, 0, 8000),
         MaxResponseContentBufferSize = ((long)2 << 30) - 1
     };
+
     private static bool shouldRefreshHeader = true;
     public static HttpClient InitializeHeader(this HttpClient client, Dictionary<string, string>? header = null)
     {

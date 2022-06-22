@@ -5,7 +5,7 @@ internal static class PicMeme
 {
     private const string baseUri = "https://gsapi.cyberrex.jp/image?top={0}&bottom={1}";
 
-    private static long lastCalled = 0;
+    private static long lastCalled;
 
     private const int coolDown = 180;
 

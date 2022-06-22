@@ -1,5 +1,6 @@
 using Kagami.Core;
 using Kagami.Services;
+using Kagami.Utilities;
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
@@ -21,6 +22,8 @@ public static class Program
         _ = Task.Run(HttpClientExtensions.Initialize);
 
         bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
+
+        Retransmit.TryLoad();
 
         // Print the log
         bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
@@ -54,8 +57,8 @@ public static class Program
         // Handle messages from group
         bot.OnGroupMessage += BotResponse.Entry;
 
-
-        //bot.OnGroupMessageRecall += BotResponse.Entry;
+        // Retransmit messages
+        bot.OnFriendMessage += Retransmit.OnFriendMessage;
 
         // Login the bot
         var result = await bot.Login();
@@ -66,8 +69,6 @@ public static class Program
         Console.WriteLine("Running...");
 
         // cli
-        var isGroup = false;
-        uint uid = 0;
         try
         {
             while (true)
@@ -84,36 +85,21 @@ public static class Program
                         BotResponse.AllowEcho = true;
                         break;
                     case "/help":
-                        _ = Services.Help.GenerateImageAsync(true);
+                        _ = Help.GenerateImageAsync(true);
                         break;
-                    case "/join":
-                        if (args.Length < 2)
+                    case "/retransmit":
+                        if (args.Length > 2 && uint.TryParse(args[1], out var friendUin) && uint.TryParse(args[2], out var groupUin))
                         {
-                            Console.WriteLine("[Error]: /join <群号/好友号>");
-                            continue;
+                            Retransmit.FriendUin = friendUin;
+                            Retransmit.GroupUin = groupUin;
+                            Retransmit.Save();
                         }
-
-                        if (!uint.TryParse(args[1], out uid))
-                        {
-                            uid = 0;
-                            Console.WriteLine("[Error]: /join <群号/好友号>");
-                        }
-
-                        goto case "/current";
-                    case "/switch":
-                        isGroup = !isGroup;
-                        goto case "/current";
-                    case "/current":
-                        Console.WriteLine($"当前是 与{uid}({(isGroup ? "群组" : "好友")}) 聊天");
+                        Console.WriteLine($"[Now]: retransmitting friend {Retransmit.FriendUin} to group {Retransmit.GroupUin}");
                         break;
+                    case "/relogin":
+                        File.Delete("keystore.json");
+                        return;
                     default:
-                        if (uid is 0)
-                        {
-                            Console.WriteLine("[Error]: 需要先加入一个群或好友");
-                            continue;
-                        }
-
-                        _ = isGroup ? bot.SendGroupMessage(uid, message) : bot.SendFriendMessage(uid, message);
                         break;
                 }
             }
@@ -144,22 +130,19 @@ public static class Program
     /// Load or create device 
     /// </summary>
     /// <returns></returns>
-    private static BotDevice? GetDevice()
+    private static BotDevice GetDevice()
     {
         // Read the device from config
-        if (File.Exists("device.json"))
-        {
-            return JsonSerializer.Deserialize
-                <BotDevice>(File.ReadAllText("device.json"));
-        }
+        if (File.Exists("device.json") && JsonSerializer.Deserialize
+                <BotDevice>(File.ReadAllText("device.json")) is { } device)
+            return device;
 
         // Create new one
-        var device = BotDevice.Default();
-        {
-            var deviceJson = JsonSerializer.Serialize(device,
-                new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText("device.json", deviceJson);
-        }
+        device = BotDevice.Default();
+
+        var deviceJson = JsonSerializer.Serialize(device,
+            new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText("device.json", deviceJson);
 
         return device;
     }
@@ -168,12 +151,13 @@ public static class Program
     /// Load or create keystore
     /// </summary>
     /// <returns></returns>
-    private static BotKeyStore? GetKeyStore()
+    private static BotKeyStore GetKeyStore()
     {
         // Read the device from config
-        if (File.Exists("keystore.json"))
-            return JsonSerializer.Deserialize
-                <BotKeyStore>(File.ReadAllText("keystore.json"));
+
+        if (File.Exists("keystore.json") && JsonSerializer.Deserialize
+                <BotKeyStore>(File.ReadAllText("keystore.json")) is { } key)
+            return key;
 
         Console.WriteLine("For first running, please type your account and password.");
 

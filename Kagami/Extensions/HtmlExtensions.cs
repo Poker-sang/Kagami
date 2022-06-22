@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Kagami.Extensions;
 internal static class HtmlExtensions
@@ -18,12 +13,12 @@ internal static class HtmlExtensions
     {
         var metaDict = new Dictionary<string, string>();
 
-        foreach (string? i in keys)
+        foreach (var i in keys)
         {
-            string? pattern = i + @"=""(.*?)""(.|\s)*?content=""(.*?)"".*?>";
+            var pattern = i + @"=""(.*?)""(.|\s)*?content=""(.*?)"".*?>";
 
             // Match results
-            foreach (Match j in Regex.Matches(html, pattern, RegexOptions.Multiline).Cast<Match>())
+            foreach (var j in Regex.Matches(html, pattern, RegexOptions.Multiline).Cast<Match>())
                 _ = metaDict.TryAdd(j.Groups[1].Value, j.Groups[3].Value);
         }
 
