@@ -18,7 +18,7 @@ public static class Poke
             return;
 
         // Convert it to ping
-        if (Random.Shared.Next(10) is 0)
+        if (Random.Shared.Next(5) is 0)
             _ = bot.SendGroupMessage(
                 group.GroupUin,
                 new Konata.Core.Message.MessageBuilder(StringResources.PokeMessage.RandomGet()));

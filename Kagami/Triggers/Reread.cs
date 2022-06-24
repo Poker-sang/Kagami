@@ -35,7 +35,7 @@ public static class Reread
     /// - 若新消息为 5. bbb<br/>
     /// 新消息相同，但不连续（漏消息），新值设为(5, 1, "bbb")<br/>
     /// </remarks>
-    private static readonly Dictionary<uint, (int LastCount, int MessageCount, string LastText)> RereadDictionary = new();
+    private static readonly Dictionary<uint, (int LastCount, int MessageCount, string LastText)> rereadDictionary = new();
 
     private static Dictionary<uint, int> MessageCounter => BotResponse.MessageCounter;
 
@@ -43,6 +43,7 @@ public static class Reread
     /// 超过三条连续相同消息复读
     /// "复读一次这条消息", "3连相同文字消息"
     /// </summary>
+    /// <param name="bot"></param>
     /// <param name="group"></param>
     /// <returns></returns>
     [Trigger(TriggerPriority.AfterCmdlet)]
@@ -54,9 +55,9 @@ public static class Reread
         var messageCount = 1;
         try
         {
-            if (!RereadDictionary.ContainsKey(group.GroupUin))
+            if (!rereadDictionary.ContainsKey(group.GroupUin))
                 return false;
-            (var lastCount, messageCount, var lastText) = RereadDictionary[group.GroupUin];
+            (var lastCount, messageCount, var lastText) = rereadDictionary[group.GroupUin];
             // 如果有漏消息
             if (lastCount + 1 != MessageCounter[group.GroupUin])
                 messageCount = 1;
@@ -78,7 +79,7 @@ public static class Reread
         }
         finally
         {
-            RereadDictionary[group.GroupUin] = (MessageCounter[group.GroupUin], messageCount, text);
+            rereadDictionary[group.GroupUin] = (MessageCounter[group.GroupUin], messageCount, text);
         }
 
         return false;

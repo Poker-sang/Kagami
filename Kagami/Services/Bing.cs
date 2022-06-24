@@ -4,20 +4,20 @@ namespace Kagami.Services;
 
 public static class Bing
 {
-    private const string baseUri = "https://cn.bing.com/";
-    private const string image = "HPImageArchive.aspx?n=1&format=js";
+    private const string BaseUri = "https://cn.bing.com/";
+    private const string Image = "HPImageArchive.aspx?n=1&format=js";
 
     public static async Task<MessageBuilder> PictureAsync()
     {
-        var json = await (baseUri + image).DownloadJsonAsync();
+        var json = await (BaseUri + Image).DownloadJsonAsync();
         var obj = json.RootElement.GetProperty("images")[0];
         var uri = obj.GetProperty("url").GetString()!.TrimStart('/');
         return new MessageBuilder()
-            .Image(await (baseUri + uri).DownloadBytesAsync())
+            .Image(await (BaseUri + uri).DownloadBytesAsync())
             .TextLine()
             .TextLine(obj.GetProperty("title").GetString()!)
             .TextLine()
             .TextLine(obj.GetProperty("copyright").GetString()!)
-            .TextLine(baseUri + uri);
+            .TextLine(BaseUri + uri);
     }
 }

@@ -7,12 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami", "Kagami\Kagami.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kagami.Test", "Kagami.Test\Kagami.Test.csproj", "{771325FB-9825-4327-8C7D-47B9D9EA6A56}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Folder", "Solution Folder", "{65A4AAE9-42BF-46B6-B739-3147BEC83808}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{65A4AAE9-42BF-46B6-B739-3147BEC83808}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		Directory.Build.targets = Directory.Build.targets
 		LICENSE = LICENSE
+		luck.json = luck.json
 		README.md = README.md
 	EndProjectSection
 EndProject

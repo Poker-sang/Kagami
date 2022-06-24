@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace Kagami.Commands;
 
 /// <summary>
-/// 从Acfun通过ac号获取视频信息
+/// 从AcFun通过ac号获取视频信息
 /// </summary>
 public static class AcFun
 {

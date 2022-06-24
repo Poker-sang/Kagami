@@ -6,13 +6,13 @@ namespace Kagami.Services;
 
 public static class Novel
 {
-    private const string baseUri = "https://fiction.cyapi.cn/v2/";// "http://if.caiyunai.com/v1/dream/"
-    private const string novelUri = $"{baseUri}novel/{token}/";
-    private const string token = "6290927806fbcbd68cb90683";// "tlmf0yyjen3uli2zascm"
-    private const string info = $"{baseUri}user/{token}/info";
-    private const string save = novelUri + "novel_save";
-    private const string ai = novelUri + "novel_ai";
-    // private const string novelDreamLoop = novelUri + "novel_dream_loop";
+    private const string BaseUri = "https://fiction.cyapi.cn/v2/";// "http://if.caiyunai.com/v1/dream/"
+    private const string NovelUri = $"{BaseUri}novel/{Token}/";
+    private const string Token = "6290927806fbcbd68cb90683";// "tlmf0yyjen3uli2zascm"
+    private const string Info = $"{BaseUri}user/{Token}/info";
+    private const string Save = NovelUri + "novel_save";
+    private const string Ai = NovelUri + "novel_ai";
+    // private const string NovelDreamLoop = novelUri + "novel_dream_loop";
 
     private static readonly Dictionary<NovelDream, string> mid = new()
     {
@@ -33,9 +33,9 @@ public static class Novel
             ["lang"] = "zh"
         }.ToJsonString());
 
-        using var infoRes = await client.PostAsync(info, infoObject);
+        using var infoRes = await client.PostAsync(Info, infoObject);
         if (!infoRes.IsSuccessStatusCode)
-            if (!(await client.PostAsync(info, infoObject)).IsSuccessStatusCode)
+            if (!(await client.PostAsync(Info, infoObject)).IsSuccessStatusCode)
                 return new("Token出现错误...");
 
         var saveObject = new StringContent(new JsonObject
@@ -46,7 +46,7 @@ public static class Novel
             ["lang"] = "zh",
             ["ostype"] = ""
         }.ToJsonString());
-        using var nidRes = await client.PostAsync(save, saveObject);
+        using var nidRes = await client.PostAsync(Save, saveObject);
         if (!nidRes.IsSuccessStatusCode)
             return new("获取小说nid错误...");
         var nidData = (await JsonDocument.ParseAsync(await nidRes.Content.ReadAsStreamAsync()))
@@ -65,9 +65,9 @@ public static class Novel
             ["status"] = "http",
             ["storyline"] = false,
             ["title"] = title,
-            ["uid"] = token,
+            ["uid"] = Token,
         }.ToJsonString());
-        using var xidRes = await client.PostAsync(ai, requestObject);
+        using var xidRes = await client.PostAsync(Ai, requestObject);
         if (!xidRes.IsSuccessStatusCode)
             return new("推送小说xid错误...");
         using var arr = (await JsonDocument.ParseAsync(await xidRes.Content.ReadAsStreamAsync()))

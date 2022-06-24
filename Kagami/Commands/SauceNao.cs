@@ -7,6 +7,7 @@ namespace Kagami.Commands;
 
 public static class SauceNao
 {
+    [Obsolete("连不上")]
     [Cmdlet(nameof(Sauce)), Description("从SauceNao搜索图源")]
     public static async ValueTask<MessageBuilder> Sauce(Image image)
         => new(await Services.SauceNao.Search(image.Url));

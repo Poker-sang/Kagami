@@ -72,37 +72,8 @@ public static class Program
         try
         {
             while (true)
-            {
-                var message = Console.ReadLine() ?? "";
-                var args = message.SplitRawString();
-                if (args.Length is 0)
-                    continue;
-                switch (args[0])
-                {
-                    case "/stop":
-                        return;
-                    case "/echo":
-                        BotResponse.AllowEcho = true;
-                        break;
-                    case "/help":
-                        _ = Help.GenerateImageAsync(true);
-                        break;
-                    case "/retransmit":
-                        if (args.Length > 2 && uint.TryParse(args[1], out var friendUin) && uint.TryParse(args[2], out var groupUin))
-                        {
-                            Retransmit.FriendUin = friendUin;
-                            Retransmit.GroupUin = groupUin;
-                            Retransmit.Save();
-                        }
-                        Console.WriteLine($"[Now]: retransmitting friend {Retransmit.FriendUin} to group {Retransmit.GroupUin}");
-                        break;
-                    case "/relogin":
-                        File.Delete("keystore.json");
-                        return;
-                    default:
-                        break;
-                }
-            }
+                if (Console.ReadLine() is { } command)
+                    await CommandLineInterface(command);
         }
         catch (Exception e)
         {
@@ -110,8 +81,51 @@ public static class Program
         }
         finally
         {
-            _ = await bot.Logout();
-            bot.Dispose();
+            await Exit();
+        }
+    }
+
+    public static async Task Exit()
+    {
+        _ = await bot.Logout();
+        bot.Dispose();
+        Environment.Exit(Environment.ExitCode);
+    }
+
+    public static async Task CommandLineInterface(string command)
+    {
+        var args = command.SplitRawString();
+        if (args.Length is 0)
+            return;
+        switch (args[0])
+        {
+            case "/stop":
+                await Exit();
+                break;
+            case "/echo":
+                BotResponse.AllowEcho = true;
+                break;
+            case "/help":
+                _ = Help.GenerateImageAsync(true);
+                break;
+            case "/luck":
+                Luck.Refresh();
+                break;
+            case "/retransmit":
+                if (args.Length > 2 && uint.TryParse(args[1], out var friendUin) && uint.TryParse(args[2], out var groupUin))
+                {
+                    Retransmit.FriendUin = friendUin;
+                    Retransmit.GroupUin = groupUin;
+                    Retransmit.Save();
+                }
+                Console.WriteLine($"[Now]: retransmitting friend {Retransmit.FriendUin} to group {Retransmit.GroupUin}");
+                break;
+            case "/relogin":
+                File.Delete("keystore.json");
+                await Exit();
+                break;
+            default:
+                break;
         }
     }
 
@@ -132,9 +146,10 @@ public static class Program
     /// <returns></returns>
     private static BotDevice GetDevice()
     {
+        const string devicePath = Paths.BotConfigPath + "device.json";
         // Read the device from config
-        if (File.Exists("device.json") && JsonSerializer.Deserialize
-                <BotDevice>(File.ReadAllText("device.json")) is { } device)
+        if (File.Exists(devicePath) && JsonSerializer.Deserialize
+                <BotDevice>(File.ReadAllText(devicePath)) is { } device)
             return device;
 
         // Create new one
@@ -142,7 +157,7 @@ public static class Program
 
         var deviceJson = JsonSerializer.Serialize(device,
             new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText("device.json", deviceJson);
+        File.WriteAllText(devicePath, deviceJson);
 
         return device;
     }
@@ -153,10 +168,11 @@ public static class Program
     /// <returns></returns>
     private static BotKeyStore GetKeyStore()
     {
+        const string keyStorePath = Paths.BotConfigPath + "keystore.json";
         // Read the device from config
 
-        if (File.Exists("keystore.json") && JsonSerializer.Deserialize
-                <BotKeyStore>(File.ReadAllText("keystore.json")) is { } key)
+        if (File.Exists(keyStorePath) && JsonSerializer.Deserialize
+                <BotKeyStore>(File.ReadAllText(keyStorePath)) is { } key)
             return key;
 
         Console.WriteLine("For first running, please type your account and password.");
@@ -181,7 +197,7 @@ public static class Program
     {
         var deviceJson = JsonSerializer.Serialize(keystore,
             new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText("keystore.json", deviceJson);
+        File.WriteAllText(Paths.BotConfigPath + "keystore.json", deviceJson);
         return keystore;
     }
 }

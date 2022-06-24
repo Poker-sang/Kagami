@@ -24,10 +24,10 @@ public static class Help
         return r;
     }
 
-    private const string cacheHelpImagePath = "help.png";
+    private const string CacheHelpImagePath = Paths.UtilitiesPath+"help.png";
 
     // 改用 "https://hcti.io/v1/image" 以获得最佳体验
-    private const string uri = "https://htmlcsstoimage.com/demo_run";
+    private const string Uri = "https://htmlcsstoimage.com/demo_run";
 
     public static string GenerateHtml()
     {
@@ -118,12 +118,12 @@ public static class Help
     );
     public static async Task<byte[]?> GenerateImageAsync(bool force = false)
     {
-        if (File.Exists(cacheHelpImagePath) && !force)
-            return await File.ReadAllBytesAsync(cacheHelpImagePath);
+        if (File.Exists(CacheHelpImagePath) && !force)
+            return await File.ReadAllBytesAsync(CacheHelpImagePath);
 
         var bytes = await GenerateImageWithoutCacheAsync();
 
-        await File.WriteAllBytesAsync(cacheHelpImagePath, bytes);
+        await File.WriteAllBytesAsync(CacheHelpImagePath, bytes);
 
         Console.WriteLine("help更新完成");
         return bytes;
@@ -138,7 +138,7 @@ public static class Help
         // 仅在使用 "https://hcti.io/v1/image" 时需要这步操作
         //string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes("user_id:api_key"));
         //client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
-        var response = await client.PostAsync(uri, JsonContent.Create(new RequestArgs(html, css)));
+        var response = await client.PostAsync(Uri, JsonContent.Create(new RequestArgs(html, css)));
         var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         var imgUri = json.RootElement.GetProperty("url").GetString();
         return imgUri is null ? throw new InvalidOperationException("请求失败") : await imgUri.DownloadBytesAsync();
