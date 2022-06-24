@@ -1,5 +1,4 @@
-using Kagami.Enums;
-using Kagami.Interfaces;
+using Kagami.UsedTypes;
 using Konata.Core.Common;
 
 namespace Kagami.Attributes;
@@ -17,12 +16,12 @@ internal class CmdletAttribute : Attribute, IKagamiAttribute
     public RoleType Permission { get; init; } = RoleType.Member;
 
     /// <summary>
-    /// Default <see cref="Kagami.Enums.CmdletType.Default"/>
+    /// Default <see cref="UsedTypes.CmdletType.Default"/>
     /// </summary>
     public CmdletType CmdletType { get; init; } = CmdletType.Default;
 
     /// <summary>
-    /// Default <see cref="Kagami.Enums.ParameterType.Default"/>
+    /// Default <see cref="UsedTypes.ParameterType.Default"/>
     /// </summary>
     public ParameterType ParameterType { get; init; } = ParameterType.Default;
 

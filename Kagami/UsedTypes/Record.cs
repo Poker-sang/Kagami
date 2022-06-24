@@ -1,7 +1,6 @@
-﻿using Kagami.Interfaces;
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace Kagami.Records;
+namespace Kagami.UsedTypes;
 
 internal record Record<TAttribute>(
     TAttribute Attribute,

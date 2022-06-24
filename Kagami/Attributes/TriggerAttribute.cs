@@ -1,5 +1,4 @@
-using Kagami.Enums;
-using Kagami.Interfaces;
+using Kagami.UsedTypes;
 using Konata.Core.Common;
 
 namespace Kagami.Attributes;
@@ -12,7 +11,7 @@ internal class TriggerAttribute : Attribute, IKagamiAttribute
     public TriggerPriority TriggerPriority { get; set; }
 
     /// <summary>
-    /// Default <see cref="Kagami.Enums.ParameterType.Default"/>
+    /// Default <see cref="UsedTypes.ParameterType.Default"/>
     /// </summary>
     public ParameterType ParameterType { get; init; } = ParameterType.Default;
 

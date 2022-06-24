@@ -1,7 +1,6 @@
 using Kagami.ArgTypes;
 using Kagami.Attributes;
-using Kagami.Enums;
-using Kagami.Records;
+using Kagami.UsedTypes;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Message.Model;

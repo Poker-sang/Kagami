@@ -1,7 +1,6 @@
-﻿using Kagami.Enums;
-using Konata.Core.Common;
+﻿using Konata.Core.Common;
 
-namespace Kagami.Interfaces;
+namespace Kagami.UsedTypes;
 
 internal interface IKagamiAttribute
 {

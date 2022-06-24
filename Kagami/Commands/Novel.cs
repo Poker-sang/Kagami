@@ -1,6 +1,6 @@
 ﻿using Kagami.ArgTypes;
 using Kagami.Attributes;
-using Kagami.Enums;
+using Kagami.UsedTypes;
 using Konata.Core.Message;
 using System.ComponentModel;
 
