@@ -1,7 +1,6 @@
-using Kagami.UsedTypes;
 using Konata.Core.Common;
 
-namespace Kagami.Attributes;
+namespace Kagami.UsedTypes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 internal class TriggerAttribute : Attribute, IKagamiAttribute
@@ -11,7 +10,7 @@ internal class TriggerAttribute : Attribute, IKagamiAttribute
     public TriggerPriority TriggerPriority { get; set; }
 
     /// <summary>
-    /// Default <see cref="UsedTypes.ParameterType.Default"/>
+    /// Default <see cref="ParameterType.Default"/>
     /// </summary>
     public ParameterType ParameterType { get; init; } = ParameterType.Default;
 
@@ -19,7 +18,7 @@ internal class TriggerAttribute : Attribute, IKagamiAttribute
     /// Default <see cref="RoleType.Member"/>
     /// </summary>
     public RoleType Permission { get; init; } = RoleType.Member;
-    
+
     /// <summary>
     /// Default <see langword="false"/>
     /// </summary>

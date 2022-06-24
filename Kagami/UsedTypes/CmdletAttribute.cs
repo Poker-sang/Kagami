@@ -1,7 +1,6 @@
-using Kagami.UsedTypes;
 using Konata.Core.Common;
 
-namespace Kagami.Attributes;
+namespace Kagami.UsedTypes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 internal class CmdletAttribute : Attribute, IKagamiAttribute
@@ -16,12 +15,12 @@ internal class CmdletAttribute : Attribute, IKagamiAttribute
     public RoleType Permission { get; init; } = RoleType.Member;
 
     /// <summary>
-    /// Default <see cref="UsedTypes.CmdletType.Default"/>
+    /// Default <see cref="CmdletType.Default"/>
     /// </summary>
     public CmdletType CmdletType { get; init; } = CmdletType.Default;
 
     /// <summary>
-    /// Default <see cref="UsedTypes.ParameterType.Default"/>
+    /// Default <see cref="ParameterType.Default"/>
     /// </summary>
     public ParameterType ParameterType { get; init; } = ParameterType.Default;
 
