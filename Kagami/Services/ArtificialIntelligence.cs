@@ -39,7 +39,7 @@ public static class ArtificialIntelligence
                 new PointF(x, y)
             ));
         }
-        
+
         image.Mutate(a => a.Resize(w, h));
 
         var ms = new MemoryStream();

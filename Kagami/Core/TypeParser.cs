@@ -52,7 +52,7 @@ public static class TypeParser
 
     private static object? String(in Bot bot, in GroupMessageEvent group, in string raw)
         // 过滤<.../>
-        => !(string.IsNullOrWhiteSpace(raw) || raw.StartsWith('<') && raw.EndsWith("/>")) ? raw : null;
+        => !(string.IsNullOrWhiteSpace(raw) || (raw.StartsWith('<') && raw.EndsWith("/>"))) ? raw : null;
 
     private static object? Int32(in Bot bot, in GroupMessageEvent group, in string raw)
         => int.TryParse(raw, out var tmp) ? tmp : null;

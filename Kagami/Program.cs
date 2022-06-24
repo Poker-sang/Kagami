@@ -118,6 +118,7 @@ public static class Program
                     Retransmit.GroupUin = groupUin;
                     Retransmit.Save();
                 }
+
                 Console.WriteLine($"[Now]: retransmitting friend {Retransmit.FriendUin} to group {Retransmit.GroupUin}");
                 break;
             case "/relogin":

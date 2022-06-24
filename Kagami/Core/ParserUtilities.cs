@@ -67,7 +67,6 @@ internal static class ParserUtilities
             if (parameter.HasDefault)
                 hasDefault = true;
 
-
             if (parameter.Type == typeof(Bot))
                 arguments.Add(bot);
             else if (parameter.Type == typeof(GroupMessageEvent))
@@ -86,6 +85,7 @@ internal static class ParserUtilities
                         flag = true;
                         break;
                     }
+
                 if (!flag)
                     if (hasDefault)
                         arguments.Add(Type.Missing);

@@ -23,11 +23,11 @@ internal static class CnIntConvertExtensions
             var temp = integer % 10;
             if (temp is not 0)
             {
-                _=cnNumber.Insert(0, cnUnit[i]);
-                _=cnNumber.Insert(0, CnNumber[temp]);
+                _ = cnNumber.Insert(0, cnUnit[i]);
+                _ = cnNumber.Insert(0, CnNumber[temp]);
             }
             else if (cnNumber.Length is not 0 && cnNumber[0] is not '零')
-                _=cnNumber.Insert(0, "零");
+                _ = cnNumber.Insert(0, "零");
             integer /= 10;
         }
 

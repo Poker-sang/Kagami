@@ -1,4 +1,4 @@
-﻿using Kagami.Attributes;
+﻿using Kagami.UsedTypes;
 
 namespace Kagami.ArgTypes;
 

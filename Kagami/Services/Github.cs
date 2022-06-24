@@ -17,13 +17,13 @@ public static class GitHub
     {
         try
         {
-            string? html = await $"https://github.com/{owner}/{repo}.git".DownloadStringAsync();
+            var html = await $"https://github.com/{owner}/{repo}.git".DownloadStringAsync();
             // Get meta data
-            Dictionary<string, string>? metaData = html.GetMetaData("property");
-            string? imageMeta = metaData["og:image"];
+            var metaData = html.GetMetaData("property");
+            var imageMeta = metaData["og:image"];
 
             // Build message
-            byte[]? image = await imageMeta.DownloadBytesAsync();
+            var image = await imageMeta.DownloadBytesAsync();
             return new MessageBuilder().Image(image);
         }
         catch (HttpRequestException e)

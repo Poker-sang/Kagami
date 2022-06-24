@@ -1,5 +1,4 @@
 ﻿using Kagami.ArgTypes;
-using Kagami.Attributes;
 using Kagami.UsedTypes;
 using Konata.Core;
 using Konata.Core.Events.Model;
@@ -32,6 +31,7 @@ public static class Recall
             _ = await bot.SendGroupMessage(group.GroupUin, new MessageBuilder("你的权限不足哦"));
             return true;
         }
+
         if (bot.Uin == reply.Uin)
         {
             await RecallAsync(bot, group.GroupUin, reply);

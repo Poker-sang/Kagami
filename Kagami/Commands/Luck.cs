@@ -1,4 +1,4 @@
-﻿using Kagami.Attributes;
+﻿using Kagami.UsedTypes;
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using System.ComponentModel;

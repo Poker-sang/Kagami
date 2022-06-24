@@ -22,7 +22,7 @@ public static class Help
         return r;
     }
 
-    private const string CacheHelpImagePath = Paths.UtilitiesPath+"help.png";
+    private const string CacheHelpImagePath = Paths.UtilitiesPath + "help.png";
 
     // 改用 "https://hcti.io/v1/image" 以获得最佳体验
     private const string Uri = "https://htmlcsstoimage.com/demo_run";
