@@ -19,7 +19,11 @@ public static class Program
     {
         Console.WriteLine("Starting...");
 
-        _ = Task.Run(HttpClientExtensions.Initialize);
+        _ = Task.Run(async () =>
+        {
+            HttpClientExtensions.Initialize();
+            await Luck.Refresh();
+        });
 
         bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 

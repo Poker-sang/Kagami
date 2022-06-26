@@ -9,8 +9,6 @@ internal static class HttpClientExtensions
 {
     public static void Initialize() { }
 
-    private static readonly Queue<Task> task = new();
-
     public static HttpClient Client { get; } = new(new HttpClientHandler
     {
         AutomaticDecompression = DecompressionMethods.All,

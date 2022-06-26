@@ -5,15 +5,17 @@ namespace Kagami.Services;
 
 public static class Luck
 {
-    private static string[] routine = GetRoutine();
+    private const string Uri = "https://poker.blob.core.windows.net/luck/luck.json";
 
-    public static void Refresh() => routine = GetRoutine();
+    private static string[] routine = Array.Empty<string>();
 
-    private static string[] GetRoutine()
+    public static async Task Refresh() => routine = await GetRoutine();
+
+    private static async Task<string[]> GetRoutine()
     {
         try
         {
-            return JsonSerializer.Deserialize<string[]>(File.OpenRead(Paths.UtilitiesPath + "luck.json")) ??
+            return JsonSerializer.Deserialize<string[]>(await Uri.DownloadStringAsync()) ??
                    Array.Empty<string>();
         }
         catch (Exception)
