@@ -27,7 +27,7 @@ internal static class BotResponse
     public static Dictionary<uint, int> MessageCounter { get; }
         = new() { { 0, 0 } };
 
-    internal static bool AllowEcho = false;
+    internal static bool allowEcho;
 
     static BotResponse()
     {
@@ -35,7 +35,7 @@ internal static class BotResponse
             .CurrentDomain
             .GetAssemblies()
             .SelectMany(asm => asm.GetTypes())
-            // 静态类的修饰符是 abstract sealed
+            // static 的修饰符是 abstract sealed
             .Where(t => t.Namespace is { } ns && (ns.Contains("Kagami.Commands") || ns.Contains("Kagami.Triggers") || ns.Contains("Kagami.Core")))
             .Where(t => t.IsAbstract && t.IsSealed);
 
@@ -78,11 +78,11 @@ internal static class BotResponse
     {
         Console.WriteLine($"[\x1b[38;2;0;255;255m{DateTime.Now:T}\u001b[0m] [\x1b[38;2;0;0;255m{group.GroupName}/\x1b[38;2;0;255;0m{group.MemberCard.Replace("\x7", "")}\u001b[0m]: {group.Chain}\u001b[0m");
 
-        if (!AllowEcho && group.MemberUin == bot.Uin)
+        if (!allowEcho && group.MemberUin == bot.Uin)
             return;
 
         if (group.MemberUin == bot.Uin)
-            AllowEcho = false;
+            allowEcho = false;
 
         if (!MessageCounter.ContainsKey(group.GroupUin))
             MessageCounter[group.GroupUin] = 0;

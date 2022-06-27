@@ -12,7 +12,7 @@ namespace Kagami.Commands;
 
 public static class HighPermission
 {
-    [Cmdlet(nameof(Mute), Permission = Konata.Core.Common.RoleType.Admin), Description("禁言成员（默认10分钟）")]
+    [Cmdlet(nameof(Mute), "禁言", Permission = Konata.Core.Common.RoleType.Admin), Description("禁言成员（默认10分钟）")]
     public static async ValueTask<MessageBuilder> Mute(Bot bot, GroupMessageEvent group,
         [Description("成员")] At at,
         [Description("禁言时长")] uint minutes = 10)
@@ -30,7 +30,7 @@ public static class HighPermission
         }
     }
 
-    [Cmdlet(nameof(Title), Permission = Konata.Core.Common.RoleType.Owner), Description("为成员设置头衔")]
+    [Cmdlet(nameof(Title), "头衔", Permission = Konata.Core.Common.RoleType.Owner), Description("为成员设置头衔")]
     public static async ValueTask<MessageBuilder> Title(Bot bot, GroupMessageEvent group,
         [Description("成员")] At at,
         [Description("头衔")] string title)

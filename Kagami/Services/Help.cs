@@ -41,26 +41,27 @@ public static class Help
 
         foreach (var cmdlet in BotResponse.Cmdlets.SelectMany(i => i.Value))
         {
-            _ = sb.AppendLine(@$"{Spacing(2)}<div class=""cmd block"">");
+            _ = sb.AppendLine(@$"{Spacing(2)}<div class=""cmd block{(cmdlet.IsObsoleted ? " obsoleted" : "")}"">");
             if (cmdlet.Attribute.Permission is not Konata.Core.Common.RoleType.Member)
-                _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">需要{cmdlet.Attribute.Permission switch
+                _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd comment"">❗需要{cmdlet.Attribute.Permission switch
                 {
                     Konata.Core.Common.RoleType.Admin => "管理员",
                     Konata.Core.Common.RoleType.Owner => "群主",
                     _ => "Unknown"
-                }}权限</span>]<br>");
+                }}权限</span><br>");
 
             if (!cmdlet.Attribute.IgnoreCase)
-                _ = sb.AppendLine($@"{Spacing(3)}[<span class=""cmd attribute"">此命令区分大小写</span>]<br>");
+                _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd comment"">❗此命令区分大小写</span><br>");
 
             var parameters = cmdlet.Parameters;
             if (cmdlet.Attribute.ParameterType is ParameterType.Reverse)
                 parameters = parameters.Reverse().ToArray();
 
-            _ = sb.AppendLine($@"{Spacing(3)}<span class=""cmd format""><code{(cmdlet.IsObsoleted ? " class=\"del\"" : "")}>{cmdlet.Attribute.Name}</code>{GenerateArgumentList(parameters)}</span>
-{Spacing(3)}<p class=""cmd description"">{cmdlet.Description}</p>
+            _ = sb.AppendLine(
+                $@"{Spacing(3)}<span class=""cmd format""><code>{cmdlet.Attribute.Names[0]}</code>{GenerateArgumentList(parameters)}</span>
+{Spacing(3)}<p>{cmdlet.Description}</p>
 {Spacing(3)}<div class=""cmd arguments"">");
-
+            // <p class=""cmd description"">{cmdlet.Description}</p>
             foreach (var parameter in parameters)
             {
                 if (parameter.Type == typeof(Bot) || parameter.Type == typeof(GroupMessageEvent))
@@ -71,7 +72,8 @@ public static class Help
                 if (parameter.Type.IsGenericType && parameter.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
                     typeName = parameter.Type.GenericTypeArguments[0].Name + "?";
 
-                _ = sb.AppendLine($@"{Spacing(4)}<li><code class=""type"">{typeName}</code><span class=""name"">{parameter.Description}</span></li>");
+                _ = sb.AppendLine(
+                    $@"{Spacing(4)}<li><code class=""type"">{typeName}</code><span class=""name"">{parameter.Description}</span></li>");
 
                 if (parameter.Type.IsEnum)
                 {
@@ -84,7 +86,7 @@ public static class Help
                             continue;
 
                         var name = $@"<code{(field.GetCustomAttribute(typeof(ObsoleteAttribute)) is not null
-                            ? " class=\"del\""
+                            ? " class=\"obsoleted\""
                             : "")}>{field.Name}</code>";
 
                         _ = sb.AppendLine(flat
@@ -96,8 +98,11 @@ public static class Help
                 }
             }
 
-            _ = sb.AppendLine($"{Spacing(3)}</div>")
-                .AppendLine($"{Spacing(2)}</div>")
+            _ = sb.AppendLine($"{Spacing(3)}</div>");
+            if (cmdlet.Attribute.Names.Length > 1)
+                _ = sb.AppendLine(
+                    $@"{Spacing(2)}<p class=""cmd comment"">{cmdlet.Attribute.Names[1..].Aggregate("", (current, s) => current + s + " ")[..^1]}</p>");
+            _ = sb.AppendLine($"{Spacing(2)}</div>")
                 .AppendLine();
         }
 
@@ -134,8 +139,8 @@ public static class Help
         var client = HttpClientExtensions.Client.InitializeHeader();
 
         // 仅在使用 "https://hcti.io/v1/image" 时需要这步操作
-        //string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes("user_id:api_key"));
-        //client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
+        // string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes("user_id:api_key"));
+        // client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
         var response = await client.PostAsync(Uri, JsonContent.Create(new RequestArgs(html, css)));
         var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         var imgUri = json.RootElement.GetProperty("url").GetString();

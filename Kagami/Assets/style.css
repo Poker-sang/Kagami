@@ -38,8 +38,8 @@ code {
     margin-right: 4px;
 }
 
-.del {
-    text-decoration: line-through;
+.obsoleted {
+    opacity: 0.5
 }
 
 ul {
@@ -101,7 +101,7 @@ li {
         color: var(--command-name);
     }
 
-.cmd.description {
+.cmd.comment {
     color: var(--command-description);
 }
 
@@ -113,8 +113,7 @@ code.type {
     color: var(--argument-type);
 }
 
-.cmd.arguments > li > code.name {
-    color: var(--command-arguments);
+.cmd.arguments > li > span.name {
     color: var(--command-arguments);
 }
 

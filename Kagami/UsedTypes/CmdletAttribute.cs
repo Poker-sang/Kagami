@@ -5,9 +5,9 @@ namespace Kagami.UsedTypes;
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 internal class CmdletAttribute : Attribute, IKagamiAttribute
 {
-    public CmdletAttribute(string name) => Name = name;
+    public CmdletAttribute(params string[] names) => Names = names;
 
-    public string Name { get; init; }
+    public string[] Names { get; init; }
 
     /// <summary>
     /// Default <see cref="RoleType.Member"/>

@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Kagami.Commands;
 public static class GoogleTranslation
 {
-    [Cmdlet(nameof(Trans), ParameterType = ParameterType.Reverse), Description("谷歌翻译")]
+    [Cmdlet(nameof(Trans), "translate", "翻译", ParameterType = ParameterType.Reverse), Description("谷歌翻译")]
     public static async ValueTask<MessageBuilder> Trans(
         [Description("翻译内容")] string raw,
         [Description("目标语言")] Languages target = Languages.En,

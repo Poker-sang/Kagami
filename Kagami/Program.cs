@@ -107,7 +107,7 @@ public static class Program
                 await Exit();
                 break;
             case "/echo":
-                BotResponse.AllowEcho = true;
+                BotResponse.allowEcho = true;
                 break;
             case "/help":
                 _ = Help.GenerateImageAsync(true);

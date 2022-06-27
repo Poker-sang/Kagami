@@ -11,7 +11,7 @@ namespace Kagami.Commands;
 /// </summary>
 public static class Picture
 {
-    [Cmdlet(nameof(Pic)), Description("获取图片")]
+    [Cmdlet(nameof(Pic), "图片"), Description("获取图片")]
     public static async ValueTask<MessageBuilder> Pic(
         [Description("图片源")] PicSource source,
         [Description("参数")] string[]? args = null)
