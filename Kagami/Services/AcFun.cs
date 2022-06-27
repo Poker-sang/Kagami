@@ -48,7 +48,7 @@ public static class AcFun
         var image = await imageMeta.DownloadBytesAsync();
 
         // Build message
-        return new MessageBuilder($"{titleMeta}")
+        return new MessageBuilder(titleMeta)
             .TextLine(descriptionMeta)
             .TextLine(uri)
             .TextLine()

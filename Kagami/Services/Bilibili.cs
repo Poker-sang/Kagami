@@ -11,7 +11,7 @@ public static class Bilibili
     /// <summary>
     /// 获取B站的视频基本信息
     /// </summary>
-    /// <param name="code">aid/bvid</param>
+    /// <param name="code">av/BV</param>
     /// <returns></returns>
     public static async Task<MessageBuilder> GetVideoInfoFrom(string code)
     {
@@ -22,7 +22,8 @@ public static class Bilibili
         var html = await uri.DownloadStringAsync();
         // Get meta data
         var metaData = html.GetMetaData("itemprop");
-        var titleMeta = metaData["description"];
+        var name = metaData["name"];
+        var description = metaData["description"];
         var imageMeta = metaData["image"];
         // var keywordMeta = metaData["keywords"];
 
@@ -30,7 +31,8 @@ public static class Bilibili
         var image = await imageMeta.DownloadBytesAsync();
 
         // Build message
-        return new MessageBuilder($"{titleMeta}")
+        return new MessageBuilder(name)
+            .TextLine(description)
             .TextLine(uri)
             .TextLine()
             .Image(image);
