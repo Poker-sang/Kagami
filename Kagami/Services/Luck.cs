@@ -33,6 +33,13 @@ public static class Luck
 
     public static Value GetValue(long uin)
     {
+        if (routine.Length < 6)
+            return new Value
+            {
+                Draw = "luck.json未获取或获取失败",
+                Should = Array.Empty<string>(),
+                Avoid = Array.Empty<string>()
+            };
         var seed = (int)((DateTime.Today.Ticks / TimeSpan.TicksPerDay) + (uin % int.MaxValue));
         var random = new Random(seed);
         var draw = random.Next(100) switch
