@@ -16,4 +16,7 @@ internal static class StringResources
 
     public static T RandomGet<T>(this IReadOnlyList<T> array)
         => array[Random.Shared.Next(array.Count)];
+
+    public static int RandomGetNumber<T>(this IReadOnlyList<T> array)
+        => Random.Shared.Next(array.Count);
 }

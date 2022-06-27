@@ -54,7 +54,8 @@ GC内存 {GC.GetTotalAllocatedBytes().Bytes2MiB(2)}MiB ({Math.Round((double)GC.G
     public static string Roll(string[] items)
         => items.Length < 2
             ? "没有选项让我怎么选，笨！"
-            : string.Format(StringResources.RollMessage.RandomGet(), items.RandomGet());
+            // items.RandomGet()
+            : string.Format(StringResources.RollMessage.RandomGet(), $"第{items.RandomGetNumber()}个");
 
     public static double Bytes2MiB(this long bytes, int round) => Math.Round(bytes / 1048576.0, round);
 }
