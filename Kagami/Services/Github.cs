@@ -2,9 +2,6 @@ using Konata.Core.Message;
 
 namespace Kagami.Services;
 
-/// <summary>
-/// 和Github相关的业务逻辑代码
-/// </summary>
 public static class GitHub
 {
     /// <summary>

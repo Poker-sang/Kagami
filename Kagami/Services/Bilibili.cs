@@ -36,7 +36,7 @@ public static class Bilibili
     /// </summary>
     /// <param name="bvCode"></param>
     /// <returns></returns>
-    public static string? Bv2Av(this string bvCode)
+    public static ulong? Bv2Av(this string bvCode)
     {
         const long xor = 177451812L;
         const long add = 100618342136696320L;
@@ -54,7 +54,7 @@ public static class Bilibili
             var r = sed.Select((t, i) => chars[bvCode[t]] * (long)Math.Pow(table.Length, i)).Sum();
 
             var result = (r - add) ^ xor;
-            return result is > 10000000000 or < 0 ? "" : result.ToString();
+            return result is > 10000000000 or < 0 ? null : (ulong)result;
         }
         catch
         {
