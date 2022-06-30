@@ -37,13 +37,15 @@ public static class TypeParser
     public static Dictionary<Type, TypeParserDelegate> Map { get; } = new()
     {
         { typeof(string), String },
-        { typeof(int),  Int32 },
+        { typeof(int), Int32 },
         { typeof(uint), UInt32 },
+        { typeof(long), Int64 },
+        { typeof(ulong), UInt64 },
         { typeof(PicSource), Enum<PicSource> },
         { typeof(MemeOption), Enum<MemeOption> },
         { typeof(Languages), Enum<Languages> },
         { typeof(NovelDream), Enum<NovelDream> },
-        { typeof(ArgTypes.AiModel), Enum<ArgTypes.AiModel> },
+        { typeof(AiModel), Enum<AiModel> },
         { typeof(At), At },
         { typeof(Reply), Reply },
         { typeof(Image), Image },
@@ -59,6 +61,12 @@ public static class TypeParser
 
     private static object? UInt32(in Bot bot, in GroupMessageEvent group, in string raw)
         => uint.TryParse(raw, out var tmp) ? tmp : null;
+
+    private static object? Int64(in Bot bot, in GroupMessageEvent group, in string raw)
+        => long.TryParse(raw, out var tmp) ? tmp : null;
+
+    private static object? UInt64(in Bot bot, in GroupMessageEvent group, in string raw)
+        => ulong.TryParse(raw, out var tmp) ? tmp : null;
 
     private static object? Enum<TEnum>(in Bot bot, in GroupMessageEvent group, in string raw) where TEnum : struct, Enum
         => System.Enum.TryParse(raw, true, out TEnum tmp) && System.Enum.IsDefined(tmp) ? tmp : null;
