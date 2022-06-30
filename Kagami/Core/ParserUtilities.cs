@@ -93,7 +93,7 @@ internal static class ParserUtilities
                         return false;
             }
             else
-                throw new NotSupportedException($"类型解析器器不支持的类型 \"{type.FullName}\". ");
+                throw new NotSupportedException($"类型解析器不支持的类型 \"{type.FullName}\". ");
         }
 
         parameters = arguments.ToArray();
