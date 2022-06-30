@@ -108,14 +108,24 @@ public static class CommandParser
         CmdletType type,
         HashSet<Record<CmdletAttribute>> set)
     {
+        var cmd = raw.SplitArgs[0].Trim();
+
         Func<string?, string[], StringComparison, bool> matcher = type switch
         {
             CmdletType.Default => (i, o, s) => o.Any(t => string.Equals(i, t, s)),
-            CmdletType.Prefix => (i, o, s) => o.Any(t => i?.StartsWith(t, s) is true),
+            CmdletType.Prefix => (i, o, s) => o.Any(t =>
+            {
+                if (i?.StartsWith(t, s) is true)
+                {
+                    cmd = t;
+                    return true;
+                }
+
+                return false;
+            }),
             _ => throw new ArgumentOutOfRangeException(nameof(type)),
         };
 
-        var cmd = raw.SplitArgs[0].Trim();
         var cmdSet = set.Where(c => !c.IsObsoleted)
             .Where(i => matcher(cmd, i.Attribute.Names,
                 i.Attribute.IgnoreCase
@@ -135,7 +145,7 @@ public static class CommandParser
                     break;
                 case CmdletType.Prefix:
                     args = raw.SplitArgs;
-                    args[0] = args[0][cmdlet.Attribute.Names.Length..];
+                    args[0] = args[0][cmd.Length..];
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type));

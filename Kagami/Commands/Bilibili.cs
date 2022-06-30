@@ -14,5 +14,7 @@ public static class Bilibili
     [Cmdlet("BV", CmdletType = CmdletType.Prefix, IgnoreCase = false)]
     [Description("从Bilibili通过BV号获取视频信息")]
     public static async ValueTask<MessageBuilder> Bv([Description("BV号")] string bv)
-        => bv.Bv2Av() is { } av ? await Av(av) : new("不是正确的BV号");
+        => await Services.Bilibili.GetVideoInfoFrom($"BV{bv}");
+
+    //=> bv.Bv2Av() is { } av ? await Av(av) : new("不是正确的BV号");
 }
