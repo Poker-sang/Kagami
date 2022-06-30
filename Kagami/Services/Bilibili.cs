@@ -3,16 +3,8 @@ using System.Diagnostics;
 
 namespace Kagami.Services;
 
-/// <summary>
-/// 和B站相关的业务逻辑代码
-/// </summary>
 public static class Bilibili
 {
-    /// <summary>
-    /// 获取B站的视频基本信息
-    /// </summary>
-    /// <param name="code">av/BV</param>
-    /// <returns></returns>
     public static async Task<MessageBuilder> GetVideoInfoFrom(string code)
     {
         var uri = $"https://www.bilibili.com/video/{code}";

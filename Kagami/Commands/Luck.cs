@@ -7,7 +7,6 @@ namespace Kagami.Commands;
 
 public static class Luck
 {
-
     [Cmdlet(nameof(Luck), "今日人品", "今日运势", "抽签", "jrrp"), Description("今日运势")]
     public static MessageBuilder GetLuck(GroupMessageEvent group)
     {

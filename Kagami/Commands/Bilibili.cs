@@ -4,9 +4,6 @@ using System.ComponentModel;
 
 namespace Kagami.Commands;
 
-/// <summary>
-/// 从Bilibili通过av、BV号获取视频信息
-/// </summary>
 public static class Bilibili
 {
     [Cmdlet(nameof(Av), CmdletType = CmdletType.Prefix), Description("从Bilibili通过av号获取视频信息")]

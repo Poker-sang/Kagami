@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.11.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
+    <PackageReference Include="Wolfram.NETLink" Version="1.7.1" />
   </ItemGroup>
 
   <ItemGroup>

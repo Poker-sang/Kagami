@@ -22,9 +22,9 @@ public static class SauceNao
         var client = HttpClientExtensions.Client.InitializeHeader();
         using var res = await client.PostAsync(Api, picParams);
         if (!res.IsSuccessStatusCode)
-            return new("获取小说nid错误...");
-        var nidData = (await JsonDocument.ParseAsync(await res.Content.ReadAsStreamAsync()))
-            .RootElement;
+            return new("获取错误...");
+        //var nidData = (await JsonDocument.ParseAsync(await res.Content.ReadAsStreamAsync()))
+        //    .RootElement;
         return "s";
     }
 }

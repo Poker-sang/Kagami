@@ -30,5 +30,4 @@ public static class Dice
     /// <param name="max">最大点数</param>
     /// <returns>以换行符分割的字符串</returns>
     public static Task<string> RollAsync(int max) => RollAsync(1, 0, max);
-
 }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using static Kagami.Services.GitHub;
 
 namespace Kagami.Commands;
+
 public static class GitHub
 {
     [Cmdlet(nameof(GitHub)), Description("获取仓库概要图片")]

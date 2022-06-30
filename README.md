@@ -35,6 +35,7 @@
 | repeat -message | 复读一条消息 |
 | novel [-mode] [-title] -content | 续写小说 |
 | sauce -image | SauceNao查询图片 |
+| mma -cmd | 调用Mathematica API |
 
 ## 触发器
 

@@ -24,6 +24,7 @@ public static class Meme
     /// 记录现在已经发到第几张图片的指针
     /// </summary>
     private const string Pointer = "0.ptr";
+
     /// <summary>
     /// 记录某期所有图片链接的索引
     /// </summary>
@@ -199,6 +200,7 @@ public static class Meme
     /// <summary>
     /// 记录下载的图片
     /// </summary>
+    /// <param name="issuePath">期数所在路径</param>
     /// <param name="imgUrls">图片链接索引</param>
     /// <returns></returns>
     private static async Task DownloadMemesAsync(string issuePath, string[] imgUrls)
@@ -206,7 +208,7 @@ public static class Meme
         // 如果已经有文件夹且索引和图片都有
         if (Directory.Exists(issuePath))
         {
-            if (!(Directory.GetFiles(issuePath) is { Length: 2 } files) ||
+            if (Directory.GetFiles(issuePath) is not { Length: 2 } files ||
                 files[1] != Path.Combine(issuePath, Indexer))
                 throw new OperationCanceledException();
         }

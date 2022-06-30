@@ -3,16 +3,8 @@ using System.Diagnostics;
 
 namespace Kagami.Services;
 
-/// <summary>
-/// 和A站相关的业务逻辑代码
-/// </summary>
 public static class AcFun
 {
-    /// <summary>
-    /// 获取A站的视频基本信息
-    /// </summary>
-    /// <param name="code">id</param>
-    /// <returns></returns>
     public static async Task<MessageBuilder> GetVideoInfoFrom(string code)
     {
         var uri = $"https://www.acfun.cn/v/{code}";
