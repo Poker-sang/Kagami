@@ -6,9 +6,9 @@ public static class Luck
 {
     private const string Uri = "https://poker.blob.core.windows.net/luck/luck.json";
 
-    private static string[] routine = Array.Empty<string>();
+    private static string[] _routine = Array.Empty<string>();
 
-    public static async Task Refresh() => routine = await GetRoutine();
+    public static async void Refresh() => _routine = await GetRoutine();
 
     private static async Task<string[]> GetRoutine()
     {
@@ -32,7 +32,7 @@ public static class Luck
 
     public static Value GetValue(long uin)
     {
-        if (routine.Length < 6)
+        if (_routine.Length < 6)
             return new Value
             {
                 Draw = "luck.json未获取或获取失败",
@@ -51,7 +51,7 @@ public static class Luck
         };
         var daily = new SortedSet<string>();
         while (daily.Count < 6)
-            _ = daily.Add(routine[random.Next(routine.Length)]);
+            _ = daily.Add(_routine[random.Next(_routine.Length)]);
         return new Value
         {
             Draw = draw,

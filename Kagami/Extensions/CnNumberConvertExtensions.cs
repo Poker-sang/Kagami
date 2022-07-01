@@ -6,7 +6,7 @@ internal static class CnIntConvertExtensions
 {
     private const string CnNumber = "零一二三四五六七八九十百千万";
 
-    private static readonly List<string> cnUnit = new() { "", "十", "百", "千", "万", "十万", "百万", "千万", "亿" };
+    private static readonly List<string> _cnUnit = new() { "", "十", "百", "千", "万", "十万", "百万", "千万", "亿" };
 
     /// <summary>
     /// 阿拉伯数字转中文数字
@@ -23,7 +23,7 @@ internal static class CnIntConvertExtensions
             var temp = integer % 10;
             if (temp is not 0)
             {
-                _ = cnNumber.Insert(0, cnUnit[i]);
+                _ = cnNumber.Insert(0, _cnUnit[i]);
                 _ = cnNumber.Insert(0, CnNumber[temp]);
             }
             else if (cnNumber.Length is not 0 && cnNumber[0] is not '零')
@@ -39,8 +39,8 @@ internal static class CnIntConvertExtensions
         var integer = 0;
         cnNumber = cnNumber.Replace("零", "");
         // 从亿循环到十位
-        for (var i = cnUnit.Count - 1; i > 0; --i)
-            if (cnNumber.Split(cnUnit[i]) is { Length: 2 } splitCnNumber)
+        for (var i = _cnUnit.Count - 1; i > 0; --i)
+            if (cnNumber.Split(_cnUnit[i]) is { Length: 2 } splitCnNumber)
             {
                 integer += (int)Math.Pow(10, i) * CnNumber.IndexOf(splitCnNumber[0], StringComparison.Ordinal);
                 cnNumber = splitCnNumber[1];

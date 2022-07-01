@@ -6,8 +6,6 @@ internal static class WeakReferenceExtensions
     {
         if (!target.TryGetTarget(out var value))
             target.SetTarget(value = @default());
-        if (value is null)
-            target.SetTarget(value = @default());
         return value;
     }
 }

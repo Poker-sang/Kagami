@@ -13,29 +13,29 @@ namespace Kagami;
 
 public static class Program
 {
-    private static Bot bot = null!;
+    private static Bot _bot = null!;
 
     public static async Task Main()
     {
         Console.WriteLine("Starting...");
 
-        _ = Task.Run(async () =>
+        _ = Task.Run(() =>
         {
             HttpClientExtensions.Initialize();
-            await Luck.Refresh();
+            Luck.Refresh();
         });
 
-        bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
+        _bot = BotFather.Create(GetConfig(), GetDevice(), GetKeyStore());
 
         Retransmit.TryLoad();
 
         // Print the log
-        bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
+        _bot.OnLog += (_, e) => Trace.WriteLine(e.EventMessage);
 
-        bot.OnBotOnline += (_, e) => Console.WriteLine(e.EventMessage);
+        _bot.OnBotOnline += (_, e) => Console.WriteLine(e.EventMessage);
 
         // Handle the captcha
-        bot.OnCaptcha += (s, e) =>
+        _bot.OnCaptcha += (s, e) =>
         {
             switch (e.Type)
             {
@@ -56,19 +56,18 @@ public static class Program
         };
 
         // Handle poke messages
-        bot.OnGroupPoke += Poke.OnGroupPoke;
+        _bot.OnGroupPoke += Poke.OnGroupPoke;
 
         // Handle messages from group
-        bot.OnGroupMessage += BotResponse.Entry;
+        _bot.OnGroupMessage += BotResponse.Entry;
 
         // Retransmit messages
-        bot.OnFriendMessage += Retransmit.OnFriendMessage;
+        _bot.OnFriendMessage += Retransmit.OnFriendMessage;
 
         // Login the bot
-        var result = await bot.Login();
-        // Update the keystore
-        if (result)
-            _ = UpdateKeystore(bot.KeyStore);
+        if (await _bot.Login())
+            // Update the keystore
+            _ = UpdateKeystore(_bot.KeyStore);
 
         Console.WriteLine("Running...");
 
@@ -91,8 +90,8 @@ public static class Program
 
     public static async Task Exit()
     {
-        _ = await bot.Logout();
-        bot.Dispose();
+        _ = await _bot.Logout();
+        _bot.Dispose();
         Environment.Exit(Environment.ExitCode);
     }
 
@@ -107,7 +106,7 @@ public static class Program
                 await Exit();
                 break;
             case "/echo":
-                BotResponse.allowEcho = true;
+                BotResponse.AllowEcho = true;
                 break;
             case "/help":
                 _ = Help.GenerateImageAsync(true);

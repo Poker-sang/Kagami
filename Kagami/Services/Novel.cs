@@ -14,7 +14,7 @@ public static class Novel
     private const string Ai = NovelUri + "novel_ai";
     // private const string NovelDreamLoop = novelUri + "novel_dream_loop";
 
-    private static readonly Dictionary<NovelDream, string> mid = new()
+    private static readonly Dictionary<NovelDream, string> _mid = new()
     {
         { NovelDream.Bot0, "60094a2a9661080dc490f75a" },
         { NovelDream.Bot1, "601ac4c9bd931db756e22da6"},
@@ -59,7 +59,7 @@ public static class Novel
             ["content"] = content,
             ["lang"] = "zh",
             ["lastnode"] = nidData.GetProperty("firstnode").GetProperty("nodeid").GetString()!,
-            ["mid"] = mid[mode],
+            ["mid"] = _mid[mode],
             ["nid"] = nid,
             ["ostype"] = "",
             ["status"] = "http",

@@ -19,19 +19,19 @@ internal static class HttpClientExtensions
         MaxResponseContentBufferSize = ((long)2 << 30) - 1
     };
 
-    private static bool shouldRefreshHeader = true;
+    private static bool _shouldRefreshHeader = true;
     public static HttpClient InitializeHeader(this HttpClient client, Dictionary<string, string>? header = null)
     {
-        if (!shouldRefreshHeader && header is null)
+        if (!_shouldRefreshHeader && header is null)
             return client;
 
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("PokerKagami", "1.0"));
-        shouldRefreshHeader = false;
+        _shouldRefreshHeader = false;
         if (header is not null)
         {
-            shouldRefreshHeader = true;
+            _shouldRefreshHeader = true;
             foreach (var (k, v) in header)
                 client.DefaultRequestHeaders.Add(k, v);
         }

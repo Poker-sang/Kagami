@@ -31,8 +31,8 @@ public delegate object? TypeParserDelegate(
 /// </summary>
 public static class TypeParser
 {
-    private static readonly Dictionary<Type, int> cache = new();
-    public static void Clear() => cache.Clear();
+    private static readonly Dictionary<Type, int> _cache = new();
+    public static void Clear() => _cache.Clear();
 
     public static Dictionary<Type, TypeParserDelegate> Map { get; } = new()
     {
@@ -83,13 +83,13 @@ public static class TypeParser
     private static TChain? NextChain<TChain>(in GroupMessageEvent group) where TChain : BaseChain
     {
         var chains = group.Chain.FetchChains<TChain>().ToArray();
-        if (!cache.TryGetValue(typeof(TChain), out var index))
-            cache[typeof(TChain)] = 0;
+        if (!_cache.TryGetValue(typeof(TChain), out var index))
+            _cache[typeof(TChain)] = 0;
 
         if (index >= chains.Length)
             return null;
 
-        cache[typeof(TChain)] = index + 1;
+        _cache[typeof(TChain)] = index + 1;
         return chains[index];
     }
 }
