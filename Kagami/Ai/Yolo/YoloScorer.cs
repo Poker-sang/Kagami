@@ -66,7 +66,6 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     /// </summary>
     private DenseTensor<float>[] Inference(Image<Rgba32> image)
     {
-
         if (image.Width != _model.Width || image.Height != _model.Height)
         {
             image.Mutate(x => x.Resize(_model.Width, _model.Height)); // fit image size to specified input size
@@ -81,7 +80,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
 
         // add outputs for processing
 
-        return _model.Outputs.Select(item => result.First(x => x.Name == item).Value as DenseTensor<float>).ToArray();
+        return _model.Outputs.Select(item => (DenseTensor<float>)result.First(x => x.Name == item).Value).ToArray();
     }
 
     /// <summary>
@@ -243,7 +242,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     /// <summary>
     /// Creates new instance of YoloScorer with weights path and options.
     /// </summary>
-    public YoloScorer(string weights, SessionOptions opts = null) : this() => _inferenceSession = new InferenceSession(File.ReadAllBytes(weights), opts ?? new SessionOptions());
+    public YoloScorer(string weights, SessionOptions? opts = null) : this() => _inferenceSession = new InferenceSession(File.ReadAllBytes(weights), opts ?? new SessionOptions());
 
     /// <summary>
     /// Creates new instance of YoloScorer with weights stream and options.

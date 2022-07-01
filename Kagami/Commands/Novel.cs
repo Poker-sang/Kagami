@@ -7,7 +7,7 @@ namespace Kagami.Commands;
 
 public static class Novel
 {
-    [Obsolete("容易被封禁")]
+    // [Obsolete("容易被封禁")]
     [Cmdlet(nameof(Novel), "小说", ParameterType = ParameterType.Reverse), Description("续写小说")]
     public static async Task<MessageBuilder> WriteNovel(
         [Description("内容")] string content,

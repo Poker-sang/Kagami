@@ -23,7 +23,7 @@ public static class Kernel
     [Cmdlet(nameof(Status), "状态"), Description("内核信息")]
     public static MessageBuilder Status() => new(Services.Kernel.Status());
 
-    [Obsolete("容易被封禁")]
+    // [Obsolete("容易被封禁")]
     [Cmdlet(nameof(Repeat), "复读"), Description("复读一条消息")]
     public static MessageBuilder Repeat(GroupMessageEvent group)
         => new MessageBuilder(((TextChain)group.Chain[0]).Content[nameof(Repeat).Length..].Trim()).Add(group.Chain[1..]);

@@ -8,7 +8,7 @@ namespace Kagami.Commands;
 
 public static class Meme
 {
-    [Obsolete("容易被封禁")]
+    // [Obsolete("容易被封禁")]
     [Cmdlet(nameof(Meme), "弔图", ParameterType = ParameterType.Reverse), Description("弔图其他指令")]
     public static async Task<MessageBuilder> MemeCommand(
         [Description("期数")] uint? intIssue = null,
