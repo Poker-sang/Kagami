@@ -52,10 +52,9 @@ public static class Meme
         await Task.Yield();
 
         var xDocument = XDocument.Parse((await "https://cangku.icu/feed".DownloadStringAsync())[1..]);
-        XNamespace d = "http://www.w3.org/2005/Atom";
+        var d = XNamespace.Get("http://www.w3.org/2005/Atom");
         if (xDocument.Root is { } root)
             foreach (var entry in root.Descendants(d + "entry"))
-            {
                 // xElement.Element(d + "author")?.Element(d + "name")?.Value is not "錒嗄锕"
                 if (entry.Element(d + "title")?.Value is { } entryTitle && entryTitle.Contains("沙雕图集锦"))
                 {
@@ -67,7 +66,6 @@ public static class Meme
                         return (GetImageTags(content.Value).ToArray(), entryTitle[(first + 1)..last]);
                     }
                 }
-            }
 
         throw new KeyNotFoundException("RSS订阅失败！");
     }
@@ -136,9 +134,9 @@ public static class Meme
     /// <summary>
     /// 更新沙雕图
     /// </summary>
-    /// <param name="issue">期数</param>
+    /// <param name="issue">中文期数</param>
+    /// <param name="intIssue">数字期数</param>
     /// <returns></returns>
-
     public static async Task<MessageBuilder> UpdateMemeAsync(string? issue = null, int intIssue = -1)
     {
         try
@@ -180,7 +178,6 @@ public static class Meme
         }
         catch (OperationCanceledException)
         {
-
             return new($"{issue}期弔图已存在！");
         }
         catch (FileNotFoundException e)

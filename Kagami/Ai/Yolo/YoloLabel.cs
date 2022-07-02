@@ -13,4 +13,10 @@ public class YoloLabel
     public Color Color { get; set; }
 
     public YoloLabel() => Color = Color.Yellow;
+
+    public YoloLabel(int id, string name) : this()
+    {
+        Id = id;
+        Name = name;
+    }
 }

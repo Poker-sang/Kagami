@@ -11,7 +11,7 @@ namespace Kagami.Commands;
 
 public static class Kernel
 {
-    //private static readonly WeakReference<MessageBuilder?> sPing = new(null);
+    // private static readonly WeakReference<MessageBuilder?> sPing = new(null);
 
     [Cmdlet(nameof(Ping)), Description("看看我是否还在线")]
     public static MessageBuilder Ping() => new("Pong!");

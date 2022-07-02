@@ -16,7 +16,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
 {
     private readonly T _model;
 
-    private readonly InferenceSession _inferenceSession;
+    private readonly InferenceSession _inferenceSession = null!;
 
     /// <summary>
     /// Outputs value between 0 and 1.
@@ -247,7 +247,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     /// <summary>
     /// Creates new instance of YoloScorer with weights stream and options.
     /// </summary>
-    public YoloScorer(Stream weights, SessionOptions opts = null) : this()
+    public YoloScorer(Stream weights, SessionOptions? opts = null) : this()
     {
         using var reader = new BinaryReader(weights);
         _inferenceSession = new InferenceSession(reader.ReadBytes((int)weights.Length), opts ?? new SessionOptions());
@@ -256,10 +256,14 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     /// <summary>
     /// Creates new instance of YoloScorer with weights bytes and options.
     /// </summary>
-    public YoloScorer(byte[] weights, SessionOptions opts = null) : this() => _inferenceSession = new InferenceSession(weights, opts ?? new SessionOptions());
+    public YoloScorer(byte[] weights, SessionOptions? opts = null) : this() => _inferenceSession = new InferenceSession(weights, opts ?? new SessionOptions());
 
     /// <summary>
     /// Disposes YoloScorer instance.
     /// </summary>
-    public void Dispose() => _inferenceSession.Dispose();
+    public void Dispose()
+    {
+        _inferenceSession.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

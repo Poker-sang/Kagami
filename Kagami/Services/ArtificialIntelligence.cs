@@ -17,7 +17,7 @@ public static class ArtificialIntelligence
 
         var (w, h) = (image.Width, image.Height);
 
-        using var scorer = new YoloScorer<YoloCocoP5Model>("Assets/yolov5n.onnx");
+        var scorer = new YoloScorer<YoloCocoP5Model>("Assets/yolov5n.onnx");
 
         var predictions = scorer.Predict(image);
 
