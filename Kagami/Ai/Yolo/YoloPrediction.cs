@@ -8,13 +8,11 @@ namespace Kagami.Ai.Yolo;
 /// </summary>
 public class YoloPrediction
 {
-    public YoloLabel Label { get; set; }
+    public string Label { get; set; }
     public RectangleF Rectangle { get; set; }
     public float Score { get; set; }
 
-    public YoloPrediction() { }
+    public YoloPrediction(string label, float confidence) : this(label) => Score = confidence;
 
-    public YoloPrediction(YoloLabel label, float confidence) : this(label) => Score = confidence;
-
-    public YoloPrediction(YoloLabel label) => Label = label;
+    public YoloPrediction(string label) => Label = label;
 }

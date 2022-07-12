@@ -1,5 +1,4 @@
-﻿using Kagami.Ai.Yolo.Extensions;
-using Kagami.Ai.Yolo.Models.Abstract;
+﻿using Kagami.Ai.Yolo.Models.Abstract;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SixLabors.ImageSharp;
@@ -26,7 +25,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     /// <summary>
     /// Converts xywh bbox format to xyxy.
     /// </summary>
-    private float[] Xywh2xyxy(float[] source)
+    private float[] Xywh2Xyxy(float[] source)
     {
         var result = new float[4];
 
@@ -44,36 +43,16 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     public float Clamp(float value, float min, float max) => (value < min) ? min : (value > max) ? max : value;
 
     /// <summary>
-    /// Extracts pixels into tensor for net input.
-    /// </summary>
-    private Tensor<float> ExtractPixels(Image<Rgba32> image)
-    {
-        var tensor = new DenseTensor<float>(new[] { 1, 3, _model.Height, _model.Width });
-
-        _ = Parallel.For(0, image.Height, y =>
-            Parallel.For(0, image.Width, x =>
-            {
-                tensor[0, 0, y, x] = image[x, y].R / 255.0F; // r
-                tensor[0, 1, y, x] = image[x, y].G / 255.0F; // g
-                tensor[0, 2, y, x] = image[x, y].B / 255.0F; // b
-            }));
-
-        return tensor;
-    }
-
-    /// <summary>
     /// Runs inference session.
     /// </summary>
     private DenseTensor<float>[] Inference(Image<Rgba32> image)
     {
         if (image.Width != _model.Width || image.Height != _model.Height)
-        {
             image.Mutate(x => x.Resize(_model.Width, _model.Height)); // fit image size to specified input size
-        }
 
-        var inputs = new List<NamedOnnxValue> // add image as onnx input
+        var inputs = new[] // add image as onnx input
         {
-            NamedOnnxValue.CreateFromTensor("images", ExtractPixels(image))
+            NamedOnnxValue.CreateFromTensor("images", image.ExtractPixels())
         };
 
         var result = _inferenceSession.Run(inputs); // run inference
@@ -171,7 +150,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
                         var rawW = (float)Math.Pow(buffer[2] * 2, 2) * _model.Anchors[i][a][0]; // predicted bbox w
                         var rawH = (float)Math.Pow(buffer[3] * 2, 2) * _model.Anchors[i][a][1]; // predicted bbox h
 
-                        var xyxy = Xywh2xyxy(new[] { rawX, rawY, rawW, rawH });
+                        var xyxy = Xywh2Xyxy(new[] { rawX, rawY, rawW, rawH });
 
                         var xMin = Clamp((xyxy[0] - xPad) / gain, 0, info.Width - 0); // unpad, clip tlx
                         var yMin = Clamp((xyxy[1] - yPad) / gain, 0, info.Height - 0); // unpad, clip tly
@@ -217,12 +196,8 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
                 var overlap = intArea / unionArea; // overlap ratio
 
                 if (overlap >= _model.Overlap)
-                {
                     if (item.Score >= current.Score)
-                    {
                         _ = result.Remove(current);
-                    }
-                }
             }
         }
 

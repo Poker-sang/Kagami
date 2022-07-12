@@ -20,6 +20,9 @@ public static class ArtificialIntelligence
                 var buffer = new byte[stream.Length];
                 _ = await stream.ReadAsync(buffer);
                 return new MessageBuilder().Image(buffer);
+            case AiModel.MobileNet:
+                var result = await MobileNet(await image.Url.DownloadStreamAsync());
+                return new MessageBuilder("一眼丁真，鉴定为：").TextLine(result);
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode));
         }

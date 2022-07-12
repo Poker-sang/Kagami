@@ -20,6 +20,6 @@ public abstract class YoloModel
     public abstract float Overlap { get; set; }
 
     public abstract string[] Outputs { get; set; }
-    public abstract List<YoloLabel> Labels { get; set; }
+    public abstract string[] Labels { get; set; }
     public abstract bool UseDetect { get; set; }
 }
