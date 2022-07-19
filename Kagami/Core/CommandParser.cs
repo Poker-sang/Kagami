@@ -20,14 +20,17 @@ public static class CommandParser
     /// <param name="method">方法</param>
     /// <param name="attribute"></param>
     /// <returns></returns>
-    internal static Record<CmdletAttribute>? Get(MethodInfo method, CmdletAttribute attribute)
+    internal static Record<CmdletAttribute>? Get<T>(MethodInfo method, CmdletAttribute attribute)
     {
         // 方法类型不对的
-        if (!(method.ReturnType.IsAssignableFrom(typeof(MessageBuilder))
-            || method.ReturnType.IsAssignableFrom(typeof(Task<MessageBuilder>))
-            || method.ReturnType.IsAssignableFrom(typeof(ValueTask<MessageBuilder>))))
+        if (!(method.ReturnType.IsAssignableFrom(typeof(T))
+            || method.ReturnType.IsAssignableFrom(typeof(Task<T>))
+            || method.ReturnType.IsAssignableFrom(typeof(ValueTask<T>))
+            || method.ReturnType.IsAssignableFrom(typeof(T[]))
+            || method.ReturnType.IsAssignableFrom(typeof(Task<T[]>))
+            || method.ReturnType.IsAssignableFrom(typeof(ValueTask<T[]>))))
         {
-            Console.Error.WriteLine($"警告: 命令方法\"[{method.ReflectedType?.FullName}]::{method.Name}()\"的返回类型不正确, 将忽略这个命令！");
+            Console.Error.WriteLine($"警告: 命令方法\"[{method.ReflectedType?.FullName}]::{method.Name}()\"的返回类型不是{typeof(T)}, 将忽略这个命令！");
             return null;
         }
 
@@ -66,18 +69,23 @@ public static class CommandParser
             if (raw.SplitArgs.Length is 0 || raw.SplitArgs[0].Trim().Contains(' '))
                 return false;
 
-            MessageBuilder? result = null;
+            MessageBuilder[]? result = null;
 
             if (BotResponse.Cmdlets.TryGetValue(CmdletType.Default, out var set))
-                result = await ParseCommand(bot, group, raw, CmdletType.Default, set);
+                if (ParseCommand<MessageBuilder>(bot, group, raw, CmdletType.Default, set) is { } r)
+                    result = await r;
 
-            if (result is null &&
-                BotResponse.Cmdlets.TryGetValue(CmdletType.Prefix, out set))
-                result = await ParseCommand(bot, group, raw, CmdletType.Prefix, set);
+            if (result is null && BotResponse.Cmdlets.TryGetValue(CmdletType.Prefix, out set))
+                if (ParseCommand<MessageBuilder>(bot, group, raw, CmdletType.Prefix, set) is { } r)
+                    result = await r;
 
             if (result is not null)
             {
-                _ = await bot.SendGroupMessage(group.GroupUin, result);
+                foreach (var messageBuilder in result)
+                {
+                    _ = await bot.SendGroupMessage(group.GroupUin, messageBuilder);
+                }
+
                 return true;
             }
         }
@@ -101,7 +109,7 @@ public static class CommandParser
     /// <exception cref="ArgumentException">命令名不能为空</exception>
     /// <exception cref="InvalidOperationException">找不到合适的命令</exception>
     /// <exception cref="NotSupportedException">类型解析器不支持的类型</exception>
-    private static async Task<MessageBuilder?> ParseCommand(
+    private static Task<T[]>? ParseCommand<T>(
         Bot bot,
         GroupMessageEvent group,
         Raw raw,
@@ -152,7 +160,7 @@ public static class CommandParser
             }
 
             if (cmdlet.ParseArguments(bot, group, raw, args, out var parameters))
-                return await cmdlet.InvokeAsync<MessageBuilder, CmdletAttribute>(bot, group, parameters);
+                return cmdlet.InvokeArrayAsync<T, CmdletAttribute>(bot, group, parameters);
         }
 
         // 找不到合适的Cmdlet重载

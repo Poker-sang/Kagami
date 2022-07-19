@@ -2,6 +2,7 @@ using Kagami.ArgTypes;
 using Kagami.UsedTypes;
 using Konata.Core;
 using Konata.Core.Events.Model;
+using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using System.Reflection;
 using System.Text;
@@ -48,12 +49,12 @@ internal static class BotResponse
                 // 没有标注是命令的
                 if (method.GetCustomAttribute<CmdletAttribute>() is { } cmdletAttribute)
                 {
-                    if (CommandParser.Get(method, cmdletAttribute) is { } c)
+                    if (CommandParser.Get<MessageBuilder>(method, cmdletAttribute) is { } c)
                         tempCmdlet.Add(c);
                 }
                 else if (method.GetCustomAttribute<TriggerAttribute>() is { } triggerAttribute)
                 {
-                    if (TriggerParser.Get(method, triggerAttribute) is { } t)
+                    if (TriggerParser.Get<bool>(method, triggerAttribute) is { } t)
                         tempTriggers.Add(t);
                 }
 

@@ -9,28 +9,37 @@ using System.Text;
 namespace Kagami.Core;
 internal static class ParserUtilities
 {
-    internal static async Task<T> InvokeAsync<T, TAttribute>(this Record<TAttribute> attributeRecord, Bot bot, GroupMessageEvent group, params object?[]? parameters)
+    internal static async Task<T?> InvokeAsync<T, TAttribute>(this Record<TAttribute> attributeRecord, Bot bot, GroupMessageEvent group, object?[]? parameters, bool strict = true)
         where TAttribute : Attribute, IKagamiAttribute
     {
-        T? result = default;
-        Task<T>? asyncResult = null;
         if (attributeRecord.Method.ReturnType == typeof(T))
-            result = (T)attributeRecord.Method.Invoke(null, parameters)!;
-        else if (attributeRecord.Method.ReturnType == typeof(Task<T>))
-            asyncResult = (Task<T>)attributeRecord.Method.Invoke(null, parameters)!;
-        else if (attributeRecord.Method.ReturnType == typeof(ValueTask<T>))
-            result = await (ValueTask<T>)attributeRecord.Method.Invoke(null, parameters)!;
+            return (T)attributeRecord.Method.Invoke(null, parameters)!;
+        if (attributeRecord.Method.ReturnType == typeof(Task<T>))
+            return await Invoke<T, TAttribute>((Task<T>)attributeRecord.Method.Invoke(null, parameters)!, bot, group);
+        if (attributeRecord.Method.ReturnType == typeof(ValueTask<T>))
+            return await (ValueTask<T>)attributeRecord.Method.Invoke(null, parameters)!;
+        if (!strict)
+            return default;
+        throw new InvalidOperationException("命令返回的类型不正确");
+    }
 
-        if (asyncResult is not null)
-        {
-            if (!asyncResult.IsCompleted)
-                // TODO 重构好看点
-                if (typeof(CmdletAttribute) == typeof(TAttribute))
-                    _ = bot.SendGroupMessage(group.GroupUin, StringResources.ProcessingMessage.RandomGet()).ConfigureAwait(false);
-            result = await asyncResult;
-        }
+    internal static async Task<T[]> InvokeArrayAsync<T, TAttribute>(this Record<TAttribute> attributeRecord, Bot bot, GroupMessageEvent group, object?[]? parameters)
+        where TAttribute : Attribute, IKagamiAttribute
+    {
+        if (await InvokeAsync<T, TAttribute>(attributeRecord, bot, group, parameters, false) is { } result)
+            return new[] { result };
+        if (await InvokeAsync<T[], TAttribute>(attributeRecord, bot, group, parameters, false) is { } arrayResult)
+            return arrayResult;
+        throw new InvalidOperationException("命令返回的类型不正确");
+    }
 
-        return result is null ? throw new InvalidOperationException("命令返回的类型不正确") : result;
+    private static Task<T> Invoke<T, TAttribute>(Task<T> asyncResult, Bot bot, GroupMessageEvent group)
+    {
+        if (asyncResult.IsCompleted)
+            return asyncResult;
+        if (typeof(CmdletAttribute) == typeof(TAttribute))
+            _ = bot.SendGroupMessage(group.GroupUin, StringResources.ProcessingMessage.RandomGet()).ConfigureAwait(false);
+        return asyncResult;
     }
 
     /// <summary>

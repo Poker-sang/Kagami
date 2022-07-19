@@ -34,6 +34,11 @@ internal static class CnIntConvertExtensions
         return cnNumber.ToString();
     }
 
+    /// <summary>
+    /// 中文数字转阿拉伯数字
+    /// </summary>
+    /// <param name="cnNumber">中文数字</param>
+    /// <returns>如果不包含中文数字，会返回-1</returns>
     public static int CnToInt(this string cnNumber)
     {
         var integer = 0;

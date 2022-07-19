@@ -19,15 +19,12 @@ public static class Bilibili
         var imageMeta = metaData["image"];
         // var keywordMeta = metaData["keywords"];
 
-        // UrlDownload the image
-        var image = await imageMeta.DownloadBytesAsync();
-
         // Build message
         return new MessageBuilder(name)
             .TextLine(description)
             .TextLine(uri)
             .TextLine()
-            .Image(image);
+            .Image(await imageMeta.DownloadBytesAsync());
         // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
     }
 

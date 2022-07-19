@@ -9,13 +9,13 @@ namespace Kagami.Core;
 
 internal static class TriggerParser
 {
-    internal static Record<TriggerAttribute>? Get(MethodInfo method, TriggerAttribute attribute)
+    internal static Record<TriggerAttribute>? Get<T>(MethodInfo method, TriggerAttribute attribute)
     {
-        if (!(method.ReturnType.IsAssignableFrom(typeof(bool))
-            || method.ReturnType.IsAssignableFrom(typeof(Task<bool>))
-            || method.ReturnType.IsAssignableFrom(typeof(ValueTask<bool>))))
+        if (!(method.ReturnType.IsAssignableFrom(typeof(T))
+            || method.ReturnType.IsAssignableFrom(typeof(Task<T>))
+            || method.ReturnType.IsAssignableFrom(typeof(ValueTask<T>))))
         {
-            Console.Error.WriteLine($"警告: 触发方法\"[{method.ReflectedType?.FullName}]::{method.Name}()\"的返回类型不正确, 将忽略这个触发！");
+            Console.Error.WriteLine($"警告: 触发方法\"[{method.ReflectedType?.FullName}]::{method.Name}()\"的返回类型不是{typeof(T)}, 将忽略这个触发！");
             return null;
         }
 

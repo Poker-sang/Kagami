@@ -1,4 +1,3 @@
-using Kagami.Services;
 using Kagami.UsedTypes;
 using Konata.Core.Message;
 using System.ComponentModel;

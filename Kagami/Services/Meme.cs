@@ -1,5 +1,4 @@
 using Kagami.Core;
-using Konata.Core.Message;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -7,7 +6,8 @@ namespace Kagami.Services;
 
 public static class Meme
 {
-    private const string UriTemplate = "https://cangku.icu/api/v1/post/search?search=沙雕图集锦 ";
+    private const string UriTemplate = "https://cangku.icu/api/v1/post/search?search=";
+    private const string SearchTemplate = "沙雕图集锦 第{0}期";
     private const string Pattern = @"<img src=""([\w:/.]+)"" class=""[\w\- ]+"" alt=""[\w.]+"">";
 
     /// <summary>
@@ -32,22 +32,33 @@ public static class Meme
 
     public static bool IsRepoEmpty => !File.Exists(NewPath);
 
-    public static async Task<string[]> GetMemeImageSourcesAsync(string issue)
+    public static async Task<string[]?> GetMemeImageSourcesAsync(int issue)
     {
         await Task.Yield();
 
-        var uri = UriTemplate + $"第{issue}期";
-        var json = await uri.DownloadJsonAsync();
-        var content = json.RootElement.GetProperty("data")[0].GetProperty("content").GetString()!;
-        // TODO: 404 NotFound
-        return GetImageTags(content).ToArray();
+        var target = string.Format(SearchTemplate, issue.IntToCn());
+        var json = await (UriTemplate + target).DownloadJsonAsync();
+        foreach (var datum in json.RootElement.GetProperty("data").EnumerateArray())
+            if (datum.GetProperty("title").GetString() is { } title && title.Contains(target))
+                if (datum.GetProperty("content").GetString() is { } content)
+                    return GetImageTags(content).ToArray();
+
+        // 尝试阿拉伯数字搜索
+        target = string.Format(SearchTemplate, issue.ToString());
+        json = await (UriTemplate + target).DownloadJsonAsync();
+        foreach (var datum in json.RootElement.GetProperty("data").EnumerateArray())
+            if (datum.GetProperty("title").GetString() is { } title && title.Contains(target))
+                if (datum.GetProperty("content").GetString() is { } content)
+                    return GetImageTags(content).ToArray();
+
+        return null;
     }
 
     /// <summary>
     /// 从RSS获取订阅
     /// </summary>
     /// <returns>图片链接和期数</returns>
-    private static async Task<(string[], string)> GetMemeImageSourcesRssAsync()
+    private static async Task<(string[] ImgUrls, string Issue)> GetMemeImageSourcesRssAsync()
     {
         await Task.Yield();
 
@@ -61,10 +72,8 @@ public static class Meme
                     var first = entryTitle.IndexOf('第');
                     var last = entryTitle.IndexOf('期');
                     if (first is not -1 && last is not -1 && entry.Element(d + "content") is { } content)
-                    {
                         // 直接获取图片链接索引、期数
                         return (GetImageTags(content.Value).ToArray(), entryTitle[(first + 1)..last]);
-                    }
                 }
 
         throw new KeyNotFoundException("RSS订阅失败！");
@@ -85,7 +94,7 @@ public static class Meme
     /// </summary>
     /// <param name="issue">期数</param>
     /// <returns></returns>
-    public static async Task<MessageBuilder> SendMemePicAsync(string issue)
+    public static async Task<(string Result, string? Image)> GetMemePicAsync(string issue)
     {
         try
         {
@@ -93,33 +102,29 @@ public static class Meme
 
             // 指定期数不存在
             if (!directory.Exists)
-                return new($"第{issue}期不存在");
+                return new($"第{issue}期不存在", null);
 
-            var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Meme.Pointer)));
-            var files = directory.GetFiles();
-            if (pointer >= files.Length - 2)
+            var pointer = uint.Parse(await File.ReadAllTextAsync(Path.Combine(directory.FullName, Pointer)));
+            var files = directory.GetFiles().Length - 2;
+            if (pointer >= files)
                 pointer = 0;
 
-            var image = await File.ReadAllBytesAsync(Path.Combine(directory.FullName,
-                (pointer + 2).ToString()));
+            var image = Path.Combine(directory.FullName, (pointer + 2).ToString());
 
             ++pointer;
-            await File.WriteAllTextAsync(Path.Combine(directory.FullName, Meme.Pointer), pointer.ToString());
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, Pointer), pointer.ToString());
 
-            var message = new MessageBuilder();
-            _ = message.Text($"{issue} {pointer}/{files.Length - 2}");
-            _ = message.Image(image);
-            return message;
+            return ($"{issue} {pointer}/{files}", image);
         }
         catch (FormatException e)
         {
             Console.WriteLine(e);
-            return new(StringResources.ArgumentErrorMessage.RandomGet());
+            return new(StringResources.ArgumentErrorMessage.RandomGet(), null);
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return new(e.Message);
+            return new(e.Message, null);
         }
     }
 
@@ -127,9 +132,35 @@ public static class Meme
     /// 发送沙雕图列表
     /// </summary>
     /// <returns></returns>
-    public static MessageBuilder SendMemeList()
-        => new(new DirectoryInfo(MemePath).GetDirectories().Aggregate("弔图已有期数：",
-            (current, directoryInfo) => current + directoryInfo.Name + ", ")[..^2]);
+    public static string GetMemeList()
+        => new DirectoryInfo(MemePath).GetDirectories().Aggregate("弔图已有期数：",
+            (current, directoryInfo) => current + directoryInfo.Name + ", ")[..^2];
+
+    public static (string Result, string[]? Images) GetAllMeme(string issue)
+    {
+        try
+        {
+            var directory = new DirectoryInfo(Path.Combine(MemePath, issue));
+
+            // 指定期数不存在
+            if (!directory.Exists)
+                return new($"第{issue}期不存在", null);
+
+            var images = directory.GetFiles()[2..].Select(fi => fi.FullName).ToArray();
+
+            return ($"弔图：第{issue}期\n图源：cangku.icu", images);
+        }
+        catch (FormatException e)
+        {
+            Console.WriteLine(e);
+            return new(StringResources.ArgumentErrorMessage.RandomGet(), null);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return new(e.Message, null);
+        }
+    }
 
     /// <summary>
     /// 更新沙雕图
@@ -137,7 +168,7 @@ public static class Meme
     /// <param name="issue">中文期数</param>
     /// <param name="intIssue">数字期数</param>
     /// <returns></returns>
-    public static async Task<MessageBuilder> UpdateMemeAsync(string? issue = null, int intIssue = -1)
+    public static async Task<string> UpdateMemeAsync(string? issue = null, int intIssue = -1)
     {
         try
         {
@@ -149,13 +180,15 @@ public static class Meme
                 // 未指定期数，RSS获取订阅
                 (imgUrls, var cnIssue) = await GetMemeImageSourcesRssAsync();
 
-                issue = cnIssue.CnToInt().ToString();
+                var tryParse = cnIssue.CnToInt();
+                issue = tryParse is -1 ? cnIssue : tryParse.ToString();
                 issuePath = Path.Combine(MemePath, issue);
                 if (!int.TryParse(issue, out intIssue))
                 {
                     Console.WriteLine("Meme int parse failed!");
-                    return new(StringResources.ArgumentErrorMessage.RandomGet());
+                    return StringResources.ArgumentErrorMessage.RandomGet();
                 }
+
                 // 记录下载的图片
                 await DownloadMemesAsync(issuePath, imgUrls);
             }
@@ -178,20 +211,24 @@ public static class Meme
         }
         catch (OperationCanceledException)
         {
-            return new($"{issue}期弔图已存在！");
+            return $"{issue}期弔图已存在！";
+        }
+        catch (KeyNotFoundException)
+        {
+            return $"未找到{issue}期弔图！";
         }
         catch (FileNotFoundException e)
         {
             Console.WriteLine(e);
-            return new(e.Message);
+            return e.Message;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return new("弔图更新失败！你可以重新尝试");
+            return "弔图更新失败！你可以重新尝试";
         }
 
-        return new($"弔图已更新！第{issue}期");
+        return $"弔图已更新！第{issue}期";
     }
 
     /// <summary>
@@ -200,6 +237,7 @@ public static class Meme
     /// <param name="issuePath">期数所在路径</param>
     /// <param name="imgUrls">图片链接索引</param>
     /// <returns></returns>
+    /// <exception cref="OperationCanceledException">已存在</exception>
     private static async Task DownloadMemesAsync(string issuePath, string[] imgUrls)
     {
         // 如果已经有文件夹且索引和图片都有
@@ -223,6 +261,7 @@ public static class Meme
     /// 获取imgUrls
     /// </summary>
     /// <returns></returns>
+    /// <exception cref="OperationCanceledException">已存在</exception>
     private static async Task<string[]> DownloadMemesAsync(string issuePath, int intIssue)
     {
         string[] imgUrls;
@@ -241,7 +280,7 @@ public static class Meme
         {
             // 指定期数时，需要下载图片链接索引
             // may throw FileNotFoundException
-            imgUrls = await GetMemeImageSourcesAsync(intIssue.IntToCn());
+            imgUrls = await GetMemeImageSourcesAsync(intIssue) ?? throw new KeyNotFoundException();
             // 记录索引和指针
             _ = Directory.CreateDirectory(issuePath);
             await File.WriteAllTextAsync(Path.Combine(issuePath, Pointer), "0");

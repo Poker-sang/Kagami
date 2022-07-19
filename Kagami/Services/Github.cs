@@ -20,8 +20,7 @@ public static class GitHub
             var imageMeta = metaData["og:image"];
 
             // Build message
-            var image = await imageMeta.DownloadBytesAsync();
-            return new MessageBuilder().Image(image);
+            return new MessageBuilder().Image(await imageMeta.DownloadBytesAsync());
         }
         catch (HttpRequestException e)
         {

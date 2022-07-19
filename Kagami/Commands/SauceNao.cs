@@ -9,6 +9,6 @@ public static class SauceNao
 {
     [Obsolete("连不上")]
     [Cmdlet(nameof(Sauce), "搜图"), Description("从SauceNao搜索图源")]
-    public static async ValueTask<MessageBuilder> Sauce([Description("需要搜索的图片")]Image image)
+    public static async ValueTask<MessageBuilder> Sauce([Description("需要搜索的图片")] Image image)
         => new(await Services.SauceNao.Search(image.Url));
 }

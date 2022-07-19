@@ -36,14 +36,11 @@ public static class AcFun
             }
         }
 
-        // UrlDownload the image
-        var image = await imageMeta.DownloadBytesAsync();
-
         // Build message
         return new MessageBuilder(titleMeta)
             .TextLine(descriptionMeta)
             .TextLine(uri)
             .TextLine()
-            .Image(image);
+            .Image(await imageMeta.DownloadBytesAsync());
     }
 }
