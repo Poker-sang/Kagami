@@ -8,7 +8,7 @@ namespace Kagami.Test.Services;
 [TestClass]
 public class MemeTest
 {
-    [TestMethod()]
+    [TestMethod]
     public async Task TestGetMemeImageSourcesAsync()
     {
         return;
