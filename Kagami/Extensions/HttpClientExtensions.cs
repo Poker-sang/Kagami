@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Kagami.Extensions;
@@ -15,7 +14,7 @@ internal static class HttpClientExtensions
         // ServerCertificateCustomValidationCallback = (_, _, _, _) => true
     })
     {
-        Timeout = new TimeSpan(0, 0, 0, 8000),
+        Timeout = new(0, 0, 0, 8000),
         MaxResponseContentBufferSize = ((long)2 << 30) - 1
     };
 
@@ -26,8 +25,8 @@ internal static class HttpClientExtensions
             return client;
 
         client.DefaultRequestHeaders.Clear();
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("PokerKagami", "1.0"));
+        client.DefaultRequestHeaders.UserAgent.Add(new("Mozilla", "5.0"));
+        client.DefaultRequestHeaders.UserAgent.Add(new("PokerKagami", "1.0"));
         _shouldRefreshHeader = false;
         if (header is not null)
         {
@@ -56,5 +55,8 @@ internal static class HttpClientExtensions
         => Client.InitializeHeader(header).GetByteArrayAsync(uri);
 
     public static async Task<JsonDocument> DownloadJsonAsync(this string uri, Dictionary<string, string>? header = null)
-        => await JsonDocument.ParseAsync(await uri.DownloadStreamAsync(header));
+    {
+        await using var download = await uri.DownloadStreamAsync(header);
+        return await JsonDocument.ParseAsync(download);
+    }
 }

@@ -217,7 +217,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     /// <summary>
     /// Creates new instance of YoloScorer with weights path and options.
     /// </summary>
-    public YoloScorer(string weights, SessionOptions? opts = null) : this() => _inferenceSession = new InferenceSession(File.ReadAllBytes(weights), opts ?? new SessionOptions());
+    public YoloScorer(string weights, SessionOptions? opts = null) : this() => _inferenceSession = new(File.ReadAllBytes(weights), opts ?? new SessionOptions());
 
     /// <summary>
     /// Creates new instance of YoloScorer with weights stream and options.
@@ -225,13 +225,13 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     public YoloScorer(Stream weights, SessionOptions? opts = null) : this()
     {
         using var reader = new BinaryReader(weights);
-        _inferenceSession = new InferenceSession(reader.ReadBytes((int)weights.Length), opts ?? new SessionOptions());
+        _inferenceSession = new(reader.ReadBytes((int)weights.Length), opts ?? new SessionOptions());
     }
 
     /// <summary>
     /// Creates new instance of YoloScorer with weights bytes and options.
     /// </summary>
-    public YoloScorer(byte[] weights, SessionOptions? opts = null) : this() => _inferenceSession = new InferenceSession(weights, opts ?? new SessionOptions());
+    public YoloScorer(byte[] weights, SessionOptions? opts = null) : this() => _inferenceSession = new(weights, opts ?? new SessionOptions());
 
     /// <summary>
     /// Disposes YoloScorer instance.

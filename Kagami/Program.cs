@@ -71,7 +71,7 @@ public static class Program
 
         Console.WriteLine("Running...");
 
-        // cli
+        // CLI
         try
         {
             while (true)

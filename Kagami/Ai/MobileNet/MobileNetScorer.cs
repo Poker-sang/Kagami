@@ -16,7 +16,7 @@ public partial class MobileNetScorer : IDisposable
     public DenseTensor<float> Inference(Image<Rgba32> image)
     {
         if (_inferenceSession.InputMetadata is not { Count: > 0 })
-            throw new Exception();
+            throw new();
 
         var inputMetadata = new OnnxMetadata(_inferenceSession.InputMetadata.First());
 
@@ -55,16 +55,16 @@ public partial class MobileNetScorer : IDisposable
     }
 
     public MobileNetScorer(string weights, SessionOptions? opts = null) => _inferenceSession =
-        new InferenceSession(File.ReadAllBytes(weights), opts ?? new SessionOptions());
+        new(File.ReadAllBytes(weights), opts ?? new SessionOptions());
 
     public MobileNetScorer(Stream weights, SessionOptions? opts = null)
     {
         using var reader = new BinaryReader(weights);
-        _inferenceSession = new InferenceSession(reader.ReadBytes((int)weights.Length), opts ?? new SessionOptions());
+        _inferenceSession = new(reader.ReadBytes((int)weights.Length), opts ?? new SessionOptions());
     }
 
     public MobileNetScorer(byte[] weights, SessionOptions? opts = null) =>
-        _inferenceSession = new InferenceSession(weights, opts ?? new SessionOptions());
+        _inferenceSession = new(weights, opts ?? new SessionOptions());
 
     public void Dispose()
     {
