@@ -18,8 +18,6 @@ public static class ArtificialIntelligence
     {
         using var image = await Image.LoadAsync<Rgba32>(stream);
 
-        var (w, h) = (image.Width, image.Height);
-
         var scorer = new YoloScorer<YoloCocoP5Model>("Assets/yolov5n.onnx");
 
         var predictions = scorer.Predict(image);
@@ -42,11 +40,8 @@ public static class ArtificialIntelligence
             ));
         }
 
-        image.Mutate(a => a.Resize(w, h));
-
         var ms = new MemoryStream();
         await image.SaveAsync(ms, new PngEncoder());
-        var b = new byte[ms.Length];
         ms.Position = 0;
         return ms;
     }

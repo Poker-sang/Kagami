@@ -207,7 +207,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
     /// <summary>
     /// Runs object detection.
     /// </summary>
-    public List<YoloPrediction> Predict(Image<Rgba32> image) => Suppress(ParseOutput(Inference(image), (image.Width, image.Height)));
+    public List<YoloPrediction> Predict(Image<Rgba32> image) => Suppress(ParseOutput(Inference(image.Clone()), (image.Width, image.Height)));
 
     /// <summary>
     /// Creates new instance of YoloScorer.
