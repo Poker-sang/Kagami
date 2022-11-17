@@ -32,6 +32,11 @@ public static class Meme
 
     public static bool IsRepoEmpty => !File.Exists(NewPath);
 
+    /// <summary>
+    /// 获取指定期数的Meme
+    /// </summary>
+    /// <param name="issue">期数</param>
+    /// <returns>图片链接</returns>
     public static async Task<string[]?> GetMemeImageSourcesAsync(int issue)
     {
         await Task.Yield();

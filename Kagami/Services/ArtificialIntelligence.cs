@@ -36,7 +36,7 @@ public static class ArtificialIntelligence
             ).DrawText($"{prediction.Label} ({score})",
                 _font,
                 Color.Yellow,
-                new PointF(x, y)
+                new(x, y)
             ));
         }
 

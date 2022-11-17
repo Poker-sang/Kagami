@@ -11,10 +11,13 @@ public class MemeTest
     [TestMethod]
     public async Task TestGetMemeImageSourcesAsync()
     {
-        return;
-        var list = await Meme.GetMemeImageSourcesAsync("二百四十四");
-        Console.WriteLine("Images: [\n  ");
-        Console.WriteLine(string.Join(",\n  ", list));
-        Console.WriteLine("]");
+        if (await Meme.GetMemeImageSourcesAsync(122) is { } list)
+        {
+            Console.WriteLine("Images: [\n  ");
+            Console.WriteLine(string.Join(",\n  ", list));
+            Console.WriteLine("]");
+        }
+        else 
+            Console.WriteLine("Wrong issue");
     }
 }
