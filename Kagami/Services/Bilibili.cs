@@ -1,5 +1,6 @@
 using Konata.Core.Message;
 using System.Diagnostics;
+using System.Text;
 
 namespace Kagami.Services;
 
@@ -29,33 +30,61 @@ public static class Bilibili
     }
 
     /// <summary>
-    /// Convert bv into av
+    /// Length = 58
     /// </summary>
-    /// <param name="bvCode"></param>
-    /// <returns></returns>
-    public static ulong? Bv2Av(this string bvCode)
+    private const string Table = "fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF";
+    private const long Xor = 177451812;
+    private const long Add = 8728348608L;
+
+    private static ulong IntPow(uint a, uint b)
     {
-        const long xor = 177451812L;
-        const long add = 100618342136696320L;
-        const string table = "fZodR9XQDSUm21yCkr6" +
-                             "zBqiveYah8bt4xsWpHn" +
-                             "JE7jL5VG3guMTKNPAwcF";
+        var power = 1UL;
+        for (var i = 0; i < b; ++i)
+            power *= a;
+        return power;
+    }
 
-        var sed = new byte[] { 9, 8, 1, 6, 2, 4, 0, 7, 3, 5 };
-        var chars = new Dictionary<char, int>();
-        for (var i = 0; i < table.Length; ++i)
-            chars.Add(table[i], i);
-
+    public static string Av2Bv(this ulong avCode)
+    {
         try
         {
-            var r = sed.Select((t, i) => chars[bvCode[t]] * (long)Math.Pow(table.Length, i)).Sum();
+            avCode = (avCode ^ Xor) + Add;
 
-            var result = (r - add) ^ xor;
-            return result is > 10000000000 or < 0 ? null : (ulong)result;
+            return new StringBuilder("1")
+                .Append(Table[(int)(avCode / (58 * 58) % 58)])
+                .Append(Table[(int)(avCode / (58 * 58 * 58 * 58)) % 58])
+                .Append('4')
+                .Append(Table[(int)(avCode / (58 * 58 * 58 * 58 * 58)) % 58])
+                .Append('1')
+                .Append(Table[(int)(avCode / (58 * 58 * 58)) % 58])
+                .Append('7')
+                .Append(Table[(int)(avCode / 58 % 58)])
+                .Append(Table[(int)(avCode % 58)])
+                .ToString();
         }
         catch
         {
-            return null;
+            return "Error";
+        }
+    }
+
+    public static unsafe ulong Bv2Av(this string bvCode)
+    {
+        var sed = stackalloc byte[10] { 9, 8, 1, 6, 2, 4, 0, 7, 3, 5 };
+        var chars = new Dictionary<char, uint>();
+        for (var i = 0U; i < 58; ++i)
+            chars.Add(Table[(int)i], i);
+
+        try
+        {
+            var result = 0UL;
+            for (var i = 0U; i < 6; ++i)
+                result += chars[bvCode[sed[i]]] * IntPow(58, i);
+            return result - Add ^ Xor;
+        }
+        catch
+        {
+            return 0;
         }
     }
 }
