@@ -35,7 +35,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
 
       - name: Cache .Nuget packages
         uses: actions/cache@v3
@@ -72,4 +72,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artifact
-          path: Kagami/bin/Release/net6.0/
+          path: Kagami/bin/Release/net7.0/

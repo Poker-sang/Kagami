@@ -29,62 +29,33 @@ public static class Bilibili
         // .TextLine("#" + string.Join(" #", keywordMeta.Split(",")[1..^4]));
     }
 
-    /// <summary>
-    /// Length = 58
-    /// </summary>
-    private const string Table = "fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF";
-    private const long Xor = 177451812;
-    private const long Add = 8728348608L;
+    private const int Xor = 177451812;
 
-    private static ulong IntPow(uint a, uint b)
+    private const long Add = 8728348608;
+
+    private static ReadOnlySpan<byte> Table => "fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF"u8;
+
+    public static unsafe string Av2Bv(this int av)
     {
-        var power = 1UL;
-        for (var i = 0; i < b; ++i)
-            power *= a;
-        return power;
-    }
-
-    public static string Av2Bv(this ulong avCode)
-    {
-        try
+        fixed (byte* table = Table)
         {
-            avCode = (avCode ^ Xor) + Add;
-
-            return new StringBuilder("1")
-                .Append(Table[(int)(avCode / (58 * 58) % 58)])
-                .Append(Table[(int)(avCode / (58 * 58 * 58 * 58)) % 58])
-                .Append('4')
-                .Append(Table[(int)(avCode / (58 * 58 * 58 * 58 * 58)) % 58])
-                .Append('1')
-                .Append(Table[(int)(avCode / (58 * 58 * 58)) % 58])
-                .Append('7')
-                .Append(Table[(int)(avCode / 58 % 58)])
-                .Append(Table[(int)(avCode % 58)])
-                .ToString();
-        }
-        catch
-        {
-            return "Error";
+            var result = stackalloc byte[10] { 49, 0, 0, 52, 0, 49, 0, 55, 0, 0 };
+            var temp = (av ^ Xor) + Add;
+            result[9] = table[temp % 58];
+            result[8] = table[temp / 58 % 58];
+            result[1] = table[temp / (58 * 58) % 58];
+            result[6] = table[temp / (58 * 58 * 58) % 58];
+            result[2] = table[temp / (58 * 58 * 58 * 58) % 58];
+            result[4] = table[temp / (58 * 58 * 58 * 58 * 58) % 58];
+            return Encoding.ASCII.GetString(result, 12);
         }
     }
 
-    public static unsafe ulong Bv2Av(this string bvCode)
-    {
-        var sed = stackalloc byte[10] { 9, 8, 1, 6, 2, 4, 0, 7, 3, 5 };
-        var chars = new Dictionary<char, uint>();
-        for (var i = 0U; i < 58; ++i)
-            chars.Add(Table[(int)i], i);
-
-        try
-        {
-            var result = 0UL;
-            for (var i = 0U; i < 6; ++i)
-                result += chars[bvCode[sed[i]]] * IntPow(58, i);
-            return result - Add ^ Xor;
-        }
-        catch
-        {
-            return 0;
-        }
-    }
+    public static int Bv2Av(this string bv) =>
+        (int)((Table.IndexOf((byte)bv[9]) +
+            Table.IndexOf((byte)bv[8]) * 58 +
+            Table.IndexOf((byte)bv[1]) * 58 * 58 +
+            Table.IndexOf((byte)bv[6]) * 58 * 58 * 58 +
+            Table.IndexOf((byte)bv[2]) * 58 * 58 * 58 * 58 +
+            Table.IndexOf((byte)bv[4]) * 58 * 58 * 58 * 58 * 58 - Add) ^ Xor);
 }

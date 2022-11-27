@@ -4,11 +4,13 @@ using System.Xml.Linq;
 
 namespace Kagami.Services;
 
-public static class Meme
+public static partial class Meme
 {
-    private const string UriTemplate = "https://cangku.icu/api/v1/post/search?search=";
+    private const string UriTemplate = "https://cangku.moe/api/v1/post/search?search=";
     private const string SearchTemplate = "沙雕图集锦 第{0}期";
-    private const string Pattern = @"<img src=""([\w:/.]+)"" class=""[\w\- ]+"" alt=""[\w.]+"">";
+
+    [GeneratedRegex(@"<img src=""([\w:/.]+)"" class=""[\w\- ]+"" alt=""[\w.]+"">")]
+    private static partial Regex ImgTagRegex();
 
     /// <summary>
     /// 图片存放总路径
@@ -67,7 +69,7 @@ public static class Meme
     {
         await Task.Yield();
 
-        var xDocument = XDocument.Parse((await "https://cangku.icu/feed".DownloadStringAsync())[1..]);
+        var xDocument = XDocument.Parse((await "https://cangku.moe/feed".DownloadStringAsync())[1..]);
         var d = XNamespace.Get("http://www.w3.org/2005/Atom");
         if (xDocument.Root is { } root)
             foreach (var entry in root.Descendants(d + "entry"))
@@ -86,7 +88,7 @@ public static class Meme
 
     private static IEnumerable<string> GetImageTags(string content)
     {
-        var matches = Regex.Matches(content, Pattern);
+        var matches = ImgTagRegex().Matches(content);
         var images = matches.Select(i => i.Groups[1].Value);
         return content.Contains("语录") ? images.SkipLast(2) : images;
     }
@@ -153,7 +155,7 @@ public static class Meme
 
             var images = directory.GetFiles()[2..].Select(fi => fi.FullName).ToArray();
 
-            return ($"弔图：第{issue}期\n图源：cangku.icu", images);
+            return ($"弔图：第{issue}期\n图源：cangku.moe", images);
         }
         catch (FormatException e)
         {
@@ -247,19 +249,17 @@ public static class Meme
     {
         // 如果已经有文件夹且索引和图片都有
         if (Directory.Exists(issuePath))
-        {
             if (Directory.GetFiles(issuePath) is not { Length: 2 } files ||
                 files[1] != Path.Combine(issuePath, Indexer))
                 throw new OperationCanceledException();
-        }
-        // 没有文件夹
-        else
-        {
-            // 记录索引和指针
-            _ = Directory.CreateDirectory(issuePath);
-            await File.WriteAllTextAsync(Path.Combine(issuePath, Pointer), "0");
-            await File.WriteAllLinesAsync(Path.Combine(issuePath, Indexer), imgUrls);
-        }
+            // 没有文件夹
+            else
+            {
+                // 记录索引和指针
+                _ = Directory.CreateDirectory(issuePath);
+                await File.WriteAllTextAsync(Path.Combine(issuePath, Pointer), "0");
+                await File.WriteAllLinesAsync(Path.Combine(issuePath, Indexer), imgUrls);
+            }
     }
 
     /// <summary>
@@ -272,14 +272,12 @@ public static class Meme
         string[] imgUrls;
         // 如果已经有文件夹
         if (Directory.Exists(issuePath))
-        {
             imgUrls = Directory.GetFiles(issuePath) is { Length: 2 } files &&
                 files[1] == Path.Combine(issuePath, Indexer)
                 // 只有索引
                 ? await File.ReadAllLinesAsync(files[1])
                 // 索引和图片都有
                 : throw new OperationCanceledException();
-        }
         // 没有文件夹
         else
         {
