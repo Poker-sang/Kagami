@@ -3,23 +3,22 @@
 /// <summary>
 /// Model descriptor.
 /// </summary>
-public abstract class YoloModel
-{
-    public abstract int Width { get; set; }
-    public abstract int Height { get; set; }
-    public abstract int Depth { get; set; }
+public record YoloModel(
+    int Width,
+    int Height,
+    int Depth,
 
-    public abstract int Dimensions { get; set; }
+    int Dimensions,
 
-    public abstract int[] Strides { get; set; }
-    public abstract int[][][] Anchors { get; set; }
-    public abstract int[] Shapes { get; set; }
+    int[] Strides,
+    int[][][] Anchors,
+    int[] Shapes,
 
-    public abstract float Confidence { get; set; }
-    public abstract float MulConfidence { get; set; }
-    public abstract float Overlap { get; set; }
+    float Confidence,
+    float MulConfidence,
+    float Overlap,
 
-    public abstract string[] Outputs { get; set; }
-    public abstract string[] Labels { get; set; }
-    public abstract bool UseDetect { get; set; }
-}
+    string[] Outputs,
+    string[] Labels,
+    bool UseDetect
+);

@@ -72,7 +72,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
         var (xGain, yGain) = (_model.Width / (float)info.Width, _model.Height / (float)info.Height); // x, y gains
         var gain = Math.Min(xGain, yGain); // gain = resized / original
 
-        var (xPad, yPad) = ((_model.Width - (info.Width * gain)) / 2, (_model.Height - (info.Height * gain)) / 2); // left, right pads
+        var (xPad, yPad) = ((_model.Width - (info.Width * xGain)) / 2, (_model.Height - (info.Height * yGain)) / 2); // left, right pads
 
         _ = Parallel.For(0, (int)output.Length / _model.Dimensions, i =>
         {
@@ -86,10 +86,10 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
                 if (output[0, i, k] <= _model.MulConfidence)
                     return; // skip low mul_conf results
 
-                var xMin = (output[0, i, 0] - (output[0, i, 2] / 2) - xPad) / gain; // unpad bbox tlx to original
-                var yMin = (output[0, i, 1] - (output[0, i, 3] / 2) - yPad) / gain; // unpad bbox tly to original
-                var xMax = (output[0, i, 0] + (output[0, i, 2] / 2) - xPad) / gain; // unpad bbox brx to original
-                var yMax = (output[0, i, 1] + (output[0, i, 3] / 2) - yPad) / gain; // unpad bbox bry to original
+                var xMin = (output[0, i, 0] - (output[0, i, 2] / 2) - xPad) / xGain; // unpad bbox tlx to original
+                var yMin = (output[0, i, 1] - (output[0, i, 3] / 2) - yPad) / yGain; // unpad bbox tly to original
+                var xMax = (output[0, i, 0] + (output[0, i, 2] / 2) - xPad) / xGain; // unpad bbox brx to original
+                var yMax = (output[0, i, 1] + (output[0, i, 3] / 2) - yPad) / yGain; // unpad bbox bry to original
 
                 xMin = Clamp(xMin, 0, info.Width - 0); // clip bbox tlx to boundaries
                 yMin = Clamp(yMin, 0, info.Height - 0); // clip bbox tly to boundaries
@@ -98,10 +98,7 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
 
                 var label = _model.Labels[k - 5];
 
-                var prediction = new YoloPrediction(label, output[0, i, k])
-                {
-                    Rectangle = new RectangleF(xMin, yMin, xMax - xMin, yMax - yMin)
-                };
+                var prediction = new YoloPrediction(label, output[0, i, k], new(xMin, yMin, xMax - xMin, yMax - yMin));
 
                 result.Add(prediction);
             });
@@ -118,9 +115,8 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
         var result = new ConcurrentBag<YoloPrediction>();
 
         var (xGain, yGain) = (_model.Width / (float)info.Width, _model.Height / (float)info.Height); // x, y gains
-        var gain = Math.Min(xGain, yGain); // gain = resized / original
 
-        var (xPad, yPad) = ((_model.Width - (info.Width * gain)) / 2, (_model.Height - (info.Height * gain)) / 2); // left, right pads
+        var (xPad, yPad) = ((_model.Width - (info.Width * xGain)) / 2, (_model.Height - (info.Height * yGain)) / 2); // left, right pads
 
         _ = Parallel.For(0, output.Length, i => // iterate model outputs
         {
@@ -152,17 +148,14 @@ public class YoloScorer<T> : IDisposable where T : YoloModel
 
                         var xyxy = Xywh2Xyxy(new[] { rawX, rawY, rawW, rawH });
 
-                        var xMin = Clamp((xyxy[0] - xPad) / gain, 0, info.Width - 0); // unpad, clip tlx
-                        var yMin = Clamp((xyxy[1] - yPad) / gain, 0, info.Height - 0); // unpad, clip tly
-                        var xMax = Clamp((xyxy[2] - xPad) / gain, 0, info.Width - 1); // unpad, clip brx
-                        var yMax = Clamp((xyxy[3] - yPad) / gain, 0, info.Height - 1); // unpad, clip bry
+                        var xMin = Clamp((xyxy[0] - xPad) / xGain, 0, info.Width - 0); // unpad, clip tlx
+                        var yMin = Clamp((xyxy[1] - yPad) / yGain, 0, info.Height - 0); // unpad, clip tly
+                        var xMax = Clamp((xyxy[2] - xPad) / xGain, 0, info.Width - 1); // unpad, clip brx
+                        var yMax = Clamp((xyxy[3] - yPad) / yGain, 0, info.Height - 1); // unpad, clip bry
 
                         var label = _model.Labels[scores.IndexOf(mulConfidence)];
 
-                        var prediction = new YoloPrediction(label, mulConfidence)
-                        {
-                            Rectangle = new RectangleF(xMin, yMin, xMax - xMin, yMax - yMin)
-                        };
+                        var prediction = new YoloPrediction(label, mulConfidence, new(xMin, yMin, xMax - xMin, yMax - yMin));
 
                         result.Add(prediction);
                     })));
