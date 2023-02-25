@@ -1,4 +1,4 @@
-﻿using Kagami.UsedTypes;
+using Kagami.UsedTypes;
 using Konata.Core.Message;
 using System.ComponentModel;
 using Wolfram.NETLink;

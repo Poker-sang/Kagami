@@ -1,4 +1,4 @@
-﻿using Kagami.Core;
+using Kagami.Core;
 using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
@@ -20,7 +20,7 @@ public static class Retransmit
     {
         if (FriendUin is not 0 && GroupUin is not 0)
             if (e.FriendUin == FriendUin)
-                if (e.Chain is { Count: 1 } && e.Chain[0] is TextChain textChain && textChain.Content.StartsWith('/'))
+                if (e.Chain is [TextChain textChain] && textChain.Content.StartsWith('/'))
                     try
                     {
                         Console.WriteLine(textChain.Content);
